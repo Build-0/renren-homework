@@ -288,7 +288,39 @@ const KEY='renren-zi-v1';
 const store={stars:0,known:{},done:{},sung:{}};
 try{Object.assign(store,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){}
 store.done=store.done||{}; store.sung=store.sung||{}; store.known=store.known||{};
-function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}schedulePush();}
+
+/* ============ 同步（Supabase，全家共用一份進度；連唔到就淨用本機） ============ */
+const SB_URL='https://nikijysochwdfcqscgby.supabase.co/rest/v1/renren_progress?id=eq.1';
+const SB_KEY='sb_publishable_CXS1oAAM1sTtfalOTFMOTA_FSZwA4gU';
+const SB_H={apikey:SB_KEY,Authorization:'Bearer '+SB_KEY};
+const maxMerge=(a,b)=>{const o={...(a||{})};for(const k in (b||{}))o[k]=Math.max(o[k]||0,b[k]||0);return o;};
+function mergeInto(r){
+  if(!r||typeof r!=='object')return;
+  store.stars=Math.max(store.stars||0,r.stars||0);
+  store.known=maxMerge(store.known,r.known);
+  store.done=maxMerge(store.done,r.done);
+  const s={...(store.sung||{})};for(const k in (r.sung||{}))s[k]=s[k]||r.sung[k];store.sung=s;
+}
+let pushTimer=null,syncing=false;
+function schedulePush(){clearTimeout(pushTimer);pushTimer=setTimeout(syncNow,1500);}
+async function syncNow(){
+  if(syncing){schedulePush();return;}
+  syncing=true;
+  try{
+    const r=await fetch(SB_URL+'&select=data',{headers:SB_H});
+    if(!r.ok)throw new Error('pull '+r.status);
+    const rows=await r.json();
+    mergeInto(rows[0]&&rows[0].data);
+    try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}
+    const w=await fetch(SB_URL,{method:'PATCH',headers:{...SB_H,'Content-Type':'application/json',Prefer:'return=minimal'},
+      body:JSON.stringify({data:store,updated_at:new Date().toISOString()})});
+    if(!w.ok)throw new Error('push '+w.status);
+    document.querySelectorAll('.starN').forEach(e=>e.textContent=store.stars);
+    if(typeof T!=='undefined'&&T&&!SUBJ&&!G)renderHome();
+  }catch(e){/* 連唔到就算，下次再同步 */}
+  syncing=false;
+}
 const kc=(lang,w)=>store.known[lang+':'+w]||0;
 
 /* ============ 聲音 ============ */
@@ -753,6 +785,7 @@ async function boot(){
     TERMS.forEach(t=>Object.assign(PIC,t.pics||{}));
     T=TERMS[TERMS.length-1];
     renderHome();
+    syncNow();
   }catch(e){
     app.innerHTML='<p class="note">讀唔到溫習內容，請檢查網絡後重新整理頁面。</p>';
   }
