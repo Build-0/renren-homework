@@ -40,16 +40,19 @@ data/k1-t1.json     幼兒班第一段綜合評估（26/27 年度）全科內容
 - 背景純色，唔要生字簿橫線
 - 每組詞語右上角有「🔀 隨機排序」（進階：打亂位置都認到）
 - 讀音用瀏覽器 Web Speech（zh-HK / zh-CN / en-GB）；iPhone 靜音掣問題用 audioSession='playback' + 靜音 loop 處理
-- 進度（星星、識咗嘅字、剔歌）用 localStorage，只喺每部機自己度
+- 進度（星星、識咗嘅字、剔歌）用 localStorage，並同步去 Supabase 專案 `renren-homework`（ref `nikijysochwdfcqscgby`，新加坡）嘅 `renren_progress` 表（只有 id=1 一行，全家共用，冇暗號冇帳號；anon 只可 select／update 呢行，唔可新增／刪除）。合併規則：星星同次數攞較大值、done 攞較大值、唱遊剔選取聯集；連唔到就淨用本機。之後加帳號先至收緊。
+- App icon：`icons/` 係裁切版（只留頭同雙手，**唔好用原圖**：原圖有英文名牌同校徽），`manifest.webmanifest` 俾「加入主畫面」用
 - 頁面唔好寫仁仁全名同學校名（GitHub Pages 係公開）
 
 ## 已完成
 - 第一段評估全科：語文、識數、英文、常識、普通話、宗教、唱遊、評估日程、學校備註
 - 測試聲音掣、貼紙簿（每 5 粒星一張，共 30 張）
 
+- GitHub repo `Build-0/renren-homework`，GitHub Pages：https://build-0.github.io/renren-homework/
+- Supabase 進度同步、App icon、數一數遊戲量詞（個／粒／條／架／隻）
+
 ## 下一步
-- [ ] 開 GitHub repo（例如 renren-zi），push，開 GitHub Pages（Settings → Pages → main / root）
-- [ ] 視乎需要：用 Supabase 做全家同步進度（媽咪、婆婆部機見到同一份星星）
+- [ ] 加帳號（每個小朋友／家人分開進度），並收緊 `renren_progress` 嘅 RLS
 - [ ] 每次有新大綱／功課 → 加新 data 檔
 
 ## 舊版
