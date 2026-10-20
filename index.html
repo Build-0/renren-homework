@@ -95,7 +95,11 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .subjects{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .subj{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;background:var(--card);border:2px solid var(--ink);border-radius:18px;padding:12px 14px 14px;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
 .subj:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
-.sj-top{display:flex;align-items:center;gap:10px}
+.sj-top{display:flex;align-items:flex-start;gap:10px;align-self:stretch}
+.sj-top .word{margin-top:2px;flex:none}
+.sj-date{margin-top:auto}
+.usage,.snd-msg,.note,.small,.sec,.panel{-webkit-user-select:text;user-select:text}
+.panel button{-webkit-user-select:none;user-select:none}
 .sj-tag{display:block;font-size:15px;color:var(--soft);margin-top:2px}
 .word.ic{--s:46px}
 .subj .tz{border-color:var(--c)}
@@ -350,7 +354,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.2';
+const APP_VER='2026-10-21.3';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
