@@ -108,7 +108,9 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .panel button{-webkit-user-select:none;user-select:none}
 .sj-tag{display:block;font-size:15px;color:var(--soft);margin-top:2px}
 .sj-meta{font-size:14px;color:var(--soft);line-height:1.5;font-variant-numeric:tabular-nums}
-.pretag{display:inline-block;margin-left:6px;padding:0 8px;border:1.5px solid var(--soft);border-radius:999px;font-size:12px;font-weight:700;line-height:1.5;color:var(--soft);vertical-align:1px}
+.sj-meta>span{display:block}
+.sj-row{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px}
+.pretag{display:inline-block;padding:0 8px;border:1.5px solid var(--soft);border-radius:999px;font-size:12px;font-weight:700;line-height:1.5;color:var(--soft);vertical-align:1px}
 .songwrap{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
 .songlink{display:inline-block;padding:4px 12px;border:2px solid var(--ink);border-radius:999px;background:var(--sun);color:#1D2A38;font-size:14px;font-weight:700;text-decoration:none}
 .word.ic{--s:46px}
@@ -123,7 +125,7 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 @keyframes toastin{from{transform:translate(-50%,40px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
 .newstk{font-family:var(--kai);font-weight:700}
 .newstk span{font-size:44px;vertical-align:middle}
-.sj-name{font-family:var(--kai);font-weight:700;font-size:28px;line-height:1.1}
+.sj-name{font-family:var(--kai);font-weight:700;font-size:26px;line-height:1.1}
 .sj-date{font-size:15px;color:var(--soft);font-variant-numeric:tabular-nums}
 .sj-prog{font-size:13px;color:var(--soft);display:flex;align-items:center;gap:6px;width:100%}
 .sj-prog .meter{flex:1}
@@ -383,7 +385,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.8';
+const APP_VER='2026-10-21.9';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -537,14 +539,16 @@ function subjCount(s){
 }
 function metaLine(s){
   const lv=LEVELS[s.level];
-  return [lv?`難度 ${lv[0]} ${lv[1]}`:'',s.minutes?`約 ${s.minutes} 分鐘`:'',`${subjCount(s)} 項`].filter(Boolean).join('｜');
+  const l1=lv?`難度 ${lv[0]} ${lv[1]}`:'';
+  const l2=[s.minutes?`約 ${s.minutes} 分鐘`:'',`${subjCount(s)} 項`].filter(Boolean).join('・');
+  return [l1,l2].filter(Boolean).map(t=>`<span>${esc(t)}</span>`).join('');   // 難度、時間各佔一行
 }
 function subjCard(s){
   const [d,t]=subjProgress(s),m=SUBMETA[s.id]||['學',s.name,'var(--sky)'];
   return `<button class="subj" data-act="open" data-id="${s.id}" style="--c:${m[2]}">
     <span class="sj-top">${cells(m[0],'ic')}<span><span class="sj-name">${esc(s.name)}</span><span class="sj-tag">${esc(m[1])}</span></span></span>
-    <span class="sj-date">${s.dates.map(fmt).join('、')}${s.pre?'<span class="pretag">提前</span>':''}</span>${pill(s.dates)}
-    <span class="sj-meta">${esc(metaLine(s))}</span>
+    <span class="sj-date">${s.dates.map(fmt).join('、')}</span><span class="sj-row">${pill(s.dates)}${s.pre?'<span class="pretag">提前</span>':''}</span>
+    <span class="sj-meta">${metaLine(s)}</span>
     <span class="sj-prog"><span class="meter"><i style="width:${t?Math.round(d/t*100):0}%"></i></span>${d}/${t}</span></button>`;
 }
 function subjSection(title,list){
