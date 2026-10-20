@@ -43,7 +43,7 @@ data/k1-t1.json     幼兒班第一段綜合評估（26/27 年度）全科內容
 - 每組詞語右上角有「🔀 隨機排序」（進階：打亂位置都認到）
 - 讀音用瀏覽器 Web Speech（zh-HK / zh-CN / en-GB）；iPhone 靜音掣問題用 audioSession='playback' + 靜音 loop 處理
 - 進度（星星、識咗嘅字、剔歌）用 localStorage，並同步去 Supabase 專案 `renren-homework`（ref `nikijysochwdfcqscgby`，新加坡）嘅 `renren_progress` 表（只有 id=1 一行，全家共用，冇暗號冇帳號；anon 只可 select／update 呢行，唔可新增／刪除）。合併規則：星星同次數攞較大值、done 攞較大值、唱遊剔選取聯集；連唔到就淨用本機。之後加帳號先至收緊。
-- App icon：`icons/` 係裁切版（只留頭同雙手，**唔好用原圖**：原圖有英文名牌同校徽），`manifest.webmanifest` 俾「加入主畫面」用。圖檔 `icons/rr-180/192/512.png` 係 24 位 RGB（冇透明通道，iPhone 至穩陣）；**換 icon 要改檔名**（唔好用 `?v=` 參數），因為 iPhone 加入主畫面嗰刻先抓圖，之後唔會自動更新，要刪咗再加
+- App icon：`icons/` 係裁切版（只留頭同雙手，**唔好用原圖**：原圖有英文名牌同校徽），`manifest.webmanifest` 俾「加入主畫面」用。圖檔 `icons/rr-180/192/512.png` 係 24 位 RGB（冇透明通道，iPhone 至穩陣）；`index.html` 嘅 `apple-touch-icon` 係**內嵌 base64（data URI）**，因為 Benny 部 iPhone 加入主畫面時抓唔到外部圖檔（出咗備用嘅「仁」字圖示）；換 icon 要同時更新呢段 base64（由 `icons/rr-180.png` 轉）。**換 icon 要改檔名**（唔好用 `?v=` 參數），因為 iPhone 加入主畫面嗰刻先抓圖，之後唔會自動更新，要刪咗再加
 - 頁面唔好寫仁仁全名同學校名（GitHub Pages 係公開）
 
 - **每次發佈（任何 push 到 main）都要同時改 `index.html` 嘅 `APP_VER` 同 `version.json` 嘅 `v`（兩邊要一樣，格式 `YYYY-MM-DD.n`）**：已開住網站嘅手機會喺底部見到「有新版本，按此更新」
