@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>仁仁功課</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=2">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=2">
 <meta name="apple-mobile-web-app-title" content="仁仁功課">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -109,7 +109,12 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .sj-tag{display:block;font-size:15px;color:var(--soft);margin-top:2px}
 .sj-meta{font-size:14px;color:var(--soft);line-height:1.5;font-variant-numeric:tabular-nums}
 .sj-meta>span{display:block}
-.sj-row{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px}
+.grp-sec{margin-top:6px;padding:12px 12px 14px;border-radius:22px;border:2px solid var(--rule)}
+.grp-sec.is-pre{background:color-mix(in srgb,var(--sun) 12%,transparent);border-color:color-mix(in srgb,var(--sun) 55%,transparent)}
+.grp-sec.is-main{background:color-mix(in srgb,var(--sky) 10%,transparent);border-color:color-mix(in srgb,var(--sky) 45%,transparent)}
+.grp-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:2px 12px;margin-bottom:10px}
+.grp-head .sec{margin:0}
+.grp-range{font-size:14px;color:var(--soft);font-variant-numeric:tabular-nums}
 .pretag{display:inline-block;padding:0 8px;border:1.5px solid var(--soft);border-radius:999px;font-size:12px;font-weight:700;line-height:1.5;color:var(--soft);vertical-align:1px}
 .songwrap{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
 .songlink{display:inline-block;padding:4px 12px;border:2px solid var(--ink);border-radius:999px;background:var(--sun);color:#1D2A38;font-size:14px;font-weight:700;text-decoration:none}
@@ -385,7 +390,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.10';
+const APP_VER='2026-10-21.11';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -549,13 +554,15 @@ function subjCard(s){
   const [d,t]=subjProgress(s),m=SUBMETA[s.id]||['學',s.name,'var(--sky)'];
   return `<button class="subj" data-act="open" data-id="${s.id}" style="--c:${m[2]}">
     <span class="sj-top">${cells(m[0],'ic')}<span class="sj-name">${esc(s.name)}</span></span>
-    <span class="sj-date">${s.dates.map(fmt).join('、')}</span><span class="sj-row">${pill(s.dates)}${s.pre?'<span class="pretag">提前</span>':''}</span>
+    <span class="sj-date">${s.dates.map(fmt).join('、')}</span>${pill(s.dates)}
     <span class="sj-meta">${metaLine(s)}</span>
     <span class="sj-prog"><span class="meter"><i style="width:${t?Math.round(d/t*100):0}%"></i></span>${d}/${t}</span></button>`;
 }
-function subjSection(title,list){
+function subjSection(title,list,cls){
   if(!list.length)return '';
-  return `<section><h2 class="sec">${esc(title)}</h2><div class="subjects">${list.map(subjCard).join('')}</div></section>`;
+  const ds=list.flatMap(s=>s.dates).sort(),md=d=>fmt(d).replace(/（.*?）/,'');
+  const range=ds[0]===ds[ds.length-1]?md(ds[0]):`${md(ds[0])} 至 ${md(ds[ds.length-1])}`;
+  return `<section class="grp-sec ${cls||''}"><div class="grp-head"><h2 class="sec">${esc(title)}</h2><span class="grp-range">${esc(range)}</span></div><div class="subjects">${list.map(subjCard).join('')}</div></section>`;
 }
 function stickerBook(){
   const n=stickersOwned(),left=PER-store.stars%PER;
@@ -565,13 +572,15 @@ function stickerBook(){
 function renderHome(){
   G=null;SUBJ=null;hush();
   const byDate=(a,b)=>nextDate(a).localeCompare(nextDate(b));
-  const all=[...T.subjects].sort(byDate);
+  const pre=T.subjects.filter(s=>s.pre).sort(byDate),main=T.subjects.filter(s=>!s.pre).sort(byDate);
+  const groups=[['提前評估',pre,'is-pre'],['主要評估',main,'is-main']].filter(g=>g[1].length)
+    .sort((a,b)=>nextDate(a[1][0]).localeCompare(nextDate(b[1][0])));   // 區塊本身都按日期排
   app.innerHTML=`
     <header class="top"><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1><div class="top-r"><button class="btn ghost spkbtn" data-act="test" aria-label="測試聲音" title="測試聲音">${SPK}</button>${starPill()}</div></header>
     ${voiceNote()}
     <div class="sound" ${soundTested()?'hidden':''}><span id="sndMsg" class="snd-msg">第一次使用，請先按右上角的喇叭按鈕，測試有沒有聲音。</span></div>
     <div class="usage"><button class="btn ghost tbtn ${timerOn?'on':''}" id="timerBtn" data-act="timer">${timerLabel()}</button><span id="usage">${usageText()}</span></div>
-    ${subjSection(T.name+'・按評估日期排序',all)}
+    ${groups.map(g=>subjSection(g[0],g[1],g[2])).join('')}
     ${stickerBook()}
     <section class="panel">
       <h2 class="sec">評估日程</h2>
