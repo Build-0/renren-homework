@@ -385,7 +385,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.9';
+const APP_VER='2026-10-21.10';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -399,7 +399,9 @@ async function checkUpdate(){
     document.body.style.paddingBottom='96px';
   }catch(e){}
 }
-setInterval(checkUpdate,5*60*1000);
+setInterval(checkUpdate,2*60*1000);
+addEventListener('pageshow',checkUpdate);
+addEventListener('focus',checkUpdate);
 const kc=(lang,w)=>store.known[lang+':'+w]||0;
 
 /* ============ 聲音 ============ */
@@ -546,7 +548,7 @@ function metaLine(s){
 function subjCard(s){
   const [d,t]=subjProgress(s),m=SUBMETA[s.id]||['學',s.name,'var(--sky)'];
   return `<button class="subj" data-act="open" data-id="${s.id}" style="--c:${m[2]}">
-    <span class="sj-top">${cells(m[0],'ic')}<span><span class="sj-name">${esc(s.name)}</span><span class="sj-tag">${esc(m[1])}</span></span></span>
+    <span class="sj-top">${cells(m[0],'ic')}<span class="sj-name">${esc(s.name)}</span></span>
     <span class="sj-date">${s.dates.map(fmt).join('、')}</span><span class="sj-row">${pill(s.dates)}${s.pre?'<span class="pretag">提前</span>':''}</span>
     <span class="sj-meta">${metaLine(s)}</span>
     <span class="sj-prog"><span class="meter"><i style="width:${t?Math.round(d/t*100):0}%"></i></span>${d}/${t}</span></button>`;
@@ -582,7 +584,7 @@ function renderHome(){
       <h2 class="sec">學校備註</h2>
       <ol class="notes">${T.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ol>
     </section>
-    <footer class="foot">內容跟足學校《${esc(T.year)} 年度${esc(T.name)}溫習大綱》。星星同進度只會儲喺呢部機。</footer>`;
+    <footer class="foot">內容跟足學校《${esc(T.year)} 年度${esc(T.name)}溫習大綱》。星星同進度會同步到所有裝置。<br>版本 ${APP_VER}</footer>`;
 }
 
 /* ============ 科目頁 ============ */
