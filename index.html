@@ -501,7 +501,7 @@ function finish(){
 }
 
 /* ---- 題目產生器（全部用同一個問答畫面） ---- */
-const EMO=[['🍎','蘋果'],['⭐','星星'],['🐟','魚'],['🚗','車'],['🎈','氣球'],['🐥','小雞']];
+const EMO=[['🍎','蘋果','個'],['⭐','星星','粒'],['🐟','魚','條'],['🚗','車','架'],['🎈','氣球','個'],['🐥','小雞','隻']];
 const ROUND=['🍪','⚽','🍩','🌕','🍊','🕐'],NOTROUND=['📦','🎁','📕','📺','🧀','📏'];
 const GEN={
   hear(it){
@@ -527,11 +527,11 @@ const GEN={
   },
   count(){
     return shuffle([1,2,3,1,2,3]).map((n,k)=>{
-      const [e,name]=rand(EMO);
+      const [e,name,cl]=rand(EMO);
       if(k%2===0){const m=mix([n,...[1,2,3].filter(x=>x!==n)].map(numv));
-        return {say:`有幾多個${name}？`,prompt:grp(e,n),ask:`有幾多個${name}？`,...m,ok:()=>say(CN[n]+'個','yue'),okWait:1500};}
+        return {say:`有幾多${cl}${name}？`,prompt:grp(e,n),ask:`有幾多${cl}${name}？`,...m,ok:()=>say(CN[n]+cl,'yue'),okWait:1500};}
       const m=mix([n,...[1,2,3].filter(x=>x!==n)].map(x=>grp(e,x)));
-      return {say:`邊度有${CN[n]}個${name}？`,prompt:numv(n),ask:`邊度有 ${n} 個${name}？`,...m,ok:()=>say(CN[n]+'個','yue'),okWait:1500};
+      return {say:`邊度有${CN[n]}${cl}${name}？`,prompt:numv(n),ask:`邊度有 ${n} ${cl}${name}？`,...m,ok:()=>say(CN[n]+cl,'yue'),okWait:1500};
     });
   },
   next(){
