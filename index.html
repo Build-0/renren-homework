@@ -78,7 +78,7 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .stars{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:4px 14px 4px 10px;font-weight:900;font-variant-numeric:tabular-nums;font-size:20px;white-space:nowrap}
 .stars .st{color:var(--sun);font-size:24px;line-height:1}
 .note{background:var(--card);border:2px dashed var(--berry);border-radius:14px;padding:10px 14px;font-size:14px;line-height:1.6;color:var(--soft)}
-.sound{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sound{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:-16px}
 .sound .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:15px}
 .snd-msg{flex:1;min-width:0;font-size:14px;color:var(--soft);line-height:1.5}
 .usage{display:flex;flex-direction:column;align-items:flex-start;gap:6px;font-size:13px;color:var(--soft);line-height:1.4;font-variant-numeric:tabular-nums}
@@ -109,10 +109,10 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .sj-tag{display:block;font-size:15px;color:var(--soft);margin-top:2px}
 .sj-meta{font-size:14px;color:var(--soft);line-height:1.5;font-variant-numeric:tabular-nums}
 .sj-meta>span{display:block}
-.grp-sec{margin-top:6px;padding:12px 12px 14px;border-radius:22px;border:2px solid var(--rule)}
-.grp-sec.is-pre{background:color-mix(in srgb,var(--sun) 12%,transparent);border-color:color-mix(in srgb,var(--sun) 55%,transparent)}
-.grp-sec.is-main{background:color-mix(in srgb,var(--sky) 10%,transparent);border-color:color-mix(in srgb,var(--sky) 45%,transparent)}
-.grp-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:2px 12px;margin-bottom:10px}
+.grp-sec{--gc:var(--soft)}
+.grp-sec.is-pre{--gc:var(--sun)}
+.grp-sec.is-main{--gc:var(--sky)}
+.grp-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:2px 12px;margin-bottom:14px;padding-bottom:6px;border-bottom:4px solid var(--gc)}
 .grp-head .sec{margin:0}
 .grp-range{font-size:14px;color:var(--soft);font-variant-numeric:tabular-nums}
 .pretag{display:inline-block;padding:0 8px;border:1.5px solid var(--soft);border-radius:999px;font-size:12px;font-weight:700;line-height:1.5;color:var(--soft);vertical-align:1px}
@@ -390,7 +390,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.12';
+const APP_VER='2026-10-21.13';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
