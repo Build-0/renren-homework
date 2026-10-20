@@ -29,14 +29,14 @@
   },
   "subjects": [
     {
-      "id": "sing", "name": "唱遊", "lang": "yue", "pre": true, "dates": ["2026-11-05", "2026-11-09"],
+      "id": "sing", "name": "唱遊", "lang": "yue", "pre": true, "level": 1, "minutes": 5, "dates": ["2026-11-05", "2026-11-09"],
       "scope": "歌曲",
       "items": [
         {"label": "歌曲", "songs": ["水果的色彩", "我做得到"]}
       ]
     },
     {
-      "id": "cmn", "name": "普通話", "lang": "cmn", "pre": true, "dates": ["2026-11-06"],
+      "id": "cmn", "name": "普通話", "lang": "cmn", "pre": true, "level": 2, "minutes": 20, "dates": ["2026-11-06"],
       "scope": "《小小社區探險家》及課本 P.2—P.5、P.10—P.17 內有關普通話之課文內容、生字、句子及兒歌。",
       "items": [
         {"label": "認讀生字內容", "words": ["早", "再見", "老師", "小朋友", "媽媽", "澳門", "耳朵", "公園", "鄰居", "爸爸", "哥哥", "眼睛"], "games": ["cards", "hear", "match"]},
@@ -48,7 +48,7 @@
       ]
     },
     {
-      "id": "rel", "name": "宗教", "lang": "yue", "pre": true, "dates": ["2026-11-06"],
+      "id": "rel", "name": "宗教", "lang": "yue", "pre": true, "level": 2, "minutes": 10, "dates": ["2026-11-06"],
       "scope": "課本 P.1—P.10、P.27 及 P.29 內有關宗教之課文內容及歌曲。",
       "items": [
         {"label": "歌曲內容", "songs": ["天主的創造", "謝謝主的愛"]},
@@ -56,7 +56,7 @@
       ]
     },
     {
-      "id": "yue", "name": "語文", "lang": "yue", "dates": ["2026-11-12"],
+      "id": "yue", "name": "語文", "lang": "yue", "level": 3, "minutes": 40, "dates": ["2026-11-12"],
       "scope": "《小小社區探險家》及課本《我是哥哥》、節日書《中秋節》有關語文之內容、主題活動冊 P.15—P.17、P.19—P.21 及複習工作紙。",
       "items": [
         {"label": "認讀生詞內容", "words": ["上學", "學校", "老師", "姨姨", "同學", "家", "爸爸", "媽媽", "哥哥", "姐姐", "弟弟", "妹妹", "哭", "笑", "大廈", "公園", "街道", "圖書館", "街市", "長椅", "清潔", "路燈", "垃圾桶", "鄰居", "清潔工", "保安", "感恩", "市民", "中秋節"], "games": ["cards", "hear", "match"]},
@@ -70,7 +70,7 @@
       ]
     },
     {
-      "id": "math", "name": "識數", "lang": "yue", "dates": ["2026-11-13"],
+      "id": "math", "name": "識數", "lang": "yue", "level": 1, "minutes": 15, "dates": ["2026-11-13"],
       "scope": "《小小社區探險家》及課本《我是哥哥》有關識數之內容、主題活動冊 P.15—P.17、P.19—P.21 及複習工作紙。",
       "items": [
         {"label": "(1) 數字 1 至 3 的字和量", "games": ["count"]},
@@ -87,7 +87,7 @@
       ]
     },
     {
-      "id": "eng", "name": "英文", "lang": "en", "dates": ["2026-11-16"],
+      "id": "eng", "name": "英文", "lang": "en", "level": 2, "minutes": 20, "dates": ["2026-11-16"],
       "scope": "《小小社區探險家》及課本 Book 1 P.2—P.11、練習冊 Integrated Practice (1) P.2—P.11 及複習工作紙。",
       "items": [
         {"label": "認讀字母內容", "letters": ["A", "B", "C", "D", "E"], "games": ["letter", "lmatch"]},
@@ -96,7 +96,7 @@
       ]
     },
     {
-      "id": "gs", "name": "常識", "lang": "yue", "dates": ["2026-11-17"],
+      "id": "gs", "name": "常識", "lang": "yue", "level": 2, "minutes": 35, "dates": ["2026-11-17"],
       "scope": "《小小社區探險家》及課本《我是哥哥》、節日書《中秋節》有關常識之內容、主題活動冊 P.15—P.17、P.19—P.21 及複習工作紙。",
       "items": [
         {"label": "(1) 分辨乾和濕", "games": ["wetdry"]},

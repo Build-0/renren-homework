@@ -24,13 +24,15 @@ data/k1-t1.json     幼兒班第一段綜合評估（26/27 年度）全科內容
 - `lang`：讀音語言 yue 廣東話 / cmn 普通話 / en 英文
 - `pre: true`：提前評估（主頁分開一組）
 - `dates`、`scope`（老師原文「評估內容」）
+- `level`（1 易／2 中／3 難，**相對呢一次功課**內其他科目嘅難度，俾家長睇）、`minutes`（預計總溫習分鐘）：主頁卡片顯示「難度 ★★☆ 中｜約 20 分鐘｜N 項」；項數由程式自動計
+- 主頁係**一張按評估日期排序嘅清單**（提前評估喺卡片日期旁有「提前」標籤）
 - `items`：每項一張卡，`label` 用**老師原文**，再配：
   - `words` + `games`（cards 字卡 / hear 聽音揀字 / match 翻牌 / picword 睇圖揀英文字）
   - `sentences`：`{pre, post, opts}` + `games:["sent"]`
   - `letters` + `games:["letter","lmatch"]`
   - `quiz`：`[{q, o:[[emoji, 答案], ...]}]`，第一個選項係正確答案
   - `sorts`：分類遊戲
-  - `songs`：只列歌名（**唔好放歌詞／祈禱文原文**），俾家長剔
+  - `songs`：只列歌名（**唔好放歌詞／祈禱文原文**），俾家長剔。可寫 `"歌名"` 或 `{"n":"歌名","url":"https://…"}`；有 url 就喺歌名旁出現「▶ 聽歌」（新分頁開啟）。**url 要用學校／老師提供嘅，唔好自己估**
   - 識數專用遊戲：count / order / chant / next / color / shape / pickall
 
 ## 設計決定（Benny 講過嘅）
