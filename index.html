@@ -178,6 +178,12 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .preview{display:flex;flex-wrap:wrap;gap:14px 12px}
 .pv{background:var(--card);border:2px solid var(--rule);padding:6px 12px;position:relative;border-radius:14px}
 .pv.got::after{content:"★";position:absolute;top:-9px;right:-7px;color:var(--sun);font-size:16px;text-shadow:0 0 2px var(--card)}
+.pv.due{border-style:dashed;border-color:var(--sun)}
+.pv.due::after{content:"↻";position:absolute;top:-9px;right:-7px;color:var(--sun);font-size:17px;font-weight:900;text-shadow:0 0 2px var(--card)}
+.reviewbar{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:12px 18px;border:2px solid var(--ink);border-radius:18px;background:var(--card);box-shadow:0 4px 0 var(--ink);text-align:left}
+.reviewbar b{font-family:var(--kai);font-size:22px}
+.reviewbar span{font-size:14px;color:var(--soft)}
+.reviewbar:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
 .sents{margin:0;padding:0;list-style:none;display:grid;gap:6px}
 .pvs{background:none;border:0;padding:6px 0;text-align:left;font-family:var(--kai);font-size:26px;line-height:1.5}
 .pvs u{text-decoration-color:var(--grid);text-decoration-thickness:2px;text-underline-offset:4px}
@@ -304,7 +310,7 @@ const PRAISE=['好叻呀！','啱晒！','好嘢！','叻叻豬！','好犀利�
 const GAMES={
   cards:['認','字卡'], hear:['聽','聽音揀字'], match:['配','翻牌配對'], sent:['句','句子填充'],
   count:['數','數一數'], order:['序','排次序'], chant:['唱','跟住數'], next:['接','下一個係咩'],
-  sort:['類','分類'], color:['色','揀顏色'], shape:['形','揀形狀'], pickall:['揀','揀晒出嚟'],
+  sort:['類','分類'], color:['色','揀顏色'], shape:['形','揀形狀'], pickall:['揀','揀晒出嚟'], review:['溫','今日重溫'],
   letter:['A','聽音揀字母'], lmatch:['a','大細楷配對'], picword:['圖','睇圖揀字'],
   wetdry:['濕','乾定濕'], quiz:['答','問答遊戲']
 };
@@ -322,6 +328,11 @@ try{Object.assign(store,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){}
 store.done=store.done||{}; store.sung=store.sung||{}; store.known=store.known||{}; store.usage=store.usage||{};
 const USAGE_EPOCH=1;  // 改這個數字 = 全部裝置清空使用時間統計一次（舊版本留低嘅測試時間唔會同步返嚟）
 if(store.usageEpoch!==USAGE_EPOCH){store.usage={};store.usageEpoch=USAGE_EPOCH;}
+store.mem=store.mem||{};
+if(!store.memV){   // 舊版只記「答啱次數」，搬過去當「學緊」（唔信任：可能同一日玩出嚟），下次喺另一日答啱就會升級
+  for(const k in store.known){if(!store.mem[k]&&store.known[k]>0)store.mem[k]={b:1,d:'',n:store.known[k],t:0};}
+  store.memV=1;
+}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}schedulePush();}
 
 /* ============ 同步（Supabase，全家共用一份進度；連唔到就淨用本機） ============ */
@@ -333,6 +344,8 @@ function mergeInto(r){
   if(!r||typeof r!=='object')return;
   store.stars=Math.max(store.stars||0,r.stars||0);
   store.known=maxMerge(store.known,r.known);
+  const rm=r.mem||{};   // 每個字取最後更新嗰份（答錯降級先唔會被舊資料蓋返）
+  for(const k in rm){const a=store.mem[k];if(!a||(rm[k].t||0)>(a.t||0))store.mem[k]=rm[k];}
   store.done=maxMerge(store.done,r.done);
   const s={...(store.sung||{})};for(const k in (r.sung||{}))s[k]=s[k]||r.sung[k];store.sung=s;
   const uu={...(store.usage||{})};
@@ -398,7 +411,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.15';
+const APP_VER='2026-10-21.16';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -415,7 +428,41 @@ async function checkUpdate(){
 setInterval(checkUpdate,2*60*1000);
 addEventListener('pageshow',checkUpdate);
 addEventListener('focus',checkUpdate);
-const kc=(lang,w)=>store.known[lang+':'+w]||0;
+/* ============ 記憶（間隔重溫）============
+   每個字一筆：{b:階段 0–5, d:最近一次「升級」嗰日, n:答啱次數, t:最後更新時間}
+   - 要喺「唔同日子」第一次就答啱，先升一級（同一日玩十次都只算一次）
+   - b>=2（至少兩個唔同日子答啱）＝已記住；但隔咗 MEM_INT[b] 日冇再答啱就變返「要重溫」
+   - 答錯（每題第一次錯）降一級
+   - 各部機同步時，每個字取最後更新（t 較大）嗰份 */
+const MEM_INT=[0,1,3,7,14,30];
+const MEM_TXT={new:'未學',learn:'學緊',got:'已記住',due:'要重溫'};
+const mkey=(lang,w)=>lang+':'+w;
+function daysSince(d){return d?Math.round((new Date(dayKey()+'T00:00:00')-new Date(d+'T00:00:00'))/864e5):999;}
+function memState(lang,w){
+  const m=store.mem[mkey(lang,w)];
+  if(!m)return 'new';
+  if(m.b>=2)return daysSince(m.d)<=MEM_INT[Math.min(m.b,5)]?'got':'due';
+  return 'learn';
+}
+function memRank(lang,w){   // 數字愈細愈應該先溫
+  const s=memState(lang,w),m=store.mem[mkey(lang,w)];
+  if(s==='due')return -Math.min(daysSince(m.d),999)/1000;
+  if(s==='learn')return m.d===dayKey()?1.6:1;
+  return s==='new'?1:2;
+}
+function award0(kw,first,lang){
+  if(!kw)return;
+  const key=mkey(lang,kw),m=store.mem[key]||{b:0,d:'',n:0,t:0},today=dayKey();
+  m.n++;
+  if(first&&m.d!==today){m.b=Math.min(5,m.b+1);m.d=today;}
+  m.t=Date.now();store.mem[key]=m;
+}
+function penalize(kw,lang){
+  if(!kw)return;
+  const key=mkey(lang,kw),m=store.mem[key]||{b:0,d:'',n:0,t:0};
+  m.b=Math.max(0,m.b-1);if(m.b===0)m.d='';
+  m.w=(m.w||0)+1;m.t=Date.now();store.mem[key]=m;save();
+}
 
 /* ============ 聲音 ============ */
 let voices=[];
@@ -469,12 +516,18 @@ let actx;
 function chime(ok){
   try{
     actx=actx||new (window.AudioContext||window.webkitAudioContext)();
-    (ok?[660,880,1320]:[300,220]).forEach((f,i)=>{
-      const o=actx.createOscillator(),g=actx.createGain(),t=actx.currentTime+i*.09;
-      o.type=ok?'triangle':'sine';o.frequency.value=f;
-      g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.22,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.25);
-      o.connect(g).connect(actx.destination);o.start(t);o.stop(t+.3);
-    });
+    if(actx.state==='suspended')actx.resume();
+    const note=(f,at,vol,dur,type)=>{
+      const o=actx.createOscillator(),g=actx.createGain(),t=actx.currentTime+at;
+      o.type=type;o.frequency.value=f;
+      g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+      o.connect(g).connect(actx.destination);o.start(t);o.stop(t+dur+.05);
+    };
+    if(ok)[660,880,1320].forEach((f,i)=>note(f,i*.09,.22,.25,'triangle'));
+    else{   // 答錯：輕柔嘅兩個下行音（「噔～咚」），音量細、慢慢散開，唔係蜂鳴器，唔會嚇親或者打擊小朋友
+      note(440,0,.16,.45,'sine');note(880,0,.04,.35,'sine');
+      note(349,.17,.16,.55,'sine');note(698,.17,.04,.4,'sine');
+    }
   }catch(e){}
 }
 
@@ -513,10 +566,10 @@ function toast(html,ms=2200){
   const d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.innerHTML=html;
   document.body.appendChild(d);setTimeout(()=>d.remove(),ms);
 }
-function award(kw,first){
+function award(kw,first,lang){
   const before=stickersOwned();
   store.stars++;
-  if(kw&&first)store.known[G.lang+':'+kw]=kc(G.lang,kw)+1;
+  award0(kw,first,lang||G.lang);
   G.earned++;save();
   document.querySelectorAll('.starN').forEach(e=>e.textContent=store.stars);
   const after=stickersOwned();
@@ -552,11 +605,24 @@ function subjCount(s){
   });
   return n;
 }
+function memStats(s){
+  let tot=0,got=0,due=0;const seen=new Set();
+  s.items.forEach(it=>(it.words||[]).forEach(w=>{
+    const k=mkey(s.lang,w);if(seen.has(k))return;seen.add(k);tot++;
+    const st=memState(s.lang,w);if(st==='got')got++;else if(st==='due')due++;
+  }));
+  return {tot,got,due};
+}
 function metaLine(s){
-  const lv=LEVELS[s.level];
+  const lv=LEVELS[s.level],ms=memStats(s);
   const l1=lv?`難度 ${lv[0]} ${lv[1]}`:'';
   const l2=[s.minutes?`約 ${s.minutes} 分鐘`:'',`${subjCount(s)} 項`].filter(Boolean).join('・');
-  return [l1,l2].filter(Boolean).map(t=>`<span>${esc(t)}</span>`).join('');   // 難度、時間各佔一行
+  const l3=ms.tot?`已記住 ${ms.got}／${ms.tot} 字${ms.due?`・${ms.due} 個要重溫`:''}`:'';
+  return [l1,l2,l3].filter(Boolean).map(t=>`<span>${esc(t)}</span>`).join('');   // 難度、時間、記住程度各佔一行
+}
+function reviewBar(){
+  const n=reviewCandidates().length;
+  return n?`<button class="reviewbar" data-act="review"><b>今日重溫</b><span>${n} 個字要溫・最多 10 題</span></button>`:'';
 }
 function subjCard(s){
   const [d,t]=subjProgress(s),m=SUBMETA[s.id]||['學',s.name,'var(--sky)'];
@@ -588,6 +654,7 @@ function renderHome(){
     ${voiceNote()}
     <div class="sound" ${soundTested()?'hidden':''}><span id="sndMsg" class="snd-msg">第一次使用，請先按右上角的喇叭按鈕，測試有沒有聲音。</span></div>
     <div class="usage"><button class="btn ghost tbtn ${timerOn?'on':''}" id="timerBtn" data-act="timer">${timerLabel()}</button><span><span id="usage">${usageText()}</span> <button class="linkbtn" data-act="usagelog">查看記錄 ›</button></span></div>
+    ${reviewBar()}
     ${groups.map(g=>subjSection(g[0],g[1],g[2])).join('')}
     ${stickerBook()}
     <section class="panel">
@@ -628,6 +695,7 @@ function renderSubject(){
       <div class="row"><b>${s.dates.map(fmt).join('、')}</b>${pill(s.dates)}${s.pre?'<span class="small">提前評估</span>':''}</div>
       <div class="scope"><b>評估內容：</b>${esc(s.scope)}</div>
     </section>
+    ${s.items.some(it=>it.words)?'<p class="small">字右上角：★ 已記住（至少兩日都答啱）、↻ 隔咗幾日要重溫。</p>':''}
     <section class="items">${s.items.map((it,i)=>itemCard(it,i,lang)).join('')}</section>`;
 }
 const SHUF={};
@@ -637,7 +705,7 @@ function itemCard(it,i,lang){
   const canMix=!!(it.words||it.letters);
   const head=`<div class="ihead"><h3>${esc(it.label)}</h3>${canMix?`<div class="shufs"><button class="shuf ${mixed?'on':''}" data-act="shuf" data-i="${i}">🔀 ${mixed?'再打亂':'隨機排序'}</button>${mixed?`<button class="shuf" data-act="unshuf" data-i="${i}">↺ 原本次序</button>`:''}</div>`:''}</div>`;
   let detail='';
-  if(words)detail=`<div class="preview ${mixed?'mixed':''}">${words.map(w=>`<button class="pv ${kc(lang,w)>=3?'got':''}" data-act="pv" data-t="${esc(w)}" data-l="${lang}" aria-label="讀出 ${esc(w)}">${wv(w,'sm',lang)}</button>`).join('')}</div>`;
+  if(words)detail=`<div class="preview ${mixed?'mixed':''}">${words.map(w=>{const st=memState(lang,w);return `<button class="pv ${st==='got'||st==='due'?st:''}" data-act="pv" data-t="${esc(w)}" data-l="${lang}" aria-label="讀出 ${esc(w)}（${MEM_TXT[st]}）">${wv(w,'sm',lang)}</button>`;}).join('')}</div>`;
   if(letters)detail=`<div class="preview ${mixed?'mixed':''}">${letters.map(L=>`<button class="pv" data-act="pv" data-t="${L}" data-l="en"><span class="en sm">${L}${L.toLowerCase()}</span></button>`).join('')}</div>`;
   if(it.sentences)detail=`<ul class="sents">${it.sentences.map(x=>`<li><button class="pvs" data-act="pv" data-t="${esc(x.pre+x.opts[0]+x.post)}" data-l="${lang}">${esc(x.pre)}<u>${x.opts.map(esc).join('／')}</u>${esc(x.post)}</button></li>`).join('')}</ul>`;
   if(it.songs)detail=`<div class="songs">${it.songs.map(x=>{const n=songN(x),u=typeof x==='object'&&/^https?:\/\//.test(x.url||'')?x.url:'';
@@ -648,14 +716,36 @@ function itemCard(it,i,lang){
 
 /* ============ 遊戲框 ============ */
 function renderGame(body){
-  app.innerHTML=`<div class="bar"><button class="back" data-act="subj">‹ ${esc(SUBJ.name)}</button><div class="g-title">${GAMES[G.g][1]}</div>${starPill()}</div><div class="gbody">${body}</div>`;
+  const back=G.review?'<button class="back" data-act="home">‹ 主頁</button>':`<button class="back" data-act="subj">‹ ${esc(SUBJ.name)}</button>`;
+  app.innerHTML=`<div class="bar">${back}<div class="g-title">${GAMES[G.g][1]}</div>${starPill()}</div><div class="gbody">${body}</div>`;
 }
 const dots=()=>`<div class="dots" aria-label="第 ${G.r+1} 題，共 ${G.total} 題">${Array.from({length:G.total},(_,i)=>`<i class="${i<G.r?'on':i===G.r?'cur':''}"></i>`).join('')}</div>`;
 const replayBtn=()=>`<button class="speak" data-act="replay">${SPK}再聽一次</button>`;
 function mix(list){const idx=shuffle(list.map((_,i)=>i));return {opts:idx.map(i=>list[i]),a:idx.indexOf(0),order:idx};}
-const prioritized=(lang,ws)=>shuffle(ws).sort((a,b)=>Math.min(3,kc(lang,a))-Math.min(3,kc(lang,b)));
+const prioritized=(lang,ws)=>shuffle(ws).sort((a,b)=>memRank(lang,a)-memRank(lang,b));   // 要重溫（愈耐愈先）→ 學緊／未學 → 已記住
 function orList(caps){return caps.length<2?caps.join(''):caps.slice(0,-1).join('、')+'，定係'+caps[caps.length-1]+'？';}
 
+/* ---- 今日重溫：跨科目，專揀「要重溫」同「學緊但今日未溫」嘅字 ---- */
+function reviewCandidates(){
+  const seen=new Set(),out=[];
+  T.subjects.forEach(s=>s.items.forEach(it=>(it.words||[]).forEach(w=>{
+    const k=mkey(s.lang,w);if(seen.has(k))return;seen.add(k);
+    const st=memState(s.lang,w),m=store.mem[k];
+    if(st==='due'||(st==='learn'&&m.d!==dayKey()))out.push({w,lang:s.lang,pool:it.words,rank:memRank(s.lang,w)});
+  })));
+  return out.sort((a,b)=>a.rank-b.rank);
+}
+function startReview(){
+  const c=reviewCandidates().slice(0,10);
+  if(!c.length){toast('今日冇字要重溫，好叻！',2000);return;}
+  SUBJ=null;LOGVIEW=false;
+  G={g:'review',review:true,lang:'yue',earned:0,r:0,key:'review'};
+  G.qs=c.map(x=>{
+    const m=mix([x.w,...shuffle(x.pool.filter(y=>y!==x.w)).slice(0,2)].map(y=>wv(y,'md',x.lang)));
+    return {say:x.w,sayLang:x.lang,lang:x.lang,ask:x.lang==='en'?'聽吓，係邊個英文字？':'聽吓，係邊個？',...m,wide:true,kw:x.w,pop:PIC[x.w]};
+  });
+  G.total=G.qs.length;quizRound();
+}
 function startGame(i,g){
   const it=SUBJ.items[i];
   G={g,it,i,lang:SUBJ.lang,earned:0,r:0,key:dkey(i,g)};
@@ -668,7 +758,7 @@ function finish(){
   const fall=Array.from({length:16},()=>`<i class="fall" style="left:${(Math.random()*100).toFixed(1)}%;animation-delay:${(Math.random()*1.6).toFixed(2)}s;font-size:${18+Math.random()*26|0}px">★</i>`).join('');
   app.insertAdjacentHTML('beforeend',`<div class="cele" role="dialog" aria-label="完成">${fall}
     <div class="cele-box"><div class="big-star">★</div><h2>好叻呀仁仁！</h2><p>今次儲咗 <b>${G.earned}</b> 粒星</p>${G.newSticker?`<p class="newstk">新貼紙 <span>${G.newSticker}</span></p>`:''}
-    <div class="cele-row"><button class="btn" data-act="again">再玩一次</button><button class="btn ghost" data-act="subj">返去${esc(SUBJ.name)}</button></div></div></div>`);
+    <div class="cele-row">${G.review?'<button class="btn" data-act="home">返主頁</button>':`<button class="btn" data-act="again">再玩一次</button><button class="btn ghost" data-act="subj">返去${esc(SUBJ.name)}</button>`}</div></div></div>`);
 }
 
 /* ---- 題目產生器（全部用同一個問答畫面） ---- */
@@ -767,7 +857,7 @@ function pick(b){
   if(G.lock)return;
   const i=+b.dataset.i,q=G.qs[G.r];
   if(i===q.a){
-    G.lock=true;b.classList.add('right');award(q.kw,G.miss===0);chime(true);
+    G.lock=true;b.classList.add('right');award(q.kw,G.miss===0,q.lang);chime(true);
     G.streak=G.miss===0?(G.streak||0)+1:0;
     if([3,5,8].includes(G.streak))toast(`🔥 連續答啱 ${G.streak} 題！`,1800);
     if(q.pop)b.insertAdjacentHTML('beforeend',`<span class="pop">${q.pop}</span>`);
@@ -775,19 +865,22 @@ function pick(b){
     if(q.ok){q.ok();wait=q.okWait||1800;}else setTimeout(()=>say(rand(PRAISE),'yue'),300);
     setTimeout(()=>{G.r++;G.r>=G.total?finish():quizRound();},wait);
   }else{
+    if(!G.miss)penalize(q.kw,q.lang||G.lang);   // 每題只有第一次答錯先降級
     G.miss++;b.classList.add('wrong');b.disabled=true;chime(false);
-    setTimeout(()=>say(...G.rs),400);
+    setTimeout(()=>say(...G.rs),900);   // 等柔和提示音完咗，再讀返條題目
   }
 }
 
 /* ---- 字卡 ---- */
 function cardsInit(){G.list=SHUF[skey(G.i)]||G.it.words;G.ci=0;renderCards();}
 function renderCards(){
-  const w=G.list[G.ci],k=Math.min(3,kc(G.lang,w));
+  const w=G.list[G.ci],st=memState(G.lang,w),mm=store.mem[mkey(G.lang,w)];
+  const k=st==='got'?(mm.b>=3?3:2):st==='new'?0:1;
   renderGame(`
     <div class="fc-count">${G.ci+1} / ${G.list.length}</div>
     <button class="flash" data-act="sayc" aria-label="讀出 ${esc(w)}">${wv(w,'lg',G.lang)}<span class="pic">${PIC[w]||''}</span></button>
-    <div class="kstars" aria-label="識咗程度 ${k} / 3">${'★'.repeat(k)}<span class="dim">${'★'.repeat(3-k)}</span></div>
+    <div class="kstars" aria-label="${MEM_TXT[st]}">${'★'.repeat(k)}<span class="dim">${'★'.repeat(3-k)}</span></div>
+    <p class="small" style="text-align:center">${MEM_TXT[st]}</p>
     <div class="nav"><button class="round" data-act="prev" aria-label="上一個">‹</button><button class="round speakr" data-act="sayc" aria-label="再讀一次">${SPK}</button><button class="round" data-act="next" aria-label="下一個">›</button></div>`);
   say(w,G.lang);
   if(G.ci===G.list.length-1&&!store.done[G.key]){store.done[G.key]=1;save();}
@@ -818,7 +911,7 @@ function flip(b){
   const bj=app.querySelector(`.mcard[data-i="${j}"]`);
   if(a.k===c.k){
     a.done=c.done=true;b.classList.add('done');bj.classList.add('done');
-    award(G.g==='lmatch'?null:c.k,true);chime(true);setTimeout(()=>say(c.p.say,c.p.lang),250);
+    award(G.g==='lmatch'?null:c.k,false);chime(true);   // 翻牌睇得到答案，只算見過，唔計升級setTimeout(()=>say(c.p.say,c.p.lang),250);
     if(++G.done===G.pairs.length)setTimeout(finish,1200);
   }else{
     G.lock=true;
@@ -889,6 +982,7 @@ app.addEventListener('click',e=>{
     case 'open':SUBJ=T.subjects.find(s=>s.id===b.dataset.id);renderSubject();window.scrollTo(0,0);break;
     case 'home':renderHome();window.scrollTo(0,0);break;
     case 'usagelog':renderUsageLog();window.scrollTo(0,0);break;
+    case 'review':startReview();window.scrollTo(0,0);break;
     case 'subj':renderSubject();break;
     case 'pv':say(b.dataset.t,b.dataset.l);break;
     case 'shuf':{const i=+b.dataset.i,it=SUBJ.items[i],src=it.words||it.letters;let s;do{s=shuffle(src);}while(src.length>2&&s.join()===(SHUF[skey(i)]||src).join());SHUF[skey(i)]=s;renderSubject();chime(true);break;}
