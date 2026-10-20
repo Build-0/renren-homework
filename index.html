@@ -350,7 +350,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.1';
+const APP_VER='2026-10-21.2';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -361,6 +361,7 @@ async function checkUpdate(){
     bar.innerHTML='<button class="btn">🔄 有新版本，按此更新</button>';
     bar.querySelector('button').onclick=()=>{location.replace(location.pathname+'?v='+encodeURIComponent(j.v));};
     document.body.appendChild(bar);
+    document.body.style.paddingBottom='96px';
   }catch(e){}
 }
 setInterval(checkUpdate,5*60*1000);
