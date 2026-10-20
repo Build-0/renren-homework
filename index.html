@@ -326,7 +326,7 @@ const KEY='renren-zi-v1';
 const store={stars:0,known:{},done:{},sung:{}};
 try{Object.assign(store,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){}
 store.done=store.done||{}; store.sung=store.sung||{}; store.known=store.known||{}; store.usage=store.usage||{};
-const USAGE_EPOCH=1;  // 改這個數字 = 全部裝置清空使用時間統計一次（舊版本留低嘅測試時間唔會同步返嚟）
+const USAGE_EPOCH=2;  // 改這個數字 = 全部裝置清空使用時間統計一次（舊版本留低嘅測試時間唔會同步返嚟）
 if(store.usageEpoch!==USAGE_EPOCH){store.usage={};store.usageEpoch=USAGE_EPOCH;}
 store.mem=store.mem||{};
 if(!store.memV){   // 舊版只記「答啱次數」，搬過去當「學緊」（唔信任：可能同一日玩出嚟），下次喺另一日答啱就會升級
@@ -411,7 +411,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.20';
+const APP_VER='2026-10-21.21';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
