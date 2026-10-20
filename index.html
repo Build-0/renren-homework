@@ -300,19 +300,19 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 <body>
 
 
-<div id="app"><p class="loading">載入緊溫習內容……</p></div>
+<div id="app"><p class="loading">載入複習內容中……</p></div>
 
 <script>
 /* ============ 工具 ============ */
 const SPK='<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7M18.5 6a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 const CN=['零','一','二','三'];
-const PRAISE=['好叻呀！','啱晒！','好嘢！','叻叻豬！','好犀利！'];
+const PRAISE=['好棒喔！','答對了！','太棒了！','好厲害！','真厲害！'];
 const GAMES={
-  cards:['認','字卡'], hear:['聽','聽音揀字'], match:['配','翻牌配對'], sent:['句','句子填充'],
-  count:['數','數一數'], order:['序','排次序'], chant:['唱','跟住數'], next:['接','下一個係咩'],
-  sort:['類','分類'], color:['色','揀顏色'], shape:['形','揀形狀'], pickall:['揀','揀晒出嚟'], review:['溫','今日重溫'],
-  letter:['A','聽音揀字母'], lmatch:['a','大細楷配對'], picword:['圖','睇圖揀字'],
-  wetdry:['濕','乾定濕'], quiz:['答','問答遊戲']
+  cards:['認','字卡'], hear:['聽','聽音選字'], match:['配','翻牌配對'], sent:['句','句子填充'],
+  count:['數','數一數'], order:['序','排順序'], chant:['唱','跟著數'], next:['接','下一個是什麼'],
+  sort:['類','分類'], color:['色','選顏色'], shape:['形','選形狀'], pickall:['選','全部選出來'], review:['複','今天複習'],
+  letter:['A','聽音選字母'], lmatch:['a','大小寫配對'], picword:['圖','看圖選字'],
+  wetdry:['濕','乾或濕'], quiz:['答','問答遊戲']
 };
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
 const rand=a=>a[Math.random()*a.length|0];
@@ -411,7 +411,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.19';
+const APP_VER='2026-10-21.20';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -435,7 +435,7 @@ addEventListener('focus',checkUpdate);
    - 答錯（每題第一次錯）降一級
    - 各部機同步時，每個字取最後更新（t 較大）嗰份 */
 const MEM_INT=[0,1,3,7,14,30];
-const MEM_TXT={new:'未學',learn:'學緊',got:'已記住',due:'要重溫'};
+const MEM_TXT={new:'未學',learn:'學習中',got:'已記住',due:'要複習'};
 const mkey=(lang,w)=>lang+':'+w;
 function daysSince(d){return d?Math.round((new Date(dayKey()+'T00:00:00')-new Date(d+'T00:00:00'))/864e5):999;}
 function memState(lang,w){
@@ -491,10 +491,10 @@ function say(text,lang,onend){
 }
 function hush(){try{speechSynthesis.cancel();}catch(e){}}
 function diag(){
-  if(sndErr)return `提示音播放失敗（${sndErr}）。請關掉靜音掣、調大音量，再試一次；仍然不行請告訴我這行字。`;
-  if(ttsErr==='nosupport')return '呢個瀏覽器唔支援讀字，試吓用 Safari 或 Chrome 開呢條連結。';
-  if(spoke)return pickVoice('yue')?'讀音正常。如果仍然聽唔到，請關咗靜音掣同調大音量。':'有讀，但部機未有廣東話聲，可以喺系統設定下載「中文（香港）」聲音。';
-  return `冇讀到（${ttsErr||'冇反應'}，聲音數量 ${voices.length}）。試吓關靜音掣、調大音量，或者用 Safari／Chrome 開呢條連結。`;
+  if(sndErr)return `提示音播放失敗（${sndErr}）。請關閉靜音開關、調大音量，再試一次；仍然不行，請把這行字告訴我。`;
+  if(ttsErr==='nosupport')return '這個瀏覽器不支援朗讀，請改用 Safari 或 Chrome 開啟這個連結。';
+  if(spoke)return pickVoice('yue')?'朗讀正常。如果還是聽不到，請關閉靜音開關並調大音量。':'有朗讀，但這支手機沒有廣東話語音，可以到系統設定下載「中文（香港）」語音。';
+  return `沒有聽到朗讀（${ttsErr||'沒有反應'}，語音數量 ${voices.length}）。請關閉靜音開關、調大音量，或改用 Safari／Chrome 開啟這個連結。`;
 }
 /* iPhone 靜音掣：用「播放」模式 */
 let unlocked=false,keepAlive=null;
@@ -576,11 +576,11 @@ const wetv=(e,wet)=>`<span class="wet ${wet?'is':''}"><span class="pe">${e}</spa
 const starPill=()=>`<div class="stars" aria-label="星星"><span class="st">★</span><b class="starN">${store.stars}</b></div>`;
 function pill(dates){
   const up=dates.find(d=>daysTo(d)>=0);
-  if(!up)return '<span class="pill past">已評估・可重溫</span>';
+  if(!up)return '<span class="pill past">已評估・可複習</span>';
   const d=daysTo(up);
-  if(d===0)return '<span class="pill today">今日評估</span>';
-  const cls=d<=10?'soon':d<=20?'up':'far';   // 10 日內紅、11–20 日黃、21 日或以上藍
-  return `<span class="pill ${cls}">仲有 ${d} 日</span>`;
+  if(d===0)return '<span class="pill today">今天評估</span>';
+  const cls=d<=10?'soon':d<=20?'up':'far';   // 10 天內紅、11–20 天黃、21 天或以上藍
+  return `<span class="pill ${cls}">還有 ${d} 天</span>`;
 }
 const nextDate=s=>s.dates.find(d=>daysTo(d)>=0)||s.dates[s.dates.length-1];
 
@@ -604,7 +604,7 @@ function award(kw,first,lang){
   document.querySelectorAll('.starN').forEach(e=>e.textContent=store.stars);
   const after=stickersOwned();
   if(after>before){const e=STICKERS[after-1];G.newSticker=e;
-    setTimeout(()=>{toast(`<span class="big">${e}</span>攞到新貼紙！`,2600);say('攞到新貼紙！','yue');},700);}
+    setTimeout(()=>{toast(`<span class="big">${e}</span>拿到新貼紙！`,2600);say('攞到新貼紙！','yue');},700);}
 }
 function subjProgress(s){
   let total=0,done=0;
@@ -620,8 +620,8 @@ function voiceNote(){
   if(!voices.length)return '';
   const need=[...new Set(T.subjects.map(s=>s.lang))].filter(l=>!pickVoice(l));
   if(!need.length)return '';
-  const nm={yue:'廣東話（中文－香港）',cmn:'普通話（中文－中國大陸）',en:'英文'};
-  return `<div class="note">呢部機未有${need.map(l=>nm[l]).join('、')}讀音。可以喺系統設定嘅「朗讀內容」聲音度下載，下載後重新開返呢頁就得。</div>`;
+  const nm={yue:'廣東話（中文－香港）',cmn:'國語（中文－中國大陸）',en:'英文'};
+  return `<div class="note">這支手機還沒有${need.map(l=>nm[l]).join('、')}語音。可以到系統設定的「朗讀內容」下載語音，下載後重新開啟本頁即可。</div>`;
 }
 const SUBMETA={yue:['字','認中文字・廣東話','var(--berry)'],math:['數','數字・顏色・形狀','var(--sky)'],eng:['A','ABC・英文生詞','var(--leaf)'],gs:['識','社區・家庭・中秋','var(--sun)'],
   cmn:['普','認中文字・普通話','var(--berry)'],rel:['主','歌曲・祈禱文','var(--sky)'],sing:['歌','唱遊歌曲','var(--leaf)']};
@@ -647,12 +647,12 @@ function metaLine(s){
   const lv=LEVELS[s.level],ms=memStats(s);
   const l1=lv?`難度 ${lv[0]} ${lv[1]}`:'';
   const l2=[s.minutes?`約 ${s.minutes} 分鐘`:'',`${subjCount(s)} 項`].filter(Boolean).join('・');
-  const l3=ms.tot?`已記住 ${ms.got}／${ms.tot} 字${ms.due?`・${ms.due} 個要重溫`:''}`:'';
+  const l3=ms.tot?`已記住 ${ms.got}／${ms.tot} 字${ms.due?`・${ms.due} 個要複習`:''}`:'';
   return [l1,l2,l3].filter(Boolean).map(t=>`<span>${esc(t)}</span>`).join('');   // 難度、時間、記住程度各佔一行
 }
 function reviewBar(){
   const n=reviewCandidates().length;
-  return n?`<button class="reviewbar" data-act="review"><b>今日重溫</b><span>${n} 個字要溫・最多 10 題</span></button>`:'';
+  return n?`<button class="reviewbar" data-act="review"><b>今天複習</b><span>${n} 個字要複習・最多 10 題</span></button>`:'';
 }
 function subjCard(s){
   const [d,t]=subjProgress(s),m=SUBMETA[s.id]||['學',s.name,'var(--sky)'];
@@ -670,7 +670,7 @@ function subjSection(title,list,cls){
 }
 function stickerBook(){
   const n=stickersOwned(),left=PER-store.stars%PER;
-  return `<section class="panel"><div class="sb-head"><h2 class="sec">仁仁嘅貼紙簿</h2><span class="small">${n} / ${STICKERS.length}・${n>=STICKERS.length?'全部集齊！':`再儲 ${left} 粒星有新貼紙`}</span></div>
+  return `<section class="panel"><div class="sb-head"><h2 class="sec">仁仁的貼紙簿</h2><span class="small">${n} / ${STICKERS.length}・${n>=STICKERS.length?'全部集齊！':`再存 ${left} 顆星就有新貼紙`}</span></div>
     <div class="sbook">${STICKERS.map((e,i)=>`<span class="stk ${i<n?'got':''}">${i<n?e:''}</span>`).join('')}</div></section>`;
 }
 function renderHome(){
@@ -698,7 +698,7 @@ function renderHome(){
       <h2 class="sec">學校備註</h2>
       <ol class="notes">${T.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ol>
     </section>
-    <footer class="foot">內容跟足學校《${esc(T.year)} 年度${esc(T.name)}溫習大綱》。星星同進度會同步到所有裝置。<br>版本 ${APP_VER}</footer>`;
+    <footer class="foot">內容跟足學校《${esc(T.year)} 年度${esc(T.name)}複習大綱》。星星同進度會同步到所有裝置。<br>版本 ${APP_VER}</footer>`;
 }
 
 /* ============ 科目頁 ============ */
@@ -725,7 +725,7 @@ function renderSubject(){
       <div class="row"><b>${s.dates.map(fmt).join('、')}</b>${pill(s.dates)}${s.pre?'<span class="small">提前評估</span>':''}</div>
       <div class="scope"><b>評估內容：</b>${esc(s.scope)}</div>
     </section>
-    ${s.items.some(it=>it.words)?'<p class="small">字右上角：★ 已記住（至少兩日都答啱）、↻ 隔咗幾日要重溫。</p>':''}
+    ${s.items.some(it=>it.words)?'<p class="small">字的右上角：★ 已記住（至少兩天都答對）、↻ 隔了幾天，要複習。</p>':''}
     <section class="items">${s.items.map((it,i)=>itemCard(it,i,lang)).join('')}</section>`;
 }
 const SHUF={};
@@ -739,7 +739,7 @@ function itemCard(it,i,lang){
   if(letters)detail=`<div class="preview ${mixed?'mixed':''}">${letters.map(L=>`<button class="pv" data-act="pv" data-t="${L}" data-l="en"><span class="en sm">${L}${L.toLowerCase()}</span></button>`).join('')}</div>`;
   if(it.sentences)detail=`<ul class="sents">${it.sentences.map(x=>`<li><button class="pvs" data-act="pv" data-t="${esc(x.pre+x.opts[0]+x.post)}" data-l="${lang}">${esc(x.pre)}<u>${x.opts.map(esc).join('／')}</u>${esc(x.post)}</button></li>`).join('')}</ul>`;
   if(it.songs)detail=`<div class="songs">${it.songs.map(x=>{const n=songN(x),u=typeof x==='object'&&/^https?:\/\//.test(x.url||'')?x.url:'';
-    return `<span class="songwrap"><button class="song" data-act="sing" data-n="${esc(n)}" aria-pressed="${!!store.sung[`${T.id}:${n}`]}"><span class="tick">✓</span>《${esc(n)}》</button>${u?`<a class="songlink" href="${esc(u)}" target="_blank" rel="noopener">▶ 聽歌</a>`:''}</span>`;}).join('')}</div><p class="small">溫完一首，撳一下記低。${it.songs.some(x=>typeof x==='object'&&x.url)?'有「▶ 聽歌」的可以按去聽。':''}</p>`;
+    return `<span class="songwrap"><button class="song" data-act="sing" data-n="${esc(n)}" aria-pressed="${!!store.sung[`${T.id}:${n}`]}"><span class="tick">✓</span>《${esc(n)}》</button>${u?`<a class="songlink" href="${esc(u)}" target="_blank" rel="noopener">▶ 聽歌</a>`:''}</span>`;}).join('')}</div><p class="small">複習完一首，按一下記起來。${it.songs.some(x=>typeof x==='object'&&x.url)?'有「▶ 聽歌」的可以按下去聽。':''}</p>`;
   const games=(it.games||[]).map(g=>`<button class="gbtn" data-act="play" data-i="${i}" data-g="${g}">${cells(GAMES[g][0],'xs')}${GAMES[g][1]}${store.done[dkey(i,g)]?' <span class="ok">✓</span>':''}</button>`).join('');
   return `<article class="item">${head}${detail}${games?`<div class="games">${games}</div>`:''}</article>`;
 }
@@ -767,12 +767,12 @@ function reviewCandidates(){
 }
 function startReview(){
   const c=reviewCandidates().slice(0,10);
-  if(!c.length){toast('今日冇字要重溫，好叻！',2000);return;}
+  if(!c.length){toast('今天沒有要複習的字，好棒！',2000);return;}
   SUBJ=null;LOGVIEW=false;
   G={g:'review',review:true,lang:'yue',earned:0,r:0,key:'review'};
   G.qs=c.map(x=>{
     const m=mix([x.w,...shuffle(x.pool.filter(y=>y!==x.w)).slice(0,2)].map(y=>wv(y,'md',x.lang)));
-    return {say:x.w,sayLang:x.lang,lang:x.lang,ask:x.lang==='en'?'聽吓，係邊個英文字？':'聽吓，係邊個？',...m,wide:true,kw:x.w,pop:PIC[x.w]};
+    return {say:x.w,sayLang:x.lang,lang:x.lang,ask:x.lang==='en'?'聽聽看，是哪一個英文字？':'聽聽看，是哪一個？',...m,wide:true,kw:x.w,pop:PIC[x.w]};
   });
   G.total=G.qs.length;quizRound();
 }
@@ -787,23 +787,23 @@ function finish(){
   chime(true);setTimeout(()=>say('好叻呀仁仁！','yue'),300);
   const fall=Array.from({length:16},()=>`<i class="fall" style="left:${(Math.random()*100).toFixed(1)}%;animation-delay:${(Math.random()*1.6).toFixed(2)}s;font-size:${18+Math.random()*26|0}px">★</i>`).join('');
   app.insertAdjacentHTML('beforeend',`<div class="cele" role="dialog" aria-label="完成">${fall}
-    <div class="cele-box"><div class="big-star">★</div><h2>好叻呀仁仁！</h2><p>今次儲咗 <b>${G.earned}</b> 粒星</p>${G.newSticker?`<p class="newstk">新貼紙 <span>${G.newSticker}</span></p>`:''}
-    <div class="cele-row">${G.review?'<button class="btn" data-act="home">返主頁</button>':`<button class="btn" data-act="again">再玩一次</button><button class="btn ghost" data-act="subj">返去${esc(SUBJ.name)}</button>`}</div></div></div>`);
+    <div class="cele-box"><div class="big-star">★</div><h2>好棒喔，仁仁！</h2><p>這次得到 <b>${G.earned}</b> 顆星</p>${G.newSticker?`<p class="newstk">新貼紙 <span>${G.newSticker}</span></p>`:''}
+    <div class="cele-row">${G.review?'<button class="btn" data-act="home">回主頁</button>':`<button class="btn" data-act="again">再玩一次</button><button class="btn ghost" data-act="subj">回到${esc(SUBJ.name)}</button>`}</div></div></div>`);
 }
 
 /* ---- 題目產生器（全部用同一個問答畫面） ---- */
-const EMO=[['🍎','蘋果','個'],['⭐','星星','粒'],['🐟','魚','條'],['🚗','車','架'],['🎈','氣球','個'],['🐥','小雞','隻']];
+const EMO=[['🍎','蘋果','個','個'],['⭐','星星','粒','顆'],['🐟','魚','條','條'],['🚗','車','架','輛'],['🎈','氣球','個','個'],['🐥','小雞','隻','隻']];   // [圖,名,朗讀量詞,畫面量詞]
 const ROUND=['🍪','⚽','🍩','🌕','🍊','🕐'],NOTROUND=['📦','🎁','📕','📺','🧀','📏'];
 const GEN={
   hear(it){
     const lang=G.lang,ws=prioritized(lang,it.words).slice(0,Math.min(8,it.words.length));
     return ws.map(w=>{const m=mix([w,...shuffle(it.words.filter(x=>x!==w)).slice(0,2)].map(x=>wv(x,'md',lang)));
-      return {say:w,ask:lang==='en'?'聽吓，係邊個英文字？':'聽吓，係邊個？',...m,wide:true,kw:w,pop:PIC[w]};});
+      return {say:w,ask:lang==='en'?'聽聽看，是哪一個英文字？':'聽聽看，是哪一個？',...m,wide:true,kw:w,pop:PIC[w]};});
   },
   picword(it){
     const ws=prioritized('en',it.words).slice(0,Math.min(8,it.words.length));
     return ws.map(w=>{const m=mix([w,...shuffle(it.words.filter(x=>x!==w)).slice(0,2)].map(x=>wv(x,'md','en')));
-      return {say:'呢個係咩？揀啱個英文字。',sayLang:'yue',prompt:pc(PIC[w]||'？'),ask:'呢個係咩？揀啱個英文字',...m,wide:true,kw:w,ok:()=>say(w,'en'),okWait:1700};});
+      return {say:'呢個係咩？揀啱個英文字。',sayLang:'yue',prompt:pc(PIC[w]||'？'),ask:'這是什麼？請選出正確的英文字',...m,wide:true,kw:w,ok:()=>say(w,'en'),okWait:1700};});
   },
   sent(it){
     const words=(SUBJ.items.find(x=>x.words)||{words:[]}).words;
@@ -818,11 +818,11 @@ const GEN={
   },
   count(){
     return shuffle([1,2,3,1,2,3]).map((n,k)=>{
-      const [e,name,cl]=rand(EMO);
+      const [e,name,cl,cl2]=rand(EMO);   // cl＝朗讀用量詞（廣東話），cl2＝畫面用量詞（國語）
       if(k%2===0){const m=mix([n,...[1,2,3].filter(x=>x!==n)].map(numv));
-        return {say:`有幾多${cl}${name}？`,prompt:grp(e,n),ask:`有幾多${cl}${name}？`,...m,ok:()=>say(CN[n]+cl,'yue'),okWait:1500};}
+        return {say:`有幾多${cl}${name}？`,prompt:grp(e,n),ask:`有幾${cl2}${name}？`,...m,ok:()=>say(CN[n]+cl,'yue'),okWait:1500};}
       const m=mix([n,...[1,2,3].filter(x=>x!==n)].map(x=>grp(e,x)));
-      return {say:`邊度有${CN[n]}${cl}${name}？`,prompt:numv(n),ask:`邊度有 ${n} ${cl}${name}？`,...m,ok:()=>say(CN[n]+cl,'yue'),okWait:1500};
+      return {say:`邊度有${CN[n]}${cl}${name}？`,prompt:numv(n),ask:`哪一個有 ${n} ${cl2}${name}？`,...m,ok:()=>say(CN[n]+cl,'yue'),okWait:1500};
     });
   },
   next(){
@@ -830,49 +830,50 @@ const GEN={
       const s=1+(Math.random()*28|0),ans=s+2;
       const pool=shuffle([s-1,s+3,s+4,s+5,s+1+10,ans-10].filter(x=>x>=1&&x<=30&&x!==ans&&x!==s&&x!==s+1));
       const m=mix([ans,...pool.slice(0,2)].map(x=>`<span class="numv"><b>${x}</b></span>`));
-      return {say:`${s}、${s+1}，跟住係咩？`,prompt:`<div class="seq"><span>${s}</span><span>${s+1}</span><span class="q">?</span></div>`,ask:'跟住係咩數字？',...m,ok:()=>say(String(ans),'yue'),okWait:1400};
+      return {say:`${s}、${s+1}，跟住係咩？`,prompt:`<div class="seq"><span>${s}</span><span>${s+1}</span><span class="q">?</span></div>`,ask:'接下來是哪一個數字？',...m,ok:()=>say(String(ans),'yue'),okWait:1400};
     });
   },
   color(){
     return Array.from({length:6},()=>{const m=mix(['blue',...shuffle(['red','yellow','green']).slice(0,2)].map(swv));
-      return {say:'邊個係藍色？',ask:'邊個係藍色？',...m,ok:()=>say('係藍色！','yue'),okWait:1400};});
+      return {say:'邊個係藍色？',ask:'哪一個是藍色？',...m,ok:()=>say('係藍色！','yue'),okWait:1400};});
   },
   shape(){
     return Array.from({length:6},(_,k)=>{
       const list=k%2===0?['circle',...shuffle(['square','triangle','star']).slice(0,2)].map(shv)
         :[rand(ROUND),...shuffle(NOTROUND).slice(0,2)].map(e=>pc(e));
-      return {say:k%2===0?'邊個係圓形？':'邊樣嘢係圓形？',ask:k%2===0?'邊個係圓形？':'邊樣嘢係圓形？',...mix(list),ok:()=>say('係圓形！','yue'),okWait:1400};
+      return {say:k%2===0?'邊個係圓形？':'邊樣嘢係圓形？',ask:k%2===0?'哪一個是圓形？':'哪一樣東西是圓形？',...mix(list),ok:()=>say('係圓形！','yue'),okWait:1400};
     });
   },
   letter(it){
     return Array.from({length:8},(_,k)=>{
       const L=rand(it.letters),show=[x=>x+x.toLowerCase(),x=>x,x=>x.toLowerCase()][k%3];
       const m=mix([L,...shuffle(it.letters.filter(x=>x!==L)).slice(0,2)].map(x=>`<span class="en md">${show(x)}</span>`));
-      return {say:L,sayLang:'en',ask:'聽吓，係邊個字母？',...m};
+      return {say:L,sayLang:'en',ask:'聽聽看，是哪一個字母？',...m};
     });
   },
   sort(it){
-    const set=rand(it.sorts);
-    return shuffle(set.items).map(([e,name,b])=>({
-      say:`${name}，放入${set.bins[0][1]}，定係${set.bins[1][1]}？`,prompt:pc(e,name),ask:'放入邊個籃？',
-      opts:set.bins.map(([be,bn])=>pc(be,bn)),a:b,ok:()=>say(`${name}係${set.bins[b][1]}`,'yue'),okWait:1700
+    const set=rand(it.sorts),bs=i=>set.bins[i][2]||set.bins[i][1];   // 籃子 [圖, 畫面文字, 朗讀文字?]；物品 [圖, 畫面文字, 籃子, 朗讀文字?]
+    return shuffle(set.items).map(([e,name,b,sn])=>({
+      say:`${sn||name}，放入${bs(0)}，定係${bs(1)}？`,prompt:pc(e,name),ask:'要放進哪一個籃子？',
+      opts:set.bins.map(([be,bn])=>pc(be,bn)),a:b,ok:()=>say(`${sn||name}係${bs(b)}`,'yue'),okWait:1700
     }));
   },
   wetdry(){
     const qs=shuffle(['👕','🧦','🧸','👖','🧢','🐶']).slice(0,4).map(e=>{
       const askWet=Math.random()<.5,m=mix([wetv(e,askWet),wetv(e,!askWet)]);
-      return {say:askWet?'邊個係濕嘅？':'邊個係乾嘅？',ask:askWet?'邊個係濕嘅？':'邊個係乾嘅？',...m};
+      return {say:askWet?'邊個係濕嘅？':'邊個係乾嘅？',ask:askWet?'哪一個是濕的？':'哪一個是乾的？',...m};
     });
-    [['啱啱沖完涼，頭髮係乾定濕？','濕'],['曬咗成日太陽嘅衫，係乾定濕？','乾'],['落雨冇帶遮，件衫會點？','濕']].forEach(([q,a])=>{
+    [['啱啱沖完涼，頭髮係乾定濕？','剛洗完澡，頭髮是乾的還是濕的？','濕'],['曬咗成日太陽嘅衫，係乾定濕？','曬了一整天太陽的衣服，是乾的還是濕的？','乾'],['落雨冇帶遮，件衫會點？','下雨沒帶傘，衣服會怎麼樣？','濕']].forEach(([q,qd,a])=>{
       const list=a==='濕'?[pc('💧','濕'),pc('☀️','乾')]:[pc('☀️','乾'),pc('💧','濕')];
-      qs.push({say:q,ask:q,...mix(list)});
+      qs.push({say:q,ask:qd,...mix(list)});   // say＝朗讀（維持原樣），ask＝畫面文字
     });
     return shuffle(qs).slice(0,6);
   },
   quiz(it){
     return shuffle(it.quiz).map(x=>{
-      const m=mix(x.o.map(([e,c])=>pc(e,c))),caps=m.order.map(i=>x.o[i][1]);
-      return {say:x.q+'　'+orList(caps),prompt:x.show?pc(x.show):'',ask:x.q,...m,ok:()=>say(x.o[0][1],'yue'),okWait:1700};
+      // 選項 [圖, 畫面文字, 朗讀文字?]；題目 {q:畫面, say:朗讀?}：朗讀內容維持原樣，只改畫面文字
+      const m=mix(x.o.map(([e,c])=>pc(e,c))),caps=m.order.map(i=>x.o[i][2]||x.o[i][1]);
+      return {say:(x.say||x.q)+'　'+orList(caps),prompt:x.show?pc(x.show):'',ask:x.q,...m,ok:()=>say(x.o[0][2]||x.o[0][1],'yue'),okWait:1700};
     });
   }
 };
@@ -889,7 +890,7 @@ function pick(b){
   if(i===q.a){
     G.lock=true;b.classList.add('right');award(q.kw,G.miss===0,q.lang);chime(true);
     G.streak=G.miss===0?(G.streak||0)+1:0;
-    if([3,5,8].includes(G.streak))toast(`🔥 連續答啱 ${G.streak} 題！`,1800);
+    if([3,5,8].includes(G.streak))toast(`🔥 連續答對 ${G.streak} 題！`,1800);
     if(q.pop)b.insertAdjacentHTML('beforeend',`<span class="pop">${q.pop}</span>`);
     let wait=1600;
     if(q.ok){q.ok();wait=q.okWait||1800;}else wait=1100;   // 答啱只聽樂器提示音，唔逐題讚；完成成份先講「好叻呀」
@@ -928,7 +929,7 @@ function matchInit(){
   }
   G.pairs=pairs;G.cards=shuffle(pairs.flatMap(p=>[{k:p.k,side:'a',p},{k:p.k,side:'b',p}]));
   G.first=null;G.lock=false;G.done=0;G.misses=0;
-  renderGame(`<p class="small" style="text-align:center">${G.g==='lmatch'?'搵出一對：大楷同細楷':'搵出一對：字同圖'}</p><div class="mgrid">${G.cards.map((c,i)=>`
+  renderGame(`<p class="small" style="text-align:center">${G.g==='lmatch'?'找出一對：大寫和小寫':'找出一對：字和圖'}</p><div class="mgrid">${G.cards.map((c,i)=>`
     <button class="mcard" data-act="flip" data-i="${i}" aria-label="翻牌"><span class="in"><span class="face back">★</span><span class="face front">${c.p[c.side]}</span></span></button>`).join('')}</div>`);
 }
 function flip(b){
@@ -941,7 +942,8 @@ function flip(b){
   const bj=app.querySelector(`.mcard[data-i="${j}"]`);
   if(a.k===c.k){
     a.done=c.done=true;b.classList.add('done');bj.classList.add('done');
-    award(G.g==='lmatch'?null:c.k,false);chime(true);   // 翻牌睇得到答案，只算見過，唔計升級setTimeout(()=>say(c.p.say,c.p.lang),250);
+    award(G.g==='lmatch'?null:c.k,false);chime(true);   // 翻牌看得到答案，只算見過，不計升級
+    setTimeout(()=>say(c.p.say,c.p.lang),250);
     if(++G.done===G.pairs.length)setTimeout(finish,1200);
   }else{
     G.lock=true;
@@ -954,7 +956,7 @@ function orderInit(){G.total=6;orderRound();}
 function orderRound(){
   G.nextN=1;G.miss=0;const useGrp=G.r%2===1,e=rand(EMO)[0];
   G.rs=[useGrp?'由少到多，順序撳':'由一開始，順序撳','yue'];
-  renderGame(`${dots()}<div class="qcard"><p class="ask">${useGrp?'由少到多，順序撳':'由 1 開始，順序撳'}</p></div>${replayBtn()}
+  renderGame(`${dots()}<div class="qcard"><p class="ask">${useGrp?'由少到多，依序按':'從 1 開始，依序按'}</p></div>${replayBtn()}
     <div class="choices row" style="--n:3">${shuffle([1,2,3]).map(n=>`<button class="choice" data-act="ord" data-n="${n}">${useGrp?grp(e,n):numv(n)}</button>`).join('')}</div>`);
   say(...G.rs);
 }
@@ -971,8 +973,8 @@ function ord(b){
 /* ---- 唱數 1-30 ---- */
 function chantInit(){
   G.tok=0;
-  renderGame(`<div class="qcard"><p class="ask">一齊由 1 數到 30</p><p class="small">撳「一齊數」會逐個讀出嚟；撳任何數字都會讀。</p></div>
-    <div class="crow"><button class="btn blue" data-act="chgo">${SPK.replace('width="24"','width="20"')} 一齊數</button><button class="btn ghost" data-act="chstop">停</button></div>
+  renderGame(`<div class="qcard"><p class="ask">一起從 1 數到 30</p><p class="small">按「一起數」會一個一個唸出來；按任何數字也會唸。</p></div>
+    <div class="crow"><button class="btn blue" data-act="chgo">${SPK.replace('width="24"','width="20"')} 一起數</button><button class="btn ghost" data-act="chstop">停</button></div>
     <div class="ngrid">${Array.from({length:30},(_,i)=>`<button class="nb" data-act="cnum" data-n="${i+1}">${i+1}</button>`).join('')}</div>`);
 }
 function chantStep(n,tok){
@@ -990,7 +992,7 @@ function pickInit(){G.total=4;pickRound();}
 function pickRound(){
   G.cells=shuffle([...shuffle(BLUE).slice(0,3).map(e=>({e,b:1})),...shuffle(NOTBLUE).slice(0,3).map(e=>({e,b:0}))]);
   G.found=0;G.miss=0;G.rs=['揀晒所有藍色嘅嘢出嚟','yue'];
-  renderGame(`${dots()}<div class="qcard"><p class="ask">揀晒所有藍色嘅嘢出嚟</p><p class="small">一共有 3 樣</p></div>${replayBtn()}
+  renderGame(`${dots()}<div class="qcard"><p class="ask">請選出所有藍色的東西</p><p class="small">一共有 3 個</p></div>${replayBtn()}
     <div class="pgrid">${G.cells.map((c,i)=>`<button class="choice" data-act="pk" data-i="${i}">${pc(c.e)}</button>`).join('')}</div>`);
   say(...G.rs);
 }
@@ -1036,7 +1038,7 @@ app.addEventListener('click',e=>{
       setTimeout(()=>chime(false),700);
       setTimeout(()=>say('你好，仁仁','yue'),1600);
       const m=document.getElementById('sndMsg');m.parentElement.hidden=false;try{localStorage.setItem('renren-zi-snd-tested','1');}catch(e){}
-      m.textContent='試緊：答啱的叮叮聲 → 答錯的輕柔提示音 → 說話……';setTimeout(()=>{m.textContent=diag();},3600);break;}
+      m.textContent='測試中：答對的叮叮聲 → 答錯的輕柔提示音 → 說話……';setTimeout(()=>{m.textContent=diag();},3600);break;}
   }
 });
 
@@ -1051,7 +1053,7 @@ async function boot(){
     syncNow();
     checkUpdate();
   }catch(e){
-    app.innerHTML='<p class="note">讀唔到溫習內容，請檢查網絡後重新整理頁面。</p>';
+    app.innerHTML='<p class="note">讀取不到複習內容，請檢查網路後重新整理頁面。</p>';
   }
 }
 loadVoices();
