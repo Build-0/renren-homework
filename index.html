@@ -83,12 +83,20 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .snd-msg{flex:1;min-width:0;font-size:14px;color:var(--soft);line-height:1.5}
 .usage{display:flex;flex-direction:column;align-items:flex-start;gap:6px;font-size:13px;color:var(--soft);line-height:1.4;font-variant-numeric:tabular-nums}
 .sound[hidden]{display:none}
+.linkbtn{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--sky);text-decoration:underline;white-space:nowrap}
+.ulog{list-style:none;margin:12px 0;padding:0;display:flex;flex-direction:column;gap:14px}
+.ulog li{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:baseline;font-variant-numeric:tabular-nums}
+.ulog .d{font-weight:700}
+.ulog .m{text-align:right}
+.ulog .m b{font-size:20px}
+.ulog .r{font-size:14px;color:var(--soft)}
+.ulog .meter{grid-column:1/-1;margin-top:4px}
 .btn.tbtn{padding:6px 14px;font-size:15px;box-shadow:0 3px 0 var(--ink)}
 .btn.tbtn.on{background:var(--sun)}
 .top-r{display:flex;align-items:center;gap:10px}
 .btn.spkbtn{width:44px;height:44px;padding:0;display:inline-grid;place-items:center;box-shadow:0 3px 0 var(--ink)}
-.updbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.96);border-top:2px solid var(--ink)}
-.updbar .btn{width:100%;max-width:520px;font-size:18px;padding:12px 16px}
+.updbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;align-items:center;gap:12px;padding:8px 16px calc(8px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:1px solid var(--rule);font-size:14px;color:var(--soft)}
+.updbar button{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--sky);text-decoration:underline}
 .sec{margin:0 0 10px;font-family:var(--kai);font-size:24px;text-wrap:balance}
 .small{font-size:16px;color:var(--soft);line-height:1.6;margin:0}
 .pill{display:inline-block;font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;letter-spacing:.04em;white-space:nowrap}
@@ -347,7 +355,7 @@ async function syncNow(){
       body:JSON.stringify({data:store,updated_at:new Date().toISOString()})});
     if(!w.ok)throw new Error('push '+w.status);
     document.querySelectorAll('.starN').forEach(e=>e.textContent=store.stars);
-    if(typeof T!=='undefined'&&T&&!SUBJ&&!G)renderHome();
+    if(typeof T!=='undefined'&&T&&!SUBJ&&!G&&!LOGVIEW)renderHome();
   }catch(e){/* 連唔到就算，下次再同步 */}
   syncing=false;
 }
@@ -390,7 +398,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.13';
+const APP_VER='2026-10-21.14';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -398,10 +406,10 @@ async function checkUpdate(){
     const j=await r.json();
     if(!j.v||j.v===APP_VER||document.getElementById('updbar'))return;
     const bar=document.createElement('div');bar.id='updbar';bar.className='updbar';
-    bar.innerHTML='<button class="btn">🔄 有新版本，按此更新</button>';
+    bar.innerHTML='<span>有新版本</span><button>按此更新</button>';
     bar.querySelector('button').onclick=()=>{location.replace(location.pathname+'?v='+encodeURIComponent(j.v));};
     document.body.appendChild(bar);
-    document.body.style.paddingBottom='96px';
+    document.body.style.paddingBottom='56px';
   }catch(e){}
 }
 setInterval(checkUpdate,2*60*1000);
@@ -495,7 +503,7 @@ const nextDate=s=>s.dates.find(d=>daysTo(d)>=0)||s.dates[s.dates.length-1];
 
 /* ============ 狀態 ============ */
 const app=document.getElementById('app');
-let TERMS=[],T=null,SUBJ=null,G=null;
+let TERMS=[],T=null,SUBJ=null,G=null,LOGVIEW=false;
 const dkey=(i,g)=>`${T.id}:${SUBJ.id}:${i}:${g}`;
 const STICKERS=['🐼','🦁','🐯','🐨','🐸','🐵','🦊','🐰','🐻','🐷','🐮','🐔','🦄','🐙','🦋','🐢','🦖','🐳','🦒','🐘','🦉','🐬','🦜','🐞','🐝','🦀','🐠','🦩','🐿️','🦔'];
 const PER=5;
@@ -570,7 +578,7 @@ function stickerBook(){
     <div class="sbook">${STICKERS.map((e,i)=>`<span class="stk ${i<n?'got':''}">${i<n?e:''}</span>`).join('')}</div></section>`;
 }
 function renderHome(){
-  G=null;SUBJ=null;hush();
+  G=null;SUBJ=null;LOGVIEW=false;hush();
   const byDate=(a,b)=>nextDate(a).localeCompare(nextDate(b));
   const pre=T.subjects.filter(s=>s.pre).sort(byDate),main=T.subjects.filter(s=>!s.pre).sort(byDate);
   const groups=[['提前評估',pre,'is-pre'],['主要評估',main,'is-main']].filter(g=>g[1].length)
@@ -579,7 +587,7 @@ function renderHome(){
     <header class="top"><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1><div class="top-r"><button class="btn ghost spkbtn" data-act="test" aria-label="測試聲音" title="測試聲音">${SPK}</button>${starPill()}</div></header>
     ${voiceNote()}
     <div class="sound" ${soundTested()?'hidden':''}><span id="sndMsg" class="snd-msg">第一次使用，請先按右上角的喇叭按鈕，測試有沒有聲音。</span></div>
-    <div class="usage"><button class="btn ghost tbtn ${timerOn?'on':''}" id="timerBtn" data-act="timer">${timerLabel()}</button><span id="usage">${usageText()}</span></div>
+    <div class="usage"><button class="btn ghost tbtn ${timerOn?'on':''}" id="timerBtn" data-act="timer">${timerLabel()}</button><span><span id="usage">${usageText()}</span> <button class="linkbtn" data-act="usagelog">查看記錄 ›</button></span></div>
     ${groups.map(g=>subjSection(g[0],g[1],g[2])).join('')}
     ${stickerBook()}
     <section class="panel">
@@ -597,8 +605,22 @@ function renderHome(){
 }
 
 /* ============ 科目頁 ============ */
+function renderUsageLog(){
+  G=null;SUBJ=null;LOGVIEW=true;hush();
+  const days=Object.keys(store.usage).filter(k=>store.usage[k].t>0).sort().reverse();
+  const tot=days.reduce((a,k)=>a+store.usage[k].t,0),mx=Math.max(60,...days.map(k=>store.usage[k].t));
+  const mins=t=>{const m=Math.round(t/60);return m<1?'不到 1':m;};
+  app.innerHTML=`
+    <div class="bar"><button class="back" data-act="home">‹ 主頁</button><div class="g-title">使用記錄</div>${starPill()}</div>
+    <section class="panel">
+      <p class="small">${days.length?`共 ${days.length} 天，累計 ${mins(tot)} 分鐘（平均每天 ${mins(tot/days.length)} 分鐘）`:'還沒有記錄。回主頁按「開始計時」就會開始統計。'}</p>
+      <ul class="ulog">${days.map(k=>{const u=store.usage[k];
+        return `<li><span class="d">${fmt(k)}${k===dayKey()?'・今天':''}</span><span class="m"><b>${mins(u.t)}</b> 分鐘</span><span class="r">${hm(u.s)} 開始｜${hm(u.e)} 結束</span><span class="meter"><i style="width:${Math.max(3,Math.round(u.t/mx*100))}%"></i></span></li>`;}).join('')}</ul>
+      <p class="small">只計算按了「開始計時」之後、畫面開著的時間。開始、結束是當天第一次開始和最後一次結束的時間。</p>
+    </section>`;
+}
 function renderSubject(){
-  G=null;hush();
+  G=null;LOGVIEW=false;hush();
   const s=SUBJ,lang=s.lang;
   app.innerHTML=`
     <div class="bar"><button class="back" data-act="home">‹ 主頁</button><div class="g-title">${esc(s.name)}</div>${starPill()}</div>
@@ -866,6 +888,7 @@ app.addEventListener('click',e=>{
   switch(a){
     case 'open':SUBJ=T.subjects.find(s=>s.id===b.dataset.id);renderSubject();window.scrollTo(0,0);break;
     case 'home':renderHome();window.scrollTo(0,0);break;
+    case 'usagelog':renderUsageLog();window.scrollTo(0,0);break;
     case 'subj':renderSubject();break;
     case 'pv':say(b.dataset.t,b.dataset.l);break;
     case 'shuf':{const i=+b.dataset.i,it=SUBJ.items[i],src=it.words||it.letters;let s;do{s=shuffle(src);}while(src.length>2&&s.join()===(SHUF[skey(i)]||src).join());SHUF[skey(i)]=s;renderSubject();chime(true);break;}
@@ -903,7 +926,7 @@ async function boot(){
   }
 }
 loadVoices();
-try{speechSynthesis.addEventListener('voiceschanged',()=>{loadVoices();if(T&&!SUBJ&&!G)renderHome();});}catch(e){}
+try{speechSynthesis.addEventListener('voiceschanged',()=>{loadVoices();if(T&&!SUBJ&&!G&&!LOGVIEW)renderHome();});}catch(e){}
 boot();
 </script>
 
