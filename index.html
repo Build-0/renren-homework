@@ -83,10 +83,10 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .snd-msg{flex:1;min-width:0;font-size:14px;color:var(--soft);line-height:1.5}
 .usage{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;font-size:14px;color:var(--soft);line-height:1.5;font-variant-numeric:tabular-nums}
 .usage #usage{flex:1;min-width:160px}
-.tbtn{padding:6px 14px;font-size:15px;box-shadow:0 3px 0 var(--ink)}
-.tbtn.on{background:var(--sun)}
+.btn.tbtn{padding:6px 14px;font-size:15px;box-shadow:0 3px 0 var(--ink)}
+.btn.tbtn.on{background:var(--sun)}
 .top-r{display:flex;align-items:center;gap:10px}
-.spkbtn{width:44px;height:44px;padding:0;display:inline-grid;place-items:center;box-shadow:0 3px 0 var(--ink)}
+.btn.spkbtn{width:44px;height:44px;padding:0;display:inline-grid;place-items:center;box-shadow:0 3px 0 var(--ink)}
 .updbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.96);border-top:2px solid var(--ink)}
 .updbar .btn{width:100%;max-width:520px;font-size:18px;padding:12px 16px}
 .sec{margin:0 0 10px;font-family:var(--kai);font-size:24px;text-wrap:balance}
@@ -374,7 +374,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.4';
+const APP_VER='2026-10-21.5';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
