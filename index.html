@@ -81,7 +81,12 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .sound{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .sound .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:15px}
 .snd-msg{flex:1;min-width:0;font-size:14px;color:var(--soft);line-height:1.5}
-.usage{font-size:14px;color:var(--soft);line-height:1.5;font-variant-numeric:tabular-nums}
+.usage{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;font-size:14px;color:var(--soft);line-height:1.5;font-variant-numeric:tabular-nums}
+.usage #usage{flex:1;min-width:160px}
+.tbtn{padding:6px 14px;font-size:15px;box-shadow:0 3px 0 var(--ink)}
+.tbtn.on{background:var(--sun)}
+.top-r{display:flex;align-items:center;gap:10px}
+.spkbtn{width:44px;height:44px;padding:0;display:inline-grid;place-items:center;box-shadow:0 3px 0 var(--ink)}
 .updbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.96);border-top:2px solid var(--ink)}
 .updbar .btn{width:100%;max-width:520px;font-size:18px;padding:12px 16px}
 .sec{margin:0 0 10px;font-family:var(--kai);font-size:24px;text-wrap:balance}
@@ -332,29 +337,44 @@ async function syncNow(){
   syncing=false;
 }
 
-/* ============ 使用時間（只計算畫面開著而且有操作的時間；閒置超過 1 分鐘不計） ============ */
+/* ============ 使用時間（手動按「開始計時」才計；畫面關掉或離開不計；閒置 5 分鐘自動結束） ============ */
+const TKEY='renren-zi-timer-on';  // 只存本機，不同步：每部機自己決定要不要計時
 function dayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function hm(ms){const d=new Date(ms);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+let timerOn=false;try{timerOn=localStorage.getItem(TKEY)==='1';}catch(e){}
+const timerLabel=()=>timerOn?'⏹ 結束計時':'▶ 開始計時';
 function usageText(){
-  const u=store.usage[dayKey()];
-  if(!u||!u.t)return '⏱ 今天還沒有開始使用';
-  const m=Math.floor(u.t/60);
-  return `⏱ 今天已使用 ${m<1?'不到 1':m} 分鐘｜${hm(u.s)} 開始｜${hm(u.e)} 最後使用`;
+  const u=store.usage[dayKey()],m=u?Math.floor(u.t/60):0,mt=m<1?'不到 1':m;
+  if(!u||!u.t)return timerOn?'⏱ 計時中…':'⏱ 今天沒有統計時間（沒有按開始計時）';
+  return timerOn
+    ?`⏱ 計時中｜今天已使用 ${mt} 分鐘｜${hm(u.s)} 開始`
+    :`⏱ 今天已使用 ${mt} 分鐘｜${hm(u.s)} 開始｜${hm(u.e)} 結束`;
+}
+function renderUsage(){
+  const el=document.getElementById('usage');if(el)el.textContent=usageText();
+  const b=document.getElementById('timerBtn');if(b){b.textContent=timerLabel();b.classList.toggle('on',timerOn);}
 }
 let lastAct=Date.now(),lastTick=Date.now(),lastUsageSave=0;
+function setTimer(on){
+  const now=Date.now();timerOn=on;lastTick=now;lastAct=now;
+  try{localStorage.setItem(TKEY,on?'1':'0');}catch(e){}
+  const k=dayKey(),u=store.usage[k]||(store.usage[k]={s:now,e:now,t:0});
+  if(!u.t)u.s=now;   // 今天第一次開始
+  u.e=now;save();renderUsage();
+}
 ['pointerdown','keydown','touchstart','scroll'].forEach(ev=>addEventListener(ev,()=>{lastAct=Date.now();},{passive:true,capture:true}));
 setInterval(()=>{
   const now=Date.now(),dt=Math.min(now-lastTick,10000);lastTick=now;
-  if(document.hidden||now-lastAct>60000)return;
+  if(!timerOn||document.hidden)return;
+  if(now-lastAct>5*60000){setTimer(false);return;}
   const k=dayKey(),u=store.usage[k]||(store.usage[k]={s:now,e:now,t:0});
-  u.t+=dt/1000;u.e=now;
-  const el=document.getElementById('usage');if(el)el.textContent=usageText();
+  u.t+=dt/1000;u.e=now;renderUsage();
   if(now-lastUsageSave>30000){lastUsageSave=now;save();}
 },5000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.3';
+const APP_VER='2026-10-21.4';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -515,10 +535,10 @@ function renderHome(){
   const byDate=(a,b)=>nextDate(a).localeCompare(nextDate(b));
   const main=T.subjects.filter(s=>!s.pre).sort(byDate),pre=T.subjects.filter(s=>s.pre).sort(byDate);
   app.innerHTML=`
-    <header class="top"><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1>${starPill()}</header>
+    <header class="top"><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1><div class="top-r"><button class="btn ghost spkbtn" data-act="test" aria-label="測試聲音" title="測試聲音">${SPK}</button>${starPill()}</div></header>
     ${voiceNote()}
-    <div class="usage" id="usage">${usageText()}</div>
-    <div class="sound"><button class="btn ghost" data-act="test">${SPK}測試聲音</button><span id="sndMsg" class="snd-msg">第一次使用，請先按這個按鈕測試有沒有聲音。</span></div>
+    <div class="sound"><span id="sndMsg" class="snd-msg">第一次使用，請先按右上角的喇叭按鈕，測試有沒有聲音。</span></div>
+    <div class="usage"><span id="usage">${usageText()}</span><button class="btn ghost tbtn ${timerOn?'on':''}" id="timerBtn" data-act="timer">${timerLabel()}</button></div>
     ${subjSection(T.name+'・主要評估',main)}
     ${subjSection('提前評估',pre)}
     ${stickerBook()}
@@ -822,6 +842,7 @@ app.addEventListener('click',e=>{
     case 'chgo':G.tok++;chantStep(1,G.tok);break;
     case 'chstop':G.tok++;hush();app.querySelectorAll('.nb.lit').forEach(x=>x.classList.remove('lit'));break;
     case 'cnum':G.tok++;say(b.dataset.n,'yue');b.classList.add('seen');break;
+    case 'timer':setTimer(!timerOn);break;
     case 'test':{spoke=false;ttsErr='';chime(true);say('你好，仁仁','yue');const m=document.getElementById('sndMsg');m.textContent='讀緊……';setTimeout(()=>{m.textContent=diag();},1800);break;}
   }
 });
