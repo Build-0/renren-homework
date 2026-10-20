@@ -81,6 +81,9 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .sound{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .sound .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:15px}
 .snd-msg{flex:1;min-width:0;font-size:14px;color:var(--soft);line-height:1.5}
+.usage{font-size:14px;color:var(--soft);line-height:1.5;font-variant-numeric:tabular-nums}
+.updbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.96);border-top:2px solid var(--ink)}
+.updbar .btn{width:100%;max-width:520px;font-size:18px;padding:12px 16px}
 .sec{margin:0 0 10px;font-family:var(--kai);font-size:24px;text-wrap:balance}
 .small{font-size:16px;color:var(--soft);line-height:1.6;margin:0}
 .pill{display:inline-block;font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;letter-spacing:.04em;white-space:nowrap}
@@ -287,7 +290,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const KEY='renren-zi-v1';
 const store={stars:0,known:{},done:{},sung:{}};
 try{Object.assign(store,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){}
-store.done=store.done||{}; store.sung=store.sung||{}; store.known=store.known||{};
+store.done=store.done||{}; store.sung=store.sung||{}; store.known=store.known||{}; store.usage=store.usage||{};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}schedulePush();}
 
 /* ============ 同步（Supabase，全家共用一份進度；連唔到就淨用本機） ============ */
@@ -301,6 +304,9 @@ function mergeInto(r){
   store.known=maxMerge(store.known,r.known);
   store.done=maxMerge(store.done,r.done);
   const s={...(store.sung||{})};for(const k in (r.sung||{}))s[k]=s[k]||r.sung[k];store.sung=s;
+  const uu={...(store.usage||{})};
+  for(const k in (r.usage||{})){const a=uu[k],b=r.usage[k];uu[k]=a?{s:Math.min(a.s,b.s),e:Math.max(a.e,b.e),t:Math.max(a.t,b.t)}:b;}
+  store.usage=uu;
 }
 let pushTimer=null,syncing=false;
 function schedulePush(){clearTimeout(pushTimer);pushTimer=setTimeout(syncNow,1500);}
@@ -321,6 +327,43 @@ async function syncNow(){
   }catch(e){/* 連唔到就算，下次再同步 */}
   syncing=false;
 }
+
+/* ============ 使用時間（只計算畫面開著而且有操作的時間；閒置超過 1 分鐘不計） ============ */
+function dayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function hm(ms){const d=new Date(ms);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function usageText(){
+  const u=store.usage[dayKey()];
+  if(!u||!u.t)return '⏱ 今天還沒有開始使用';
+  const m=Math.floor(u.t/60);
+  return `⏱ 今天已使用 ${m<1?'不到 1':m} 分鐘｜${hm(u.s)} 開始｜${hm(u.e)} 最後使用`;
+}
+let lastAct=Date.now(),lastTick=Date.now(),lastUsageSave=0;
+['pointerdown','keydown','touchstart','scroll'].forEach(ev=>addEventListener(ev,()=>{lastAct=Date.now();},{passive:true,capture:true}));
+setInterval(()=>{
+  const now=Date.now(),dt=Math.min(now-lastTick,10000);lastTick=now;
+  if(document.hidden||now-lastAct>60000)return;
+  const k=dayKey(),u=store.usage[k]||(store.usage[k]={s:now,e:now,t:0});
+  u.t+=dt/1000;u.e=now;
+  const el=document.getElementById('usage');if(el)el.textContent=usageText();
+  if(now-lastUsageSave>30000){lastUsageSave=now;save();}
+},5000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
+
+/* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
+const APP_VER='2026-10-21.1';
+async function checkUpdate(){
+  try{
+    const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return;
+    const j=await r.json();
+    if(!j.v||j.v===APP_VER||document.getElementById('updbar'))return;
+    const bar=document.createElement('div');bar.id='updbar';bar.className='updbar';
+    bar.innerHTML='<button class="btn">🔄 有新版本，按此更新</button>';
+    bar.querySelector('button').onclick=()=>{location.replace(location.pathname+'?v='+encodeURIComponent(j.v));};
+    document.body.appendChild(bar);
+  }catch(e){}
+}
+setInterval(checkUpdate,5*60*1000);
 const kc=(lang,w)=>store.known[lang+':'+w]||0;
 
 /* ============ 聲音 ============ */
@@ -469,7 +512,8 @@ function renderHome(){
   app.innerHTML=`
     <header class="top"><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1>${starPill()}</header>
     ${voiceNote()}
-    <div class="sound"><button class="btn ghost" data-act="test">${SPK}測試聲音</button><span id="sndMsg" class="snd-msg">第一次用，先撳呢個試吓有冇聲。</span></div>
+    <div class="usage" id="usage">${usageText()}</div>
+    <div class="sound"><button class="btn ghost" data-act="test">${SPK}測試聲音</button><span id="sndMsg" class="snd-msg">第一次使用，請先按這個按鈕測試有沒有聲音。</span></div>
     ${subjSection(T.name+'・主要評估',main)}
     ${subjSection('提前評估',pre)}
     ${stickerBook()}
@@ -786,6 +830,7 @@ async function boot(){
     T=TERMS[TERMS.length-1];
     renderHome();
     syncNow();
+    checkUpdate();
   }catch(e){
     app.innerHTML='<p class="note">讀唔到溫習內容，請檢查網絡後重新整理頁面。</p>';
   }
