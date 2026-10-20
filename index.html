@@ -390,7 +390,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.11';
+const APP_VER='2026-10-21.12';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -488,7 +488,7 @@ function pill(dates){
   if(!up)return '<span class="pill past">已評估・可重溫</span>';
   const d=daysTo(up);
   if(d===0)return '<span class="pill today">今日評估</span>';
-  const cls=d<=10?'soon':d>=30?'far':'up';   // 10 日內紅、30 日或以上藍、其餘黃
+  const cls=d<=10?'soon':d<=20?'up':'far';   // 10 日內紅、11–20 日黃、21 日或以上藍
   return `<span class="pill ${cls}">仲有 ${d} 日</span>`;
 }
 const nextDate=s=>s.dates.find(d=>daysTo(d)>=0)||s.dates[s.dates.length-1];
