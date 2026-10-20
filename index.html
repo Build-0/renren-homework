@@ -411,7 +411,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.17';
+const APP_VER='2026-10-21.18';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -491,6 +491,7 @@ function say(text,lang,onend){
 }
 function hush(){try{speechSynthesis.cancel();}catch(e){}}
 function diag(){
+  if(sndErr)return `提示音播放失敗（${sndErr}）。請關掉靜音掣、調大音量，再試一次；仍然不行請告訴我這行字。`;
   if(ttsErr==='nosupport')return '呢個瀏覽器唔支援讀字，試吓用 Safari 或 Chrome 開呢條連結。';
   if(spoke)return pickVoice('yue')?'讀音正常。如果仍然聽唔到，請關咗靜音掣同調大音量。':'有讀，但部機未有廣東話聲，可以喺系統設定下載「中文（香港）」聲音。';
   return `冇讀到（${ttsErr||'冇反應'}，聲音數量 ${voices.length}）。試吓關靜音掣、調大音量，或者用 Safari／Chrome 開呢條連結。`;
@@ -512,8 +513,37 @@ function unlockAudio(){
 }
 document.addEventListener('pointerdown',unlockAudio,{capture:true});
 document.addEventListener('touchend',unlockAudio,{capture:true});
-let actx;
+/* 提示音：用程式合成 WAV，再用 <audio> 播放（同讀音一樣行「媒體」聲道，iPhone 靜音掣／WebAudio 靜音問題都較穩）；播唔到先退回 WebAudio */
+let sndErr='';const SND={};
+function wavTone(notes,rate=22050){
+  const total=Math.max(...notes.map(n=>n.at+n.dur))+.05,N=Math.ceil(total*rate),d=new Float32Array(N);
+  notes.forEach(n=>{
+    const s0=Math.floor(n.at*rate),len=Math.floor(n.dur*rate);
+    for(let i=0;i<len&&s0+i<N;i++){
+      const t=i/rate,env=Math.min(1,t/.015)*Math.pow(1-i/len,2);
+      d[s0+i]+=n.vol*env*(Math.sin(2*Math.PI*n.f*t)+(n.tri?Math.sin(2*Math.PI*n.f*3*t)/9:0));
+    }
+  });
+  const buf=new ArrayBuffer(44+N*2),v=new DataView(buf),w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+  w(0,'RIFF');v.setUint32(4,36+N*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,rate,true);v.setUint32(28,rate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,N*2,true);
+  for(let i=0;i<N;i++)v.setInt16(44+i*2,Math.max(-1,Math.min(1,d[i]))*32767,true);
+  return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
+}
+const TONE_OK=[660,880,1320].map((f,i)=>({f,at:i*.09,dur:.3,vol:.34,tri:true}));
+const TONE_BAD=[   // 答錯：輕柔嘅兩個下行音（「噔～咚」），慢慢散開，唔係蜂鳴器，唔會嚇親或者打擊小朋友
+  {f:440,at:0,dur:.5,vol:.32},{f:880,at:0,dur:.4,vol:.08},
+  {f:349,at:.18,dur:.6,vol:.32},{f:698,at:.18,dur:.45,vol:.08}];
 function chime(ok){
+  try{
+    const u=ok?(SND.ok=SND.ok||wavTone(TONE_OK)):(SND.bad=SND.bad||wavTone(TONE_BAD));
+    const a=new Audio(u);a.volume=1;a.setAttribute('playsinline','');
+    const p=a.play();
+    if(p&&p.catch)p.catch(e=>{sndErr=String((e&&e.name)||e);webChime(ok);});
+  }catch(e){sndErr=String(e);webChime(ok);}
+}
+let actx;
+function webChime(ok){
   try{
     actx=actx||new (window.AudioContext||window.webkitAudioContext)();
     if(actx.state==='suspended')actx.resume();
@@ -862,7 +892,7 @@ function pick(b){
     if([3,5,8].includes(G.streak))toast(`🔥 連續答啱 ${G.streak} 題！`,1800);
     if(q.pop)b.insertAdjacentHTML('beforeend',`<span class="pop">${q.pop}</span>`);
     let wait=1600;
-    if(q.ok){q.ok();wait=q.okWait||1800;}else setTimeout(()=>say(rand(PRAISE),'yue'),300);
+    if(q.ok){q.ok();wait=q.okWait||1800;}else wait=1100;   // 答啱只聽樂器提示音，唔逐題讚；完成成份先講「好叻呀」
     setTimeout(()=>{G.r++;G.r>=G.total?finish():quizRound();},wait);
   }else{
     if(!G.miss)penalize(q.kw,q.lang||G.lang);   // 每題只有第一次答錯先降級
@@ -968,7 +998,7 @@ function pk(b){
   const c=G.cells[+b.dataset.i];
   if(c.b){
     b.classList.add('right');b.disabled=true;chime(true);
-    if(++G.found===3){award(null,G.miss===0);setTimeout(()=>say(rand(PRAISE),'yue'),300);setTimeout(()=>{G.r++;G.r>=G.total?finish():pickRound();},1500);}
+    if(++G.found===3){award(null,G.miss===0);chime(true);setTimeout(()=>{G.r++;G.r>=G.total?finish():pickRound();},1300);}
   }else{
     G.miss++;chime(false);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');say('呢個唔係藍色','yue');
   }
@@ -1001,7 +1031,12 @@ app.addEventListener('click',e=>{
     case 'chstop':G.tok++;hush();app.querySelectorAll('.nb.lit').forEach(x=>x.classList.remove('lit'));break;
     case 'cnum':G.tok++;say(b.dataset.n,'yue');b.classList.add('seen');break;
     case 'timer':setTimer(!timerOn);break;
-    case 'test':{spoke=false;ttsErr='';chime(true);say('你好，仁仁','yue');const m=document.getElementById('sndMsg');m.parentElement.hidden=false;try{localStorage.setItem('renren-zi-snd-tested','1');}catch(e){}m.textContent='讀緊……';setTimeout(()=>{m.textContent=diag();},1800);break;}
+    case 'test':{   // 依次試：答啱提示音 → 答錯提示音 → 讀音
+      spoke=false;ttsErr='';sndErr='';chime(true);
+      setTimeout(()=>chime(false),700);
+      setTimeout(()=>say('你好，仁仁','yue'),1600);
+      const m=document.getElementById('sndMsg');m.parentElement.hidden=false;try{localStorage.setItem('renren-zi-snd-tested','1');}catch(e){}
+      m.textContent='試緊：答啱的叮叮聲 → 答錯的輕柔提示音 → 說話……';setTimeout(()=>{m.textContent=diag();},3600);break;}
   }
 });
 
