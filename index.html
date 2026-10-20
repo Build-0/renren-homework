@@ -81,8 +81,8 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .sound{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .sound .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:15px}
 .snd-msg{flex:1;min-width:0;font-size:14px;color:var(--soft);line-height:1.5}
-.usage{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;font-size:14px;color:var(--soft);line-height:1.5;font-variant-numeric:tabular-nums}
-.usage #usage{flex:1;min-width:160px}
+.usage{display:flex;flex-direction:column;align-items:flex-start;gap:6px;font-size:13px;color:var(--soft);line-height:1.4;font-variant-numeric:tabular-nums}
+.sound[hidden]{display:none}
 .btn.tbtn{padding:6px 14px;font-size:15px;box-shadow:0 3px 0 var(--ink)}
 .btn.tbtn.on{background:var(--sun)}
 .top-r{display:flex;align-items:center;gap:10px}
@@ -93,7 +93,8 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .small{font-size:16px;color:var(--soft);line-height:1.6;margin:0}
 .pill{display:inline-block;font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;letter-spacing:.04em;white-space:nowrap}
 .pill.up{background:var(--sun);color:#1D2A38}
-.pill.today{background:var(--berry);color:#fff}
+.pill.today,.pill.soon{background:var(--berry);color:#fff}
+.pill.far{background:var(--sky);color:var(--on-sky)}
 .pill.past{background:var(--rule);color:var(--soft)}
 
 /* subjects */
@@ -345,6 +346,7 @@ async function syncNow(){
 }
 
 /* ============ 使用時間（手動按「開始計時」才計；畫面關掉或離開不計；閒置 5 分鐘自動結束） ============ */
+function soundTested(){try{return localStorage.getItem('renren-zi-snd-tested')==='1';}catch(e){return false;}}
 const TKEY='renren-zi-timer-on';  // 只存本機，不同步：每部機自己決定要不要計時
 function dayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function hm(ms){const d=new Date(ms);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
@@ -381,7 +383,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.6';
+const APP_VER='2026-10-21.8';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -476,7 +478,9 @@ function pill(dates){
   const up=dates.find(d=>daysTo(d)>=0);
   if(!up)return '<span class="pill past">已評估・可重溫</span>';
   const d=daysTo(up);
-  return d===0?'<span class="pill today">今日評估</span>':`<span class="pill up">仲有 ${d} 日</span>`;
+  if(d===0)return '<span class="pill today">今日評估</span>';
+  const cls=d<=10?'soon':d>=30?'far':'up';   // 10 日內紅、30 日或以上藍、其餘黃
+  return `<span class="pill ${cls}">仲有 ${d} 日</span>`;
 }
 const nextDate=s=>s.dates.find(d=>daysTo(d)>=0)||s.dates[s.dates.length-1];
 
@@ -559,8 +563,8 @@ function renderHome(){
   app.innerHTML=`
     <header class="top"><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1><div class="top-r"><button class="btn ghost spkbtn" data-act="test" aria-label="測試聲音" title="測試聲音">${SPK}</button>${starPill()}</div></header>
     ${voiceNote()}
-    <div class="sound"><span id="sndMsg" class="snd-msg">第一次使用，請先按右上角的喇叭按鈕，測試有沒有聲音。</span></div>
-    <div class="usage"><span id="usage">${usageText()}</span><button class="btn ghost tbtn ${timerOn?'on':''}" id="timerBtn" data-act="timer">${timerLabel()}</button></div>
+    <div class="sound" ${soundTested()?'hidden':''}><span id="sndMsg" class="snd-msg">第一次使用，請先按右上角的喇叭按鈕，測試有沒有聲音。</span></div>
+    <div class="usage"><button class="btn ghost tbtn ${timerOn?'on':''}" id="timerBtn" data-act="timer">${timerLabel()}</button><span id="usage">${usageText()}</span></div>
     ${subjSection(T.name+'・按評估日期排序',all)}
     ${stickerBook()}
     <section class="panel">
@@ -865,7 +869,7 @@ app.addEventListener('click',e=>{
     case 'chstop':G.tok++;hush();app.querySelectorAll('.nb.lit').forEach(x=>x.classList.remove('lit'));break;
     case 'cnum':G.tok++;say(b.dataset.n,'yue');b.classList.add('seen');break;
     case 'timer':setTimer(!timerOn);break;
-    case 'test':{spoke=false;ttsErr='';chime(true);say('你好，仁仁','yue');const m=document.getElementById('sndMsg');m.textContent='讀緊……';setTimeout(()=>{m.textContent=diag();},1800);break;}
+    case 'test':{spoke=false;ttsErr='';chime(true);say('你好，仁仁','yue');const m=document.getElementById('sndMsg');m.parentElement.hidden=false;try{localStorage.setItem('renren-zi-snd-tested','1');}catch(e){}m.textContent='讀緊……';setTimeout(()=>{m.textContent=diag();},1800);break;}
   }
 });
 
