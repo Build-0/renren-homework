@@ -214,6 +214,7 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .choice{position:relative;display:flex;justify-content:center;align-items:center;background:var(--card);border:2px solid var(--rule);border-radius:20px;padding:12px 6px;box-shadow:0 4px 0 var(--rule);min-height:110px;min-width:0}
 .choice.right{border-color:var(--leaf);box-shadow:0 4px 0 var(--leaf);animation:bounce .5s}
 .choice.wrong{opacity:.4;animation:shake .4s}
+.choice.reveal{border-color:var(--leaf);border-style:dashed;box-shadow:0 4px 0 var(--leaf)}   /* 答錯後：輕輕標出正確答案（不加星星） */
 .choice.shake{animation:shake .4s}
 .pop{position:absolute;right:10px;top:8px;font-size:40px;line-height:1;animation:grow .4s both}
 
@@ -411,7 +412,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-21.21';
+const APP_VER='2026-10-22.1';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -896,9 +897,14 @@ function pick(b){
     if(q.ok){q.ok();wait=q.okWait||1800;}else wait=1100;   // 答啱只聽樂器提示音，唔逐題讚；完成成份先講「好叻呀」
     setTimeout(()=>{G.r++;G.r>=G.total?finish():quizRound();},wait);
   }else{
-    if(!G.miss)penalize(q.kw,q.lang||G.lang);   // 每題只有第一次答錯先降級
-    G.miss++;b.classList.add('wrong');b.disabled=true;chime(false);
-    setTimeout(()=>say(...G.rs),900);   // 等柔和提示音完咗，再讀返條題目
+    // 答錯一次就跳題：唔俾再撳（否則會一直撳到啱為止）。標出正確答案、讀出嚟，無星星，然後去下一題
+    G.lock=true;G.streak=0;
+    penalize(q.kw,q.lang||G.lang);
+    G.miss++;b.classList.add('wrong');chime(false);
+    app.querySelectorAll('.choice').forEach(x=>{x.disabled=true;});
+    const rb=app.querySelectorAll('.choice')[q.a];if(rb)rb.classList.add('reveal');
+    setTimeout(()=>{if(q.ok)q.ok();else say(...G.rs);},900);   // 等柔和提示音完咗，再讀出答案
+    setTimeout(()=>{G.r++;G.r>=G.total?finish():quizRound();},(q.okWait||1800)+900);
   }
 }
 
