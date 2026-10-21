@@ -329,6 +329,9 @@ try{Object.assign(store,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){}
 store.done=store.done||{}; store.sung=store.sung||{}; store.known=store.known||{}; store.usage=store.usage||{};
 const USAGE_EPOCH=2;  // 改這個數字 = 全部裝置清空使用時間統計一次（舊版本留低嘅測試時間唔會同步返嚟）
 if(store.usageEpoch!==USAGE_EPOCH){store.usage={};store.usageEpoch=USAGE_EPOCH;}
+store.sd=store.sd||{d:'',n:0,k:{}};   // 今日星星：d 日期、n 今日已得、k 今日已計過星星嘅題目
+const STAR_EPOCH=1;  // 改呢個數字 = 全部裝置星星同貼紙歸零一次（舊版本嘅星星唔會同步返嚟）
+if(store.starEpoch!==STAR_EPOCH){store.stars=0;store.sd={d:'',n:0,k:{}};store.starEpoch=STAR_EPOCH;}
 store.mem=store.mem||{};
 if(!store.memV){   // 舊版只記「答啱次數」，搬過去當「學緊」（唔信任：可能同一日玩出嚟），下次喺另一日答啱就會升級
   for(const k in store.known){if(!store.mem[k]&&store.known[k]>0)store.mem[k]={b:1,d:'',n:store.known[k],t:0};}
@@ -343,7 +346,12 @@ const SB_H={apikey:SB_KEY,Authorization:'Bearer '+SB_KEY};
 const maxMerge=(a,b)=>{const o={...(a||{})};for(const k in (b||{}))o[k]=Math.max(o[k]||0,b[k]||0);return o;};
 function mergeInto(r){
   if(!r||typeof r!=='object')return;
-  store.stars=Math.max(store.stars||0,r.stars||0);
+  if(r.starEpoch===STAR_EPOCH){   // 舊世代（歸零之前）嘅星星直接忽略
+    store.stars=Math.max(store.stars||0,r.stars||0);
+    const rs=r.sd||{d:'',n:0,k:{}},ls=store.sd;
+    if(rs.d===ls.d)store.sd={d:ls.d,n:Math.max(ls.n||0,rs.n||0),k:{...(ls.k||{}),...(rs.k||{})},capToast:ls.capToast||rs.capToast};
+    else if((rs.d||'')>(ls.d||''))store.sd=rs;
+  }
   store.known=maxMerge(store.known,r.known);
   const rm=r.mem||{};   // 每個字取最後更新嗰份（答錯降級先唔會被舊資料蓋返）
   for(const k in rm){const a=store.mem[k];if(!a||(rm[k].t||0)>(a.t||0))store.mem[k]=rm[k];}
@@ -412,7 +420,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-22.1';
+const APP_VER='2026-10-22.2';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -590,18 +598,35 @@ const app=document.getElementById('app');
 let TERMS=[],T=null,SUBJ=null,G=null,LOGVIEW=false;
 const dkey=(i,g)=>`${T.id}:${SUBJ.id}:${i}:${g}`;
 const STICKERS=['🐼','🦁','🐯','🐨','🐸','🐵','🦊','🐰','🐻','🐷','🐮','🐔','🦄','🐙','🦋','🐢','🦖','🐳','🦒','🐘','🦉','🐬','🦜','🐞','🐝','🦀','🐠','🦩','🐿️','🦔'];
-const PER=5;
-const stickersOwned=()=>Math.min(STICKERS.length,Math.floor(store.stars/PER));
+/* 獎勵規則：貼紙越後面越貴；同一題（或同一個字）一天只計一次星星；每天星星有上限 */
+const STK_STEPS=[[10,5],[20,8]];   // [張數, 每張要幾顆星]：前 10 張每張 5 顆，之後 20 張每張 8 顆
+const DAILY_MAX=20;
+function stickersOwned(){
+  let s=store.stars,n=0;
+  for(const [cnt,c] of STK_STEPS){const k=Math.min(cnt,Math.floor(s/c));n+=k;s-=k*c;if(k<cnt)return n;}
+  return n;
+}
+function starsToNext(){
+  let s=store.stars;
+  for(const [cnt,c] of STK_STEPS){const k=Math.min(cnt,Math.floor(s/c));s-=k*c;if(k<cnt)return c-s;}
+  return 0;
+}
 function toast(html,ms=2200){
   document.querySelectorAll('.toast').forEach(x=>x.remove());
   const d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.innerHTML=html;
   document.body.appendChild(d);setTimeout(()=>d.remove(),ms);
 }
-function award(kw,first,lang){
-  const before=stickersOwned();
-  store.stars++;
-  award0(kw,first,lang||G.lang);
-  G.earned++;save();
+function award(kw,first,lang,qid){
+  const before=stickersOwned(),L=lang||G.lang,today=dayKey();
+  award0(kw,first,L);   // 記憶（間隔重溫）照常記錄，唔受星星上限影響
+  if(store.sd.d!==today)store.sd={d:today,n:0,k:{}};
+  const key=kw?`w:${L}:${kw}`:`${G.key}:${qid||G.r}`;   // 同一個字（唔論邊個遊戲）／同一個遊戲同一題，一天只計一次
+  if(store.sd.k[key])G.dupe=(G.dupe||0)+1;
+  else if(store.sd.n>=DAILY_MAX){
+    G.capped=true;
+    if(!store.sd.capToast){store.sd.capToast=1;setTimeout(()=>toast(`今天的星星拿滿了（${DAILY_MAX} 顆），明天再來！`,2600),500);}
+  }else{store.sd.k[key]=1;store.sd.n++;store.stars++;G.earned++;}
+  save();
   document.querySelectorAll('.starN').forEach(e=>e.textContent=store.stars);
   const after=stickersOwned();
   if(after>before){const e=STICKERS[after-1];G.newSticker=e;
@@ -670,8 +695,8 @@ function subjSection(title,list,cls){
   return `<section class="grp-sec ${cls||''}"><div class="grp-head"><h2 class="sec">${esc(title)}</h2><span class="grp-range">${esc(range)}</span></div><div class="subjects">${list.map(subjCard).join('')}</div></section>`;
 }
 function stickerBook(){
-  const n=stickersOwned(),left=PER-store.stars%PER;
-  return `<section class="panel"><div class="sb-head"><h2 class="sec">仁仁的貼紙簿</h2><span class="small">${n} / ${STICKERS.length}・${n>=STICKERS.length?'全部集齊！':`再存 ${left} 顆星就有新貼紙`}</span></div>
+  const n=stickersOwned(),left=starsToNext(),td=store.sd.d===dayKey()?store.sd.n:0;
+  return `<section class="panel"><div class="sb-head"><h2 class="sec">仁仁的貼紙簿</h2><span class="small">${n} / ${STICKERS.length}・${n>=STICKERS.length?'全部集齊！':`再存 ${left} 顆星就有新貼紙`}・今天 ${td}/${DAILY_MAX} 顆</span></div>
     <div class="sbook">${STICKERS.map((e,i)=>`<span class="stk ${i<n?'got':''}">${i<n?e:''}</span>`).join('')}</div></section>`;
 }
 function renderHome(){
@@ -788,7 +813,7 @@ function finish(){
   chime(true);setTimeout(()=>say('好叻呀仁仁！','yue'),300);
   const fall=Array.from({length:16},()=>`<i class="fall" style="left:${(Math.random()*100).toFixed(1)}%;animation-delay:${(Math.random()*1.6).toFixed(2)}s;font-size:${18+Math.random()*26|0}px">★</i>`).join('');
   app.insertAdjacentHTML('beforeend',`<div class="cele" role="dialog" aria-label="完成">${fall}
-    <div class="cele-box"><div class="big-star">★</div><h2>好棒喔，仁仁！</h2><p>這次得到 <b>${G.earned}</b> 顆星</p>${G.newSticker?`<p class="newstk">新貼紙 <span>${G.newSticker}</span></p>`:''}
+    <div class="cele-box"><div class="big-star">★</div><h2>好棒喔，仁仁！</h2><p>這次得到 <b>${G.earned}</b> 顆星</p>${G.capped?'<p class="small">今天的星星已經拿滿了，明天再來！</p>':G.dupe&&!G.earned?'<p class="small">這些題目今天已經拿過星星了，明天再來拿新的！</p>':''}${G.newSticker?`<p class="newstk">新貼紙 <span>${G.newSticker}</span></p>`:''}
     <div class="cele-row">${G.review?'<button class="btn" data-act="home">回主頁</button>':`<button class="btn" data-act="again">再玩一次</button><button class="btn ghost" data-act="subj">回到${esc(SUBJ.name)}</button>`}</div></div></div>`);
 }
 
@@ -889,7 +914,7 @@ function pick(b){
   if(G.lock)return;
   const i=+b.dataset.i,q=G.qs[G.r];
   if(i===q.a){
-    G.lock=true;b.classList.add('right');award(q.kw,G.miss===0,q.lang);chime(true);
+    G.lock=true;b.classList.add('right');award(q.kw,G.miss===0,q.lang,q.say);chime(true);
     G.streak=G.miss===0?(G.streak||0)+1:0;
     if([3,5,8].includes(G.streak))toast(`🔥 連續答對 ${G.streak} 題！`,1800);
     if(q.pop)b.insertAdjacentHTML('beforeend',`<span class="pop">${q.pop}</span>`);
@@ -948,7 +973,7 @@ function flip(b){
   const bj=app.querySelector(`.mcard[data-i="${j}"]`);
   if(a.k===c.k){
     a.done=c.done=true;b.classList.add('done');bj.classList.add('done');
-    award(G.g==='lmatch'?null:c.k,false);chime(true);   // 翻牌看得到答案，只算見過，不計升級
+    award(G.g==='lmatch'?null:c.k,false,G.lang,c.k);chime(true);   // 翻牌看得到答案，只算見過，不計升級
     setTimeout(()=>say(c.p.say,c.p.lang),250);
     if(++G.done===G.pairs.length)setTimeout(finish,1200);
   }else{
@@ -970,7 +995,7 @@ function ord(b){
   const n=+b.dataset.n;
   if(n===G.nextN){
     b.classList.add('right');b.disabled=true;say(CN[n],'yue');G.nextN++;
-    if(G.nextN>3){award(null,G.miss===0);chime(true);setTimeout(()=>{G.r++;G.r>=G.total?finish():orderRound();},1300);}
+    if(G.nextN>3){award(null,G.miss===0,G.lang,'r'+G.r);chime(true);setTimeout(()=>{G.r++;G.r>=G.total?finish():orderRound();},1300);}
   }else{
     G.miss++;chime(false);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
   }
@@ -986,7 +1011,7 @@ function chantInit(){
 function chantStep(n,tok){
   if(G.tok!==tok||G.g!=='chant')return;
   app.querySelectorAll('.nb.lit').forEach(x=>x.classList.remove('lit'));
-  if(n>30){award(null,true);finish();return;}
+  if(n>30){award(null,true,G.lang,'chant');finish();return;}
   const b=app.querySelector(`.nb[data-n="${n}"]`);if(b){b.classList.add('lit','seen');}
   let moved=false;const adv=()=>{if(moved)return;moved=true;setTimeout(()=>chantStep(n+1,tok),180);};
   say(String(n),'yue',adv);setTimeout(adv,2600);
@@ -1006,7 +1031,7 @@ function pk(b){
   const c=G.cells[+b.dataset.i];
   if(c.b){
     b.classList.add('right');b.disabled=true;chime(true);
-    if(++G.found===3){award(null,G.miss===0);chime(true);setTimeout(()=>{G.r++;G.r>=G.total?finish():pickRound();},1300);}
+    if(++G.found===3){award(null,G.miss===0,G.lang,'r'+G.r);chime(true);setTimeout(()=>{G.r++;G.r>=G.total?finish():pickRound();},1300);}
   }else{
     G.miss++;chime(false);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');say('呢個唔係藍色','yue');
   }
