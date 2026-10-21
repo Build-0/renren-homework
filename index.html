@@ -420,7 +420,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-22.2';
+const APP_VER='2026-10-22.3';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -880,7 +880,7 @@ const GEN={
   sort(it){
     const set=rand(it.sorts),bs=i=>set.bins[i][2]||set.bins[i][1];   // 籃子 [圖, 畫面文字, 朗讀文字?]；物品 [圖, 畫面文字, 籃子, 朗讀文字?]
     return shuffle(set.items).map(([e,name,b,sn])=>({
-      say:`${sn||name}，放入${bs(0)}，定係${bs(1)}？`,prompt:pc(e,name),ask:'要放進哪一個籃子？',
+      say:`${sn||name}，放入${bs(0)}，定係${bs(1)}？`,qid:name+'|'+set.bins[0][1],prompt:pc(e,name),ask:'要放進哪一個籃子？',
       opts:set.bins.map(([be,bn])=>pc(be,bn)),a:b,ok:()=>say(`${sn||name}係${bs(b)}`,'yue'),okWait:1700
     }));
   },
@@ -899,7 +899,7 @@ const GEN={
     return shuffle(it.quiz).map(x=>{
       // 選項 [圖, 畫面文字, 朗讀文字?]；題目 {q:畫面, say:朗讀?}：朗讀內容維持原樣，只改畫面文字
       const m=mix(x.o.map(([e,c])=>pc(e,c))),caps=m.order.map(i=>x.o[i][2]||x.o[i][1]);
-      return {say:(x.say||x.q)+'　'+orList(caps),prompt:x.show?pc(x.show):'',ask:x.q,...m,ok:()=>say(x.o[0][2]||x.o[0][1],'yue'),okWait:1700};
+      return {say:(x.say||x.q)+'　'+orList(caps),qid:x.q,prompt:x.show?pc(x.show):'',ask:x.q,...m,ok:()=>say(x.o[0][2]||x.o[0][1],'yue'),okWait:1700};
     });
   }
 };
@@ -914,7 +914,7 @@ function pick(b){
   if(G.lock)return;
   const i=+b.dataset.i,q=G.qs[G.r];
   if(i===q.a){
-    G.lock=true;b.classList.add('right');award(q.kw,G.miss===0,q.lang,q.say);chime(true);
+    G.lock=true;b.classList.add('right');award(q.kw,G.miss===0,q.lang,q.qid||'r'+G.r);chime(true);   // 題目編號：內容固定嘅題用 qid／字；隨機產生嘅題用「第幾題」
     G.streak=G.miss===0?(G.streak||0)+1:0;
     if([3,5,8].includes(G.streak))toast(`🔥 連續答對 ${G.streak} 題！`,1800);
     if(q.pop)b.insertAdjacentHTML('beforeend',`<span class="pop">${q.pop}</span>`);
