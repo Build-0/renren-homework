@@ -418,7 +418,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-22.4';
+const APP_VER='2026-10-22.5';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -476,9 +476,12 @@ let voices=[];
 function loadVoices(){try{voices=speechSynthesis.getVoices()||[];}catch(e){voices=[];}}
 function pickVoice(lang){
   const L=v=>(v.lang||'').toLowerCase().replace('_','-');
-  if(lang==='cmn')return voices.find(v=>L(v)==='zh-cn')||voices.find(v=>L(v)==='zh-tw')||voices.find(v=>L(v).startsWith('zh')&&!/hk|yue/.test(L(v)));
-  if(lang==='en')return voices.find(v=>L(v)==='en-gb')||voices.find(v=>L(v)==='en-us')||voices.find(v=>L(v).startsWith('en'));
-  return voices.find(v=>L(v)==='zh-hk')||voices.find(v=>/yue/.test(L(v)));
+  // 同一種語言有幾個聲音時，優先揀「進階／高品質／自然（Neural）」版本（發音同語調明顯好啲）
+  const hq=v=>/premium|enhanced|natural|neural|siri|online|進階|優化|高品質/i.test((v.name||'')+' '+(v.voiceURI||''))?1:0;
+  const best=list=>list.sort((a,b)=>hq(b)-hq(a))[0];
+  if(lang==='cmn')return best(voices.filter(v=>L(v)==='zh-cn'))||best(voices.filter(v=>L(v)==='zh-tw'))||best(voices.filter(v=>L(v).startsWith('zh')&&!/hk|yue/.test(L(v))));
+  if(lang==='en')return best(voices.filter(v=>L(v)==='en-gb'))||best(voices.filter(v=>L(v)==='en-us'))||best(voices.filter(v=>L(v).startsWith('en')));
+  return best(voices.filter(v=>L(v)==='zh-hk'||/yue/.test(L(v))));
 }
 let lastU=null,spoke=false,ttsErr='';
 function say(text,lang,onend){
