@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>發音測試</title>
+<style>
+:root{--bg:#EDF4E8;--card:#fff;--ink:#1D2A38;--soft:#5A6B62;--sun:#E39A0B}
+@media (prefers-color-scheme:dark){:root{--bg:#15241D;--card:#1E3329;--ink:#F1F0E6;--soft:#A7BCB0;--sun:#FFC940}}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 system-ui,-apple-system,"Noto Sans TC",sans-serif;padding:16px;max-width:640px;margin-inline:auto}
+h1{font-size:24px;margin:8px 0}
+h2{font-size:20px;margin:24px 0 4px}
+p{margin:4px 0;color:var(--soft);font-size:15px}
+.row{display:flex;align-items:center;gap:10px;margin:8px 0}
+.n{width:28px;height:28px;border-radius:50%;background:var(--sun);color:#1D2A38;font-weight:700;display:grid;place-items:center;flex:none}
+button{flex:1;text-align:left;background:var(--card);color:var(--ink);border:2px solid var(--ink);border-radius:14px;padding:12px 16px;font:inherit;box-shadow:0 3px 0 var(--ink)}
+button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+small{color:var(--soft);font-size:13px}
+.v{font-size:13px;color:var(--soft);word-break:break-all}
+</style>
+</head>
+<body>
+<h1>發音測試：「媽媽」</h1>
+<p>請逐個按，聽哪一個最像正常說話，把<b>號碼</b>告訴我。開著聲音、關掉靜音開關。</p>
+<p class="v" id="vinfo">載入語音中……</p>
+
+<h2>廣東話</h2>
+<div id="yue"></div>
+<h2>國語（用中國大陸語音）</h2>
+<div id="cmn"></div>
+<h2>國語（用台灣語音，手機有才會出現）</h2>
+<div id="tw"></div>
+
+<script>
+const VARS={
+  yue:[['媽媽','現在的寫法'],['媽 媽','中間加空格'],['媽，媽','中間加逗號'],['媽媽。','後面加句號'],['阿媽','阿媽（口語）'],['媽咪','媽咪'],['媽媽啊','後面加「啊」'],['我的家有媽媽。','放進句子裡']],
+  cmn:[['媽媽','現在的寫法'],['妈妈','簡體字'],['媽 媽','中間加空格'],['媽，媽','中間加逗號'],['媽媽。','後面加句號'],['媽嘛','第二個字改「嘛」'],['妈嘛','簡體「妈嘛」'],['我的家有媽媽。','放進句子裡'],['我的家有妈妈。','簡體句子']],
+};
+VARS.tw=VARS.cmn;
+let voices=[];
+const L=v=>(v.lang||'').toLowerCase().replace('_','-');
+const hq=v=>/premium|enhanced|natural|neural|siri|online|進階|優化|高品質/i.test((v.name||'')+' '+(v.voiceURI||''))?1:0;
+const best=l=>l.sort((a,b)=>hq(b)-hq(a))[0];
+const pick={
+  yue:()=>best(voices.filter(v=>L(v)==='zh-hk'||/yue/.test(L(v)))),
+  cmn:()=>best(voices.filter(v=>L(v)==='zh-cn')),
+  tw:()=>best(voices.filter(v=>L(v)==='zh-tw'))
+};
+const LANG={yue:'zh-HK',cmn:'zh-CN',tw:'zh-TW'};
+function speak(text,k){
+  const ss=speechSynthesis,go=()=>{const u=new SpeechSynthesisUtterance(text);u.lang=LANG[k];const v=pick[k]();if(v)u.voice=v;u.rate=.8;ss.speak(u);if(ss.paused)ss.resume();};
+  if(ss.speaking||ss.pending){ss.cancel();setTimeout(go,80);}else go();
+}
+function build(){
+  voices=speechSynthesis.getVoices()||[];
+  document.getElementById('vinfo').textContent='使用的語音：'+['yue','cmn','tw'].map(k=>{const v=pick[k]();return ({yue:'廣東話',cmn:'國語(CN)',tw:'國語(TW)'})[k]+'＝'+(v?v.name:'沒有');}).join('；');
+  for(const k of ['yue','cmn','tw']){
+    const box=document.getElementById(k);box.innerHTML='';
+    if(k==='tw'&&!pick.tw()){box.innerHTML='<p>這支手機沒有台灣國語語音，可略過。</p>';continue;}
+    VARS[k].forEach(([t,note],i)=>{
+      const r=document.createElement('div');r.className='row';
+      r.innerHTML='<span class="n">'+(i+1)+'</span>';
+      const b=document.createElement('button');b.innerHTML=t+' <small>'+note+'</small>';
+      b.onclick=()=>speak(t,k);r.appendChild(b);box.appendChild(r);
+    });
+  }
+}
+build();
+speechSynthesis.onvoiceschanged=build;
+</script>
+</body>
+</html>
