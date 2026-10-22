@@ -3,7 +3,7 @@
   "short_name": "仁仁功課",
   "start_url": "./",
   "scope": "./",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#ffffff",
   "theme_color": "#3a8dde",
   "lang": "zh-Hant-HK",
