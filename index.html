@@ -305,6 +305,7 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 /* ============ 工具 ============ */
 const SPK='<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7M18.5 6a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 const CN=['零','一','二','三'];
+const QN=n=>n===2?'兩':CN[n];   // 數字後面跟量詞要讀「兩」：兩條魚、兩個蘋果（單獨數數才讀「二」）
 const PRAISE=['好棒喔！','答對了！','太棒了！','好厲害！','真厲害！'];
 const GAMES={
   cards:['認','字卡'], hear:['聽','聽音選字'], match:['配','翻牌配對'], sent:['句','句子填充'],
@@ -418,7 +419,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-22.6';
+const APP_VER='2026-10-22.7';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -847,9 +848,9 @@ const GEN={
     return shuffle([1,2,3,1,2,3]).map((n,k)=>{
       const [e,name,cl,cl2]=rand(EMO);   // cl＝朗讀用量詞（廣東話），cl2＝畫面用量詞（國語）
       if(k%2===0){const m=mix([n,...[1,2,3].filter(x=>x!==n)].map(numv));
-        return {say:`有幾多${cl}${name}？`,prompt:grp(e,n),ask:`有幾${cl2}${name}？`,...m,ok:()=>say(CN[n]+cl,'yue'),okWait:1500};}
+        return {say:`有幾多${cl}${name}？`,prompt:grp(e,n),ask:`有幾${cl2}${name}？`,...m,ok:()=>say(QN(n)+cl,'yue'),okWait:1500};}
       const m=mix([n,...[1,2,3].filter(x=>x!==n)].map(x=>grp(e,x)));
-      return {say:`邊度有${CN[n]}${cl}${name}？`,prompt:numv(n),ask:`哪一個有 ${n} ${cl2}${name}？`,...m,ok:()=>say(CN[n]+cl,'yue'),okWait:1500};
+      return {say:`邊度有${QN(n)}${cl}${name}？`,prompt:numv(n),ask:`哪一個有 ${n} ${cl2}${name}？`,...m,ok:()=>say(QN(n)+cl,'yue'),okWait:1500};
     });
   },
   next(){
