@@ -135,6 +135,9 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .sbook{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px}
 .stk{aspect-ratio:1;max-width:100%;display:grid;place-items:center;border-radius:50%;background:var(--rule);opacity:.45;font-size:32px}
 .stk.got{opacity:1;border:2px solid var(--sun);background:var(--paper)}
+.stk svg{width:84%;height:84%}
+.toast .big svg{width:1.15em;height:1.15em;vertical-align:middle}
+.newstk span svg{width:1.1em;height:1.1em;vertical-align:middle}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--card);border:3px solid var(--ink);border-radius:999px;padding:10px 22px;font-family:var(--kai);font-weight:700;font-size:22px;box-shadow:0 5px 0 var(--ink);display:flex;align-items:center;gap:10px;white-space:nowrap;animation:toastin .35s both;transform:translateX(-50%)}
 .toast .big{font-size:36px;line-height:1}
 @keyframes toastin{from{transform:translate(-50%,40px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
@@ -425,7 +428,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-22 21:44';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-22 21:48';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -621,7 +624,40 @@ const nextDate=s=>s.dates.find(d=>daysTo(d)>=0)||s.dates[s.dates.length-1];
 const app=document.getElementById('app');
 let TERMS=[],T=null,SUBJ=null,G=null,LOGVIEW=false;
 const dkey=(i,g)=>`${T.id}:${SUBJ.id}:${i}:${g}`;
-const STICKERS=['🐼','🦁','🐯','🐨','🐸','🐵','🦊','🐰','🐻','🐷','🐮','🐔','🦄','🐙','🦋','🐢','🦖','🐳','🦒','🐘','🦉','🐬','🦜','🐞','🐝','🦀','🐠','🦩','🐿️','🦔'];
+/*STK-BEGIN*/
+/* 貼紙：15 隻唔同嘅恐龍（自己畫嘅卡通 SVG）＋ 15 部唔同嘅車車（表情符號），一隻恐龍一部車交錯 */
+const INK='#1D2A38';
+const OL=`stroke="${INK}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"`;
+const SV=inner=>`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${inner}</svg>`;
+const tube=(d,w,c)=>`<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w+5}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+const ell=(cx,cy,rx,ry,c,rot=0)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${c}" ${OL} transform="rotate(${rot} ${cx} ${cy})"/>`;
+const poly=(pts,c,w=2.5)=>`<polygon points="${pts}" fill="${c}" stroke="${INK}" stroke-width="${w}" stroke-linejoin="round"/>`;
+const shp=(d,c,w=2.5)=>`<path d="${d}" fill="${c}" stroke="${INK}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"/>`;
+const eye=(x,y,r=3.4)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" stroke="${INK}" stroke-width="1.6"/><circle cx="${x+.9}" cy="${y+.2}" r="${(r*.5).toFixed(1)}" fill="${INK}"/>`;
+const smile=(x,y,w)=>`<path d="M${x} ${y} q${w/2} ${(w*.5).toFixed(1)} ${w} 0" fill="none" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/>`;
+const belly=(cx,cy,rx,ry,c,rot=0)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${c}" opacity=".75" transform="rotate(${rot} ${cx} ${cy})"/>`;
+const legs4=c=>tube('M31 66 L30 90',9,c)+tube('M43 68 L43 90',9,c)+tube('M59 68 L59 90',9,c)+tube('M71 66 L72 90',9,c);
+const teeth=(pts)=>pts.map(([x,y])=>poly(`${x-2},${y} ${x+2},${y} ${x},${y+4}`,'#fff',1.2)).join('');
+const DINOS=[
+ {n:'霸王龍',s:()=>{const C='#4FB36E',B='#D6F0B8';return SV(tube('M32 56 Q14 56 5 72',12,C)+tube('M44 66 L42 87 L57 87',13,C)+ell(46,55,22,17,C,-8)+belly(48,63,13,8,B,-8)+tube('M60 49 Q68 43 71 37',14,C)+ell(77,32,15,11,C,-6)+`<path d="M66 37 Q80 45 92 35" fill="none" stroke="${INK}" stroke-width="2"/>`+teeth([[72,41],[78,43],[84,42]])+eye(77,27)+tube('M61 58 L68 63',5,C));}},
+ {n:'三角龍',s:()=>{const C='#F29A4A',F='#E0525A';return SV(legs4(C)+tube('M26 60 Q14 62 8 72',9,C)+ell(48,60,25,15,C)+belly(48,67,16,6,'#FFE2B8')+ell(74,50,13,16,F,-10)+poly('84,52 88,36 92,54','#FFF4D6')+poly('76,50 78,34 83,50','#FFF4D6')+ell(84,63,12,9.5,C)+poly('92,63 99,66 92,70','#FFF4D6')+eye(82,58)+smile(80,67,7));}},
+ {n:'劍龍',s:()=>{const C='#3FB1A0',P='#F2B84B';return SV(legs4(C)+poly('10,66 4,56 15,62',P)+poly('14,74 6,70 16,69',P)+tube('M28 60 Q16 64 10 70',9,C)+[34,42,50,58,66].map((x,i)=>poly(`${x-6},52 ${x},${34-[0,5,8,5,0][i]+4} ${x+6},52`,P)).join('')+ell(48,60,25,15,C)+belly(48,67,16,6,'#C9F2EA')+tube('M68 56 Q77 54 82 60',9,C)+ell(86,61,8,6,C)+eye(88,58,2.8)+smile(84,65,5));}},
+ {n:'腕龍',s:()=>{const C='#5B8DEF';return SV(legs4(C)+tube('M30 60 Q18 64 12 72',9,C)+ell(46,60,24,15,C)+belly(46,67,15,6,'#D3E2FF')+tube('M64 52 Q74 34 78 18',9,C)+ell(82,15,10,7,C,-10)+eye(85,13,3)+smile(80,18,6)+`<circle cx="90" cy="14" r="1.2" fill="${INK}"/>`);}},
+ {n:'翼龍',s:()=>{const C='#9B6BD6',W='#C7A8F0';return SV(shp('M42 52 L5 34 L12 62 L24 56 L30 68 L44 60Z',W)+shp('M58 52 L95 34 L88 62 L76 56 L70 68 L56 60Z',W)+ell(50,58,11,9,C)+belly(50,62,6,5,'#E6D6FA')+tube('M54 50 L62 42',7,C)+ell(67,38,8,6,C,-20)+poly('73,36 94,34 74,43','#F4C95A')+poly('60,34 52,26 66,32',C)+eye(68,36,2.8)+tube('M46 66 L42 78',4,C)+tube('M54 66 L58 78',4,C));}},
+ {n:'甲龍',s:()=>{const C='#B07A4F',A='#8A5A35';return SV(tube('M34 70 L34 84',10,C)+tube('M66 70 L66 84',10,C)+tube('M26 66 Q14 70 10 74',7,C)+ell(9,74,8,7,A)+ell(48,62,28,16,C)+belly(48,70,16,6,'#E8CDB0')+[[30,52],[38,47],[47,45],[56,46],[65,50]].map(([x,y])=>poly(`${x-5},${y+6} ${x},${y-6} ${x+5},${y+6}`,A)).join('')+ell(80,68,10,7.5,C)+eye(82,65,3)+smile(78,72,6)+tube('M42 74 L42 86',9,C)+tube('M56 74 L56 86',9,C));}},
+ {n:'棘龍',s:()=>{const C='#E0574F',S='#F2A04A';return SV(tube('M32 56 Q14 58 5 72',11,C)+tube('M44 66 L42 87 L56 87',12,C)+shp('M30 52 L33 24 L40 40 L46 20 L52 38 L59 22 L62 48Z',S)+ell(46,56,21,16,C,-8)+belly(48,63,12,8,'#FFD7C8',-8)+tube('M60 50 Q70 44 74 40',11,C)+ell(82,38,17,7,C,-12)+teeth([[78,42],[84,41],[90,38]])+eye(78,34,3)+tube('M60 60 L67 64',5,C));}},
+ {n:'迅猛龍',s:()=>{const C='#9CCB3B',D='#5E8A1E';return SV(tube('M34 60 Q16 56 4 62',7,C)+tube('M46 66 L44 86 L56 86',9,C)+poly('56,86 62,88 56,90','#fff',1.2)+ell(48,56,17,12,C,-15)+shp('M38 50 L42 62 M48 46 L52 58',D,3)+tube('M58 50 Q64 42 68 38',9,C)+ell(75,36,12,7,C,-10)+teeth([[72,40],[78,41],[83,40]])+eye(75,33,3)+tube('M58 60 L66 66',4,C)+poly('66,66 70,70 64,69','#fff',1.2));}},
+ {n:'副櫛龍',s:()=>{const C='#E8739E',R='#F6B3CC';return SV(legs4(C)+tube('M28 58 Q14 62 8 72',9,C)+ell(48,58,23,14,C)+belly(48,65,14,6,'#FFDCE8')+tube('M66 52 Q74 46 77 41',9,C)+tube('M80 38 Q68 18 48 24',5,R)+ell(82,41,11,7,C,-8)+eye(84,38,3)+smile(80,45,6));}},
+ {n:'雷龍',s:()=>{const C='#4FB6DC';return SV(legs4(C)+tube('M28 60 Q12 62 5 48',8,C)+ell(46,62,22,13,C)+belly(46,68,14,5,'#D3F0FA')+tube('M62 54 Q80 44 88 24',7,C)+ell(90,20,7,5,C,-10)+eye(92,19,2.4)+smile(88,22,4));}},
+ {n:'厚頭龍',s:()=>{const C='#8E9AAF';return SV(tube('M30 58 Q14 58 6 70',10,C)+tube('M44 66 L42 87 L56 87',12,C)+ell(46,56,21,16,C,-8)+belly(48,63,12,8,'#DDE3EE',-8)+tube('M60 50 Q68 44 70 40',11,C)+ell(76,36,13,10,C)+ell(78,27,9,7,'#C9D1E3')+eye(77,34,3)+smile(74,41,7)+tube('M60 60 L66 64',4,C)+[[68,30],[70,24]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.5" fill="${INK}"/>`).join(''));}},
+ {n:'蛇頸龍',s:()=>{const C='#37A6D8';const w='<path d="M2 80 q6 -6 12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0" fill="none" stroke="#7CC8EC" stroke-width="3" stroke-linecap="round"/>';return SV(tube('M32 66 Q18 68 8 60',6,C)+ell(46,66,21,11,C)+belly(46,71,13,5,'#CDEBFA')+tube('M62 60 Q78 52 74 32',8,C)+ell(78,26,9,6.5,C,-10)+eye(80,24,2.8)+smile(76,29,5)+ell(38,76,9,4,'#2B86B5',-25)+ell(58,76,9,4,'#2B86B5',25)+w+'<path d="M2 90 q6 -6 12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0" fill="none" stroke="#B7E1F5" stroke-width="3" stroke-linecap="round"/>');}},
+ {n:'異特龍',s:()=>{const C='#D9822B',B='#F6D4A6';return SV(tube('M32 56 Q14 58 5 70',12,C)+tube('M44 66 L42 87 L57 87',13,C)+ell(46,55,22,17,C,-8)+belly(48,63,13,8,B,-8)+tube('M60 49 Q68 43 71 37',13,C)+ell(77,33,15,10,C,-4)+poly('72,24 75,18 79,25','#8A4F12')+`<path d="M66 38 Q80 45 93 36" fill="none" stroke="${INK}" stroke-width="2"/>`+teeth([[73,41],[79,43],[85,42]])+eye(77,29)+tube('M60 58 L69 62',4,C));}},
+ {n:'恐龍寶寶',s:()=>SV(ell(50,64,28,27,'#FFF4D6')+`<circle cx="38" cy="72" r="3" fill="#F2B84B"/><circle cx="60" cy="78" r="2.5" fill="#F2B84B"/><circle cx="66" cy="66" r="2" fill="#F2B84B"/>`+ell(50,40,17,15,'#7BD389')+poly('44,27 47,20 50,27','#4FB36E',2)+poly('51,26 54,19 57,26','#4FB36E',2)+eye(43,38,4)+eye(57,38,4)+smile(45,46,10)+shp('M22 56 L30 48 L36 56 L44 46 L52 56 L60 46 L68 56 L76 48 L79 58 L79 90 L21 90Z','#FFF4D6',2.5)+`<circle cx="36" cy="72" r="3" fill="#F2B84B"/><circle cx="62" cy="78" r="2.5" fill="#F2B84B"/>`)},
+ {n:'角鼻龍',s:()=>{const C='#6FBF73',S='#3E8E55';return SV(tube('M32 56 Q14 58 5 70',12,C)+tube('M44 66 L42 87 L57 87',13,C)+ell(46,55,22,17,C,-8)+[[34,40],[42,38],[50,38]].map(([x,y])=>poly(`${x-4},${y+6} ${x},${y-4} ${x+4},${y+6}`,S)).join('')+belly(48,63,13,8,'#D8F2D2',-8)+tube('M60 49 Q68 43 71 37',13,C)+ell(77,33,15,10,C,-4)+poly('88,28 94,20 92,31',S)+`<path d="M66 38 Q80 45 93 36" fill="none" stroke="${INK}" stroke-width="2"/>`+teeth([[73,41],[79,43],[85,42]])+eye(77,29)+tube('M60 58 L68 62',4,C));}}
+];
+const CARS=[['🚗','紅色汽車'],['🚓','警車'],['🚑','救護車'],['🚒','消防車'],['🚌','公車'],['🚜','曳引機'],['🏎️','賽車'],['🚚','貨車'],['🚛','大卡車'],['🚐','廂型車'],['🏍️','摩托車'],['🚕','計程車'],['🚙','吉普車'],['🚂','火車'],['🚁','直升機']];
+const STICKERS=DINOS.flatMap((d,i)=>[{n:d.n,s:d.s()},{n:CARS[i][1],s:CARS[i][0]}]);   // 恐龍、車、恐龍、車……共 30 張
+/*STK-END*/
 /* 獎勵規則：貼紙越後面越貴；同一題（或同一個字）一天只計一次星星；每天星星有上限 */
 const STK_STEPS=[[10,5],[20,8]];   // [張數, 每張要幾顆星]：前 10 張每張 5 顆，之後 20 張每張 8 顆
 const DAILY_MAX=20;
@@ -653,8 +689,8 @@ function award(kw,first,lang,qid){
   save();
   document.querySelectorAll('.starN').forEach(e=>e.textContent=store.stars);
   const after=stickersOwned();
-  if(after>before){const e=STICKERS[after-1];G.newSticker=e;
-    setTimeout(()=>{toast(`<span class="big">${e}</span>拿到新貼紙！`,2600);say('攞到新貼紙！','yue');},700);}
+  if(after>before){const st=STICKERS[after-1];G.newSticker=st;
+    setTimeout(()=>{toast(`<span class="big">${st.s}</span>拿到新貼紙：${st.n}！`,2600);say('攞到新貼紙！','yue');},700);}
 }
 function subjProgress(s){
   let total=0,done=0;
@@ -721,7 +757,7 @@ function subjSection(title,list,cls){
 function stickerBook(){
   const n=stickersOwned(),left=starsToNext(),td=store.sd.d===dayKey()?store.sd.n:0;
   return `<section class="panel"><div class="sb-head"><h2 class="sec">仁仁的貼紙簿</h2><span class="small">${n} / ${STICKERS.length}・${n>=STICKERS.length?'全部集齊！':`再存 ${left} 顆星就有新貼紙`}・今天 ${td}/${DAILY_MAX} 顆</span></div>
-    <div class="sbook">${STICKERS.map((e,i)=>`<span class="stk ${i<n?'got':''}">${i<n?e:''}</span>`).join('')}</div></section>`;
+    <div class="sbook">${STICKERS.map((st,i)=>`<span class="stk ${i<n?'got':''}"${i<n?` title="${st.n}" aria-label="${st.n}"`:''}>${i<n?st.s:''}</span>`).join('')}</div></section>`;
 }
 function renderHome(){
   G=null;SUBJ=null;LOGVIEW=false;hush();
@@ -845,7 +881,7 @@ function finish(){
   chime(true);setTimeout(()=>say('好叻呀仁仁！','yue'),300);
   const fall=Array.from({length:16},()=>`<i class="fall" style="left:${(Math.random()*100).toFixed(1)}%;animation-delay:${(Math.random()*1.6).toFixed(2)}s;font-size:${18+Math.random()*26|0}px">★</i>`).join('');
   app.insertAdjacentHTML('beforeend',`<div class="cele" role="dialog" aria-label="完成">${fall}
-    <div class="cele-box"><div class="big-star">★</div><h2>好棒喔，仁仁！</h2><p>這次得到 <b>${G.earned}</b> 顆星</p>${G.capped?'<p class="small">今天的星星已經拿滿了，明天再來！</p>':G.dupe&&!G.earned?'<p class="small">這些題目今天已經拿過星星了，明天再來拿新的！</p>':''}${G.newSticker?`<p class="newstk">新貼紙 <span>${G.newSticker}</span></p>`:''}
+    <div class="cele-box"><div class="big-star">★</div><h2>好棒喔，仁仁！</h2><p>這次得到 <b>${G.earned}</b> 顆星</p>${G.capped?'<p class="small">今天的星星已經拿滿了，明天再來！</p>':G.dupe&&!G.earned?'<p class="small">這些題目今天已經拿過星星了，明天再來拿新的！</p>':''}${G.newSticker?`<p class="newstk">新貼紙 <span>${G.newSticker.s}</span> ${G.newSticker.n}</p>`:''}
     <div class="cele-row">${G.review?'<button class="btn" data-act="home">回主頁</button>':`<button class="btn" data-act="again">再玩一次</button><button class="btn ghost" data-act="subj">回到${esc(SUBJ.name)}</button>`}</div></div></div>`);
 }
 
