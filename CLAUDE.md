@@ -47,7 +47,7 @@ data/k1-t1.json     幼兒班第一段綜合評估（26/27 年度）全科內容
 - **主畫面圖示要用瀏覽器開，唔好用 standalone／全螢幕 App 模式**：`manifest.webmanifest` 嘅 `display` 係 `"browser"`，`index.html` 冇 `apple-mobile-web-app-capable`。原因：Benny 部 iPhone 由主畫面圖示（App 模式）進遊戲完全冇朗讀（2026-10-22），Web Speech 喺 iOS 主畫面 App 模式成日唔work；用 Safari 一般分頁就正常。改呢個設定之後要**刪走主畫面舊圖示再重新加入**先生效。
 - 頁面唔好寫仁仁全名同學校名（GitHub Pages 係公開）
 
-- **每次發佈（改咗網站程式／內容嘅 push）都要同時改 `index.html` 嘅 `APP_VER` 同 `version.json` 嘅 `v`（兩邊要一樣，格式 `YYYY-MM-DD.n`）**：已開住網站嘅手機會喺底部見到「有新版本，按此更新」（只改文件唔使升版本）
+- **每次發佈（改咗網站程式／內容嘅 push）都要同時改 `index.html` 嘅 `APP_VER` 同 `version.json` 嘅 `v`（兩邊要一樣，格式 `YYYY-MM-DD HH:mm`＝發佈時間，香港時間，頁尾「版本」直接顯示呢個時間）**：已開住網站嘅手機會喺底部見到「有新版本，按此更新」（只改文件唔使升版本）
 - **用瀏覽器測試線上網站要小心，會污染真實進度**：頁面離開時 `visibilitychange` 會 `save()` 將記憶體入面（測試後）嘅進度寫返 localStorage，下次載入就會同步上資料庫。測試前先覆蓋 `save`／`schedulePush`／`syncNow`，測完 `localStorage.removeItem('renren-zi-v1')`（同埋計時、測試聲音嗰幾個 key），先好離開頁面；測完用 SQL 檢查 `renren_progress`（星星、`sd`、`usage`、`mem`）有冇被污染。2026-10-22 試過污染星星同計時紀錄，已清走。
 - 主頁有「開始計時／結束計時」掣同今日使用時間（開始／結束／累計分鐘）：**要手動撳開始先計**（開發時唔會被統計），畫面隱藏唔計，閒置 5 分鐘自動結束；計時開關只存本機（`renren-zi-timer-on`），統計存喺 `store.usage[日期]={s,e,t}`，同步時取較大值
 - **記憶（間隔重溫）**：`store.mem["語言:字"]={b,d,n,t}`。**要喺唔同日子第一次就答啱先升一級**（同日重複唔計），b>=2＝已記住（★），隔咗 `MEM_INT[b]` 日（1/3/7/14/30）冇再答啱就變「要重溫」（↻、橙色虛線）；每題第一次答錯降一級；翻牌配對只算見過、唔升級。同步時每個字取 `t` 較大嘅一份。舊版 `known` 次數轉做 b=1「學緊」。測試咗 17 個規則個案（node 抽出 memory 區塊跑）。

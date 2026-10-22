@@ -419,7 +419,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-22.7';
+const APP_VER='2026-10-22 21:07';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
