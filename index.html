@@ -81,6 +81,10 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 .snd-msg{flex:1;min-width:0;font-size:14px;color:var(--soft);line-height:1.5}
 .usage{display:flex;flex-direction:column;align-items:flex-start;gap:6px;font-size:13px;color:var(--soft);line-height:1.4;font-variant-numeric:tabular-nums}
 .sound[hidden]{display:none}
+.seg{position:sticky;top:0;z-index:20;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:8px 2px 10px;background:var(--paper);scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{flex:1 0 auto;white-space:nowrap;padding:8px 16px;border:2px solid var(--ink);border-radius:999px;background:var(--card);color:var(--ink);font:inherit;font-size:17px;font-weight:700;box-shadow:0 3px 0 var(--ink)}
+.seg button.on{background:var(--ink);color:var(--card)}
 .linkbtn{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--sky);text-decoration:underline;white-space:nowrap}
 .ulog{list-style:none;margin:12px 0;padding:0;display:flex;flex-direction:column;gap:14px}
 .ulog li{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:baseline;font-variant-numeric:tabular-nums}
@@ -419,7 +423,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-22 21:07';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-22 21:35';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -485,20 +489,26 @@ function pickVoice(lang){
   return best(voices.filter(v=>L(v)==='zh-hk'||/yue/.test(L(v))));
 }
 let lastU=null,spoke=false,ttsErr='';
+let sayTok=0;
 function say(text,lang,onend){
   if(!('speechSynthesis' in window)){ttsErr='nosupport';if(onend)setTimeout(onend,700);return;}
   const ss=window.speechSynthesis; if(!voices.length)loadVoices();
-  const go=()=>{try{
+  const tok=++sayTok;   // 只認最新一次：新嘅朗讀會取代舊嘅
+  const go=retry=>{ if(tok!==sayTok)return; try{
     const u=new SpeechSynthesisUtterance(text);
     u.lang=lang==='cmn'?'zh-CN':lang==='en'?'en-GB':'zh-HK';
     const v=pickVoice(lang); if(v)u.voice=v;
     u.rate=lang==='en'?.6:.8; u.volume=1;   // 英文慢啲（K1 要聽清楚每個音）；廣東話／國語 .8
-    u.onstart=()=>{spoke=true;};
-    u.onerror=e=>{ttsErr=e.error||'error';};
+    let started=false;
+    u.onstart=()=>{started=true;spoke=true;};
+    u.onerror=e=>{if(e.error!=='interrupted'&&e.error!=='canceled')ttsErr=e.error||'error';};
     if(onend)u.onend=onend;
     lastU=u; ss.speak(u); if(ss.paused)ss.resume();
+    // 看門狗：iPhone 有時 speak() 靜靜地冇反應（尤其係自動跳下一題嗰陣）；0.8 秒仲未開始就取消重來一次
+    if(!retry)setTimeout(()=>{if(tok===sayTok&&!started&&!ss.speaking){try{ss.cancel();}catch(e){}setTimeout(()=>go(true),250);}},800);
   }catch(e){ttsErr=String(e);}};
-  if(ss.speaking||ss.pending){ss.cancel();setTimeout(go,80);}else go();
+  // 取消上一句之後要等一陣（iPhone 太快 speak 會被吞咗），由 80ms 改為 250ms
+  if(ss.speaking||ss.pending){ss.cancel();setTimeout(()=>go(false),250);}else go(false);
 }
 function hush(){try{speechSynthesis.cancel();}catch(e){}}
 function diag(){
@@ -746,15 +756,23 @@ function renderUsageLog(){
 }
 function renderSubject(){
   G=null;LOGVIEW=false;hush();
-  const s=SUBJ,lang=s.lang;
+  const s=SUBJ,lang=s.lang,sel=curItem(s),multi=s.items.length>1;
   app.innerHTML=`
     <div class="bar"><button class="back" data-act="home">‹ 主頁</button><div class="g-title">${esc(s.name)}</div>${starPill()}</div>
     <section class="shead panel">
       <div class="row"><b>${s.dates.map(fmt).join('、')}</b>${pill(s.dates)}${s.pre?'<span class="small">提前評估</span>':''}</div>
       <div class="scope"><b>評估內容：</b>${esc(s.scope)}</div>
     </section>
+    ${multi?segBar(s,sel):''}
     ${s.items.some(it=>it.words)?'<p class="small">字的右上角：★ 已記住（至少兩天都答對）、↻ 隔了幾天，要複習。</p>':''}
-    <section class="items">${s.items.map((it,i)=>itemCard(it,i,lang)).join('')}</section>`;
+    <section class="items">${(multi?[s.items[sel]]:s.items).map(it=>itemCard(it,s.items.indexOf(it),lang)).join('')}</section>`;
+}
+/* 分段控制：每個項目（認讀生詞／句子／兒歌…）一個分頁，一次只顯示一項，唔使一直捲 */
+const SEL={};
+const curItem=s=>Math.min(SEL[s.id]||0,s.items.length-1);
+const segLabel=it=>String(it.label).replace(/內容$/,'');
+function segBar(s,sel){
+  return `<div class="seg" role="tablist">${s.items.map((it,i)=>`<button role="tab" aria-selected="${i===sel}" class="${i===sel?'on':''}" data-act="seg" data-i="${i}">${esc(segLabel(it))}</button>`).join('')}</div>`;
 }
 const SHUF={};
 const skey=i=>`${SUBJ.id}:${i}`;
@@ -769,7 +787,7 @@ function itemCard(it,i,lang){
   if(it.songs)detail=`<div class="songs">${it.songs.map(x=>{const n=songN(x),u=typeof x==='object'&&/^https?:\/\//.test(x.url||'')?x.url:'';
     return `<span class="songwrap"><button class="song" data-act="sing" data-n="${esc(n)}" aria-pressed="${!!store.sung[`${T.id}:${n}`]}"><span class="tick">✓</span>《${esc(n)}》</button>${u?`<a class="songlink" href="${esc(u)}" target="_blank" rel="noopener">▶ 聽歌</a>`:''}</span>`;}).join('')}</div><p class="small">複習完一首，按一下記起來。${it.songs.some(x=>typeof x==='object'&&x.url)?'有「▶ 聽歌」的可以按下去聽。':''}</p>`;
   const games=(it.games||[]).map(g=>`<button class="gbtn" data-act="play" data-i="${i}" data-g="${g}">${cells(GAMES[g][0],'xs')}${GAMES[g][1]}${store.done[dkey(i,g)]?' <span class="ok">✓</span>':''}</button>`).join('');
-  return `<article class="item">${head}${detail}${games?`<div class="games">${games}</div>`:''}</article>`;
+  return `<article class="item">${head}${games?`<div class="games">${games}</div>`:''}${detail}</article>`;   // 遊戲掣放喺字詞預覽上面，唔使捲到最底
 }
 
 /* ============ 遊戲框 ============ */
@@ -805,7 +823,7 @@ function startReview(){
   G.total=G.qs.length;quizRound();
 }
 function startGame(i,g){
-  const it=SUBJ.items[i];
+  const it=SUBJ.items[i];SEL[SUBJ.id]=i;   // 玩完返嚟仍然停喺同一個分頁
   G={g,it,i,lang:SUBJ.lang,earned:0,r:0,key:dkey(i,g)};
   if(GEN[g]){G.qs=GEN[g](it);G.total=G.qs.length;quizRound();return;}
   ({cards:cardsInit,match:matchInit,lmatch:matchInit,order:orderInit,chant:chantInit,pickall:pickInit})[g]();
@@ -1049,6 +1067,7 @@ app.addEventListener('click',e=>{
     case 'usagelog':renderUsageLog();window.scrollTo(0,0);break;
     case 'review':startReview();window.scrollTo(0,0);break;
     case 'subj':renderSubject();break;
+    case 'seg':SEL[SUBJ.id]=+b.dataset.i;renderSubject();window.scrollTo(0,0);break;
     case 'pv':say(b.dataset.t,b.dataset.l);break;
     case 'shuf':{const i=+b.dataset.i,it=SUBJ.items[i],src=it.words||it.letters;let s;do{s=shuffle(src);}while(src.length>2&&s.join()===(SHUF[skey(i)]||src).join());SHUF[skey(i)]=s;renderSubject();chime(true);break;}
     case 'unshuf':delete SHUF[skey(+b.dataset.i)];renderSubject();break;
