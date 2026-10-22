@@ -418,7 +418,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-22.5';
+const APP_VER='2026-10-22.6';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -491,7 +491,7 @@ function say(text,lang,onend){
     const u=new SpeechSynthesisUtterance(text);
     u.lang=lang==='cmn'?'zh-CN':lang==='en'?'en-GB':'zh-HK';
     const v=pickVoice(lang); if(v)u.voice=v;
-    u.rate=lang==='en'?.85:.8; u.volume=1;
+    u.rate=lang==='en'?.6:.8; u.volume=1;   // 英文慢啲（K1 要聽清楚每個音）；廣東話／國語 .8
     u.onstart=()=>{spoke=true;};
     u.onerror=e=>{ttsErr=e.error||'error';};
     if(onend)u.onend=onend;
