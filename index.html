@@ -101,6 +101,7 @@ body.hastabs #app{padding-bottom:92px}
 .tiers b{color:var(--berry);font-size:17px}
 .allgot{margin:6px 0;font-size:20px;font-weight:700}
 .stk.nxt{opacity:1;border:2px dashed var(--sun);font-size:26px;color:var(--sun);font-weight:900}
+.ico{width:1em;height:1em;display:inline-block;vertical-align:-.12em}
 .pgtitle{margin:0;font-family:var(--kai);font-size:30px}
 .starbig{display:flex;align-items:baseline;gap:8px;font-size:34px;font-weight:900}
 .starbig .st{color:var(--sun);font-size:40px}
@@ -505,7 +506,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-24 06:54';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-24 06:59';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -764,6 +765,44 @@ const DINOS=[
 const CARS=[['🚗','紅色汽車'],['🚓','警車'],['🚑','救護車'],['🚒','消防車'],['🚌','公車'],['🚜','曳引機'],['🏎️','賽車'],['🚚','貨車'],['🚛','大卡車'],['🚐','廂型車'],['🏍️','摩托車'],['🚕','計程車'],['🚙','吉普車'],['🚂','火車'],['🚁','直升機']];
 const STICKERS=DINOS.flatMap((d,i)=>[{n:d.n,s:d.s()},{n:CARS[i][1],s:CARS[i][0]}]);   // 恐龍、車、恐龍、車……共 30 張
 /*STK-END*/
+/*ICO-BEGIN*/
+/* 職業人物圖示（自己畫嘅卡通 SVG）：靠「衣服」分辨——醫生白袍＋聽診器、護士護士帽、廚師高帽、的士司機西裝領呔＋司機帽。
+   data 入面用 "@doctor" 呢類記號，載入時 resolveIcons() 換成 SVG（見 boot） */
+const SVI=inner=>`<svg class="ico" viewBox="8 2 84 98" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${inner}</svg>`;
+const SKIN='#F8CFAE';
+const faceBits=(y=40)=>`<circle cx="44" cy="${y}" r="2.2" fill="${INK}"/><circle cx="56" cy="${y}" r="2.2" fill="${INK}"/>${smile(44,y+8,12)}<circle cx="39.5" cy="${y+5}" r="2.6" fill="#F5A3A3" opacity=".6"/><circle cx="60.5" cy="${y+5}" r="2.6" fill="#F5A3A3" opacity=".6"/>`;
+const bodyOf=c=>shp('M12 99 Q12 68 50 66 Q88 68 88 99Z',c);
+const ICON_SVG={
+  doctor:()=>SVI(
+    bodyOf('#FFFFFF')+poly('41,67 50,86 59,67','#5B8DEF')+`<path d="M50 86 L50 99" stroke="${INK}" stroke-width="2"/>`
+    +`<path d="M35 70 Q30 90 44 92" fill="none" stroke="${INK}" stroke-width="5.5" stroke-linecap="round"/><path d="M35 70 Q30 90 44 92" fill="none" stroke="#6B7280" stroke-width="2.6" stroke-linecap="round"/><circle cx="46" cy="91" r="5" fill="#B7BEC9" stroke="${INK}" stroke-width="2"/>`
+    +ell(50,41,15,17,SKIN)+shp('M34 38 Q31 16 50 16 Q69 16 66 38 Q60 27 50 27 Q40 27 34 38Z','#4A3728')
+    +faceBits(42)+`<circle cx="50" cy="19" r="6.5" fill="#DDE3EE" stroke="${INK}" stroke-width="2"/><circle cx="50" cy="19" r="2.4" fill="#fff" stroke="${INK}" stroke-width="1"/>`),
+  nurse:()=>SVI(
+    bodyOf('#7FD1C7')+poly('40,67 50,82 60,67','#FFFFFF')+`<rect x="60" y="78" width="11" height="11" rx="2" fill="#fff" stroke="${INK}" stroke-width="1.8"/><path d="M65.5 80V87M62 83.5H69" stroke="#E0453A" stroke-width="2.6" stroke-linecap="round"/>`
+    +ell(50,40,20,22,'#6B4226')+ell(50,44,15,17,SKIN)+shp('M35 42 Q35 30 50 30 Q65 30 65 42 Q58 34 50 34 Q42 34 35 42Z','#6B4226')
+    +faceBits(45)+shp('M32 30 L37 11 Q50 6 63 11 L68 30 Q50 22 32 30Z','#FFFFFF')+`<path d="M50 12V24M44.5 18H55.5" stroke="#E0453A" stroke-width="4" stroke-linecap="round"/>`),
+  chef:()=>SVI(
+    bodyOf('#FFFFFF')+[[42,80],[42,91],[58,80],[58,91]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.3" fill="#9AA3B2" stroke="${INK}" stroke-width="1"/>`).join('')
+    +poly('39,67 61,67 50,82','#E0453A')+`<path d="M50 82 L50 99" stroke="${INK}" stroke-width="1.6"/>`
+    +ell(50,45,15,17,SKIN)+faceBits(45).replace(/<path[^>]*q[^>]*>/,'')+`<path d="M43 52 Q47 48 50 51 Q53 48 57 52" fill="none" stroke="#4A3728" stroke-width="3" stroke-linecap="round"/>`
+    +shp('M32 34 Q21 28 28 16 Q31 6 42 9 Q50 0 58 9 Q69 6 72 16 Q79 28 68 34Z','#FFFFFF')+shp('M32 33 H68 V40 Q50 44 32 40Z','#FFFFFF')),
+  driver:()=>SVI(
+    bodyOf('#2B3A55')+poly('41,67 50,86 59,67','#FFFFFF')+poly('47.5,69 52.5,69 54.5,87 50,94 45.5,87','#E0453A')
+    +`<path d="M41 67 L33 92 M59 67 L67 92" stroke="${INK}" stroke-width="2" fill="none"/>`
+    +ell(50,43,15,17,SKIN)+shp('M35 40 Q35 28 50 28 Q65 28 65 40 Q58 33 50 33 Q42 33 35 40Z','#2A2A2A')
+    +faceBits(44)+shp('M31 30 Q31 12 50 12 Q69 12 69 30Z','#F2C230')+shp('M29 30 H79 Q81 35 74 36 H29Z','#D9A400')+`<circle cx="50" cy="21" r="3" fill="#fff" stroke="${INK}" stroke-width="1.4"/>`)
+};
+const rI=x=>typeof x==='string'&&x[0]==='@'&&ICON_SVG[x.slice(1)]?ICON_SVG[x.slice(1)]():x;
+function resolveIcons(t){   // 將資料入面嘅 "@doctor" 記號換成 SVG
+  for(const k in (t.pics||{}))t.pics[k]=rI(t.pics[k]);
+  (t.subjects||[]).forEach(s=>s.items.forEach(it=>{
+    (it.quiz||[]).forEach(q=>q.o.forEach(o=>{o[0]=rI(o[0]);}));
+    (it.sorts||[]).forEach(st=>{st.bins.forEach(b=>{b[0]=rI(b[0]);});st.items.forEach(i=>{i[0]=rI(i[0]);});});
+  }));
+}
+/*ICO-END*/
+
 /* 獎勵規則：貼紙越後面越貴；同一題（或同一個字）一天只計一次星星；每天星星有上限 */
 const STK_STEPS=[[10,5],[20,8]];   // [張數, 每張要幾顆星]：前 10 張每張 5 顆，之後 20 張每張 8 顆
 const DAILY_MAX=20;
@@ -1414,7 +1453,7 @@ async function boot(){
   try{
     const list=await (await fetch('data/terms.json',{cache:'no-cache'})).json();
     TERMS=await Promise.all(list.map(f=>fetch('data/'+f,{cache:'no-cache'}).then(r=>r.json())));
-    TERMS.forEach(t=>Object.assign(PIC,t.pics||{}));
+    TERMS.forEach(t=>{resolveIcons(t);Object.assign(PIC,t.pics||{});});
     T=TERMS[TERMS.length-1];
     renderHome();
     try{history.replaceState({v:'home',d:0},'');}catch(e){}
