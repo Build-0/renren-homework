@@ -112,11 +112,8 @@ body.hastabs #app{padding-bottom:92px}
 .scard small{font-size:12.5px;color:var(--soft);line-height:1.4}
 .scard.list{background:var(--card);border-color:var(--ink);box-shadow:0 4px 0 var(--ink)}
 .scard.list:active{box-shadow:0 1px 0 var(--ink)}
-.scard.hero{grid-column:1/-1;flex-direction:row;gap:16px;min-height:104px;background:color-mix(in srgb,var(--sun) 30%,var(--card));border-color:var(--ink);box-shadow:0 4px 0 var(--ink)}
-.scard.hero:active{box-shadow:0 1px 0 var(--ink)}
-.scard.hero .ci{font-size:48px}
-.scard.hero .ht{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left}
-.scard.hero b{font-size:24px}
+.scard.game{background:color-mix(in srgb,var(--sun) 30%,var(--card));border-color:var(--ink);box-shadow:0 4px 0 var(--ink)}
+.scard.game:active{box-shadow:0 1px 0 var(--ink)}
 .listpanel .preview{margin-top:8px}
 .listpanel .shufs{margin-bottom:6px}
 .when{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;font-size:17px}
@@ -500,7 +497,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-23 20:37';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-23 21:39';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -979,7 +976,7 @@ function renderSubject(){
     <div class="bar"><button class="back" data-act="back">‹ 返回</button><div class="g-title">${esc(s.name)}</div></div>
     <div class="when"><b>${esc(dates)}</b>${pill(s.dates)}${s.pre?'<span class="small">提前評估</span>':''}</div>
     ${cards.length?`<h2 class="sec2 learn">📖 學習</h2><div class="cgrid">${cards.join('')}</div>`:''}
-    ${Gm.length?`<h2 class="sec2 game">🎮 遊戲</h2><div class="cgrid"><button class="scard hero" data-act="mix"><span class="ci" aria-hidden="true">🎮</span><span class="ht"><b>開始遊戲</b><small>每次抽 4 關，題目混在一起<br>答對有星星 ★</small></span></button></div>`:''}
+    ${Gm.length?`<h2 class="sec2 game">🎮 遊戲</h2><div class="cgrid"><button class="scard game" data-act="mix"><span class="ci" aria-hidden="true">🎮</span><b>開始遊戲</b><small>每次抽 4 關・答對有星星 ★</small></button></div>`:''}
     <details class="fold scope"><summary>評估內容</summary><p>${esc(s.scope)}</p></details>`;
   tabs(ROOT);
 }
