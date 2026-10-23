@@ -496,7 +496,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-23 21:41';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-24 06:12';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -968,6 +968,8 @@ function itemCount(it){
   if(it.songs)return `${it.songs.length} 首`;
   return '';
 }
+const LEARN_SUB={cards:'一張一張學',chant:'1 到 30'};   // 學習卡副標題（唔再重複老師嘅項目名，免得同清單卡撞名）
+const ITEM_NAME=it=>it.words?'字詞表':it.letters?'字母表':it.sentences?'句子表':segLabel(it);   // 清單卡名稱
 const ITEM_ICON=it=>it.words?'🔤':it.letters?'🔠':it.sentences?'💬':'🎵';
 function renderSubject(){
   G=null;LOGVIEW=false;hush();
@@ -975,8 +977,8 @@ function renderSubject(){
   const dates=s.dates.length>1?s.dates.map(x=>fmt(x).replace(/（.*?）/,'')).join('、'):fmt(s.dates[0]);
   const cards=[];
   L.forEach(({it,i})=>{
-    (it.games||[]).filter(isLearn).forEach(g=>cards.push(`<button class="scard" data-act="play" data-i="${i}" data-g="${g}"><span class="ci" aria-hidden="true">${GICON[g]||'📖'}</span><b>${GAMES[g][1]}${store.done[dkey(i,g)]?' <span class="ok">✓</span>':''}</b><small>${esc(segLabel(it))}</small></button>`));
-    if(hasDetail(it))cards.push(`<button class="scard list" data-act="list" data-i="${i}"><span class="ci" aria-hidden="true">${ITEM_ICON(it)}</span><b>${esc(segLabel(it))}</b><small>${itemCount(it)}</small></button>`);
+    (it.games||[]).filter(isLearn).forEach(g=>cards.push(`<button class="scard" data-act="play" data-i="${i}" data-g="${g}"><span class="ci" aria-hidden="true">${GICON[g]||'📖'}</span><b>${GAMES[g][1]}${store.done[dkey(i,g)]?' <span class="ok">✓</span>':''}</b><small>${LEARN_SUB[g]||esc(segLabel(it))}</small></button>`));
+    if(hasDetail(it))cards.push(`<button class="scard list" data-act="list" data-i="${i}"><span class="ci" aria-hidden="true">${ITEM_ICON(it)}</span><b>${esc(ITEM_NAME(it))}</b><small>${itemCount(it)}</small></button>`);
   });
   app.innerHTML=`
     <div class="bar"><button class="back" data-act="back">‹ 返回</button><div class="g-title">${esc(s.name)}</div></div>
@@ -1004,7 +1006,7 @@ function renderList(){
   if(it.songs)body=`<div class="songs">${it.songs.map(x=>{const n=songN(x),u=typeof x==='object'&&/^https?:\/\//.test(x.url||'')?x.url:'';
     return `<span class="songwrap"><button class="song" data-act="sing" data-n="${esc(n)}" aria-pressed="${!!store.sung[`${T.id}:${n}`]}"><span class="tick">✓</span>《${esc(n)}》</button>${u?`<a class="songlink" href="${esc(u)}" target="_blank" rel="noopener">▶ 聽歌</a>`:''}</span>`;}).join('')}</div><p class="small">複習完一首，按一下記起來。${it.songs.some(x=>typeof x==='object'&&x.url)?'有「▶ 聽歌」的可以按下去聽。':''}</p>`;
   app.innerHTML=`
-    <div class="bar"><button class="back" data-act="back">‹ 返回</button><div class="g-title">${esc(s.name)}・${esc(segLabel(it))}</div></div>
+    <div class="bar"><button class="back" data-act="back">‹ 返回</button><div class="g-title">${esc(s.name)}・${esc(ITEM_NAME(it))}</div></div>
     <section class="panel listpanel">${body}</section>`;
   tabs(ROOT);
 }
