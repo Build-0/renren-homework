@@ -97,6 +97,8 @@ body.hastabs #app{padding-bottom:92px}
 .nextbar .nb-top b{font-size:22px;color:var(--berry)}
 .nextbar .meter{height:14px}
 .how{margin:8px 0 0;padding-left:22px;font-size:15px;line-height:1.8;color:var(--soft)}
+.tiers{margin:2px 0 2px;padding-left:18px;list-style:disc;color:var(--ink)}
+.tiers b{color:var(--berry);font-size:17px}
 .allgot{margin:6px 0;font-size:20px;font-weight:700}
 .stk.nxt{opacity:1;border:2px dashed var(--sun);font-size:26px;color:var(--sun);font-weight:900}
 .pgtitle{margin:0;font-family:var(--kai);font-size:30px}
@@ -503,7 +505,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-24 06:16';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-24 06:46';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -895,6 +897,7 @@ function stickerProg(){   // 距離下一張貼紙嘅進度
   return {done:true,into:0,cost:1,left:0};
 }
 const stickerLeftLine=()=>{const p=stickerProg();return p.done?'':`<p class="small">離下一張貼紙還差 <b>${p.left}</b> 顆星</p>`;};
+const tierLines=()=>{let a=1,tot=0;return STK_STEPS.map(([cnt,c])=>{const b=a+cnt-1;tot+=cnt*c;const t=`<li>第 ${a}–${b} 張：每張 <b>${c}</b> 顆星（累計 ${tot} 顆）</li>`;a=b+1;return t;}).join('');};   // 由 STK_STEPS 自動產生，改規則唔使改字
 function stickerBook(){
   const n=stickersOwned(),done=n>=STICKERS.length;
   return `<section class="panel"><div class="sb-head"><h2 class="sec">我的貼紙</h2><span class="small">${n} ／ ${STICKERS.length}</span></div>
@@ -908,7 +911,7 @@ function renderStickers(){
     <section class="panel how-panel">
       <div class="starbig"><span class="st">★</span><b class="starN">${store.stars}</b><span class="small">顆星</span></div>
       ${p.done?'<p class="allgot">🎉 貼紙全部集齊！</p>':`<div class="nextbar"><div class="nb-top"><span>再 <b>${p.left}</b> 顆星 → 🎁 新貼紙</span><span class="small">${p.into}／${p.cost}</span></div><div class="meter"><i style="width:${Math.round(p.into/p.cost*100)}%"></i></div></div>`}
-      <ol class="how"><li>答對題目 → 得到 ★ 星星</li><li>星星集夠 → 自動得到一張新貼紙</li><li>每天最多 ${DAILY_MAX} 顆（今天已得 <b>${td}</b> 顆）；同一題當天只算一次</li></ol>
+      <ol class="how"><li>答對題目 → 得到 ★ 星星</li><li>星星集夠 → 自動得到一張新貼紙<ul class="tiers">${tierLines()}</ul></li><li>每天最多 ${DAILY_MAX} 顆（今天已得 <b>${td}</b> 顆）；同一題當天只算一次</li></ol>
     </section>
     ${stickerBook()}`;
   tabs('stickers');
