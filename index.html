@@ -94,25 +94,24 @@ body.hastabs #app{padding-bottom:92px}
 .pgtitle{margin:0;font-family:var(--kai);font-size:30px}
 .starbig{display:flex;align-items:baseline;gap:8px;font-size:34px;font-weight:900}
 .starbig .st{color:var(--sun);font-size:40px}
-.subjects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.srow{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;text-align:center;background:var(--card);border:2px solid var(--ink);border-radius:20px;padding:14px 8px 12px;box-shadow:0 4px 0 var(--ink)}
-.srow:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
-.subjects .srow .word.ic{--s:52px}
-.srow .sm{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
-.srow .sj-name{font-size:21px}
-.srow .sdate{font-size:12.5px;color:var(--soft);font-variant-numeric:tabular-nums}
-.srow .sr{display:flex;flex-direction:row;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 8px}
-.srow .sprog{font-size:12.5px;color:var(--soft);font-variant-numeric:tabular-nums}
-.cgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.scard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;min-height:120px;padding:12px 8px;background:color-mix(in srgb,var(--sky) 13%,var(--card));border:2px solid var(--sky);border-radius:20px;box-shadow:0 4px 0 var(--sky)}
-.scard:active{transform:translateY(3px);box-shadow:0 1px 0 var(--sky)}
-.scard .ci{font-size:36px;line-height:1}
-.scard b{font-family:var(--kai);font-size:20px;font-weight:700}
+.subjects{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.srow{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%;text-align:center;background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:8px 2px 8px;box-shadow:0 3px 0 var(--ink)}
+.srow:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.subjects .srow .word.ic{--s:34px}
+.srow .sj-name{font-size:15px;line-height:1.15;white-space:nowrap}
+.srow .pill{font-size:11px;padding:1px 7px}
+.srow .mini{display:block;width:70%;height:4px;border-radius:2px;background:var(--rule);overflow:hidden;margin-top:2px}
+.srow .mini i{display:block;height:100%;background:var(--leaf)}
+.cgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.scard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;min-height:92px;padding:8px 2px;background:color-mix(in srgb,var(--sky) 13%,var(--card));border:2px solid var(--sky);border-radius:16px;box-shadow:0 3px 0 var(--sky)}
+.scard:active{transform:translateY(2px);box-shadow:0 1px 0 var(--sky)}
+.scard .ci{font-size:28px;line-height:1}
+.scard b{font-family:var(--kai);font-size:15px;font-weight:700;line-height:1.2}
 .scard b .ok{color:var(--leaf)}
-.scard small{font-size:12.5px;color:var(--soft);line-height:1.4}
-.scard.list{background:var(--card);border-color:var(--ink);box-shadow:0 4px 0 var(--ink)}
+.scard small{font-size:11px;color:var(--soft);line-height:1.3}
+.scard.list{background:var(--card);border-color:var(--ink);box-shadow:0 3px 0 var(--ink)}
 .scard.list:active{box-shadow:0 1px 0 var(--ink)}
-.scard.game{background:color-mix(in srgb,var(--sun) 30%,var(--card));border-color:var(--ink);box-shadow:0 4px 0 var(--ink)}
+.scard.game{background:color-mix(in srgb,var(--sun) 30%,var(--card));border-color:var(--ink);box-shadow:0 3px 0 var(--ink)}
 .scard.game:active{box-shadow:0 1px 0 var(--ink)}
 .listpanel .preview{margin-top:8px}
 .listpanel .shufs{margin-bottom:6px}
@@ -163,7 +162,7 @@ details.scope p{margin:0 0 6px;font-size:15px;line-height:1.6;color:var(--soft)}
 .pill.past{background:var(--rule);color:var(--soft)}
 
 /* subjects */
-.subjects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.subjects{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .subj{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:9px 11px 11px;box-shadow:0 3px 0 var(--ink);transition:transform .08s,box-shadow .08s}
 .subj:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
 .sj-top{display:flex;align-items:center;gap:8px;align-self:stretch}
@@ -497,7 +496,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-23 21:39';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-23 21:41';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -711,6 +710,13 @@ function pill(dates){
   const cls=d<=10?'soon':d<=20?'up':'far';   // 10 天內紅、11–20 天黃、21 天或以上藍
   return `<span class="pill ${cls}">還有 ${d} 天</span>`;
 }
+function pillS(dates){
+  const up=dates.find(d=>daysTo(d)>=0);
+  if(!up)return '<span class="pill past">已考</span>';
+  const d=daysTo(up);
+  if(d===0)return '<span class="pill today">今天</span>';
+  return `<span class="pill ${d<=10?'soon':d<=20?'up':'far'}">${d} 天</span>`;
+}
 const nextDate=s=>s.dates.find(d=>daysTo(d)>=0)||s.dates[s.dates.length-1];
 
 /* ============ 狀態 ============ */
@@ -852,13 +858,13 @@ function renderRoot(v){
 /* ============ 首頁：只放科目，一科一行 ============ */
 function subjRow(s){
   const [d,t]=subjProgress(s),m=SUBMETA[s.id]||['學',s.name,'var(--sky)'];
-  const dates=s.dates.length>1?s.dates.map(x=>fmt(x).replace(/（.*?）/,'')).join('、'):fmt(s.dates[0]);
-  return `<button class="srow" data-act="open" data-id="${s.id}" style="--c:${m[2]}">
+  const dates=s.dates.map(x=>fmt(x).replace(/（.*?）/,'')).join('、');
+  return `<button class="srow" data-act="open" data-id="${s.id}" style="--c:${m[2]}" aria-label="${esc(s.name)}，${esc(dates)}，完成 ${d} 項，共 ${t} 項">
     <span class="si">${cells(m[0],'ic')}</span>
-    <span class="sm"><span class="sj-name">${esc(s.name)}</span><span class="sdate">${esc(dates)}</span></span>
-    <span class="sr">${pill(s.dates)}<span class="sprog">${d}／${t}</span></span></button>`;
-}
-function subjSection(title,list,cls){
+    <span class="sj-name">${esc(s.name)}</span>
+    ${pillS(s.dates)}
+    <span class="mini"><i style="width:${t?Math.round(d/t*100):0}%"></i></span></button>`;
+}function subjSection(title,list,cls){
   if(!list.length)return '';
   const ds=list.flatMap(s=>s.dates).sort(),md=d=>fmt(d).replace(/（.*?）/,'');
   const range=ds[0]===ds[ds.length-1]?md(ds[0]):`${md(ds[0])} 至 ${md(ds[ds.length-1])}`;
@@ -976,7 +982,7 @@ function renderSubject(){
     <div class="bar"><button class="back" data-act="back">‹ 返回</button><div class="g-title">${esc(s.name)}</div></div>
     <div class="when"><b>${esc(dates)}</b>${pill(s.dates)}${s.pre?'<span class="small">提前評估</span>':''}</div>
     ${cards.length?`<h2 class="sec2 learn">📖 學習</h2><div class="cgrid">${cards.join('')}</div>`:''}
-    ${Gm.length?`<h2 class="sec2 game">🎮 遊戲</h2><div class="cgrid"><button class="scard game" data-act="mix"><span class="ci" aria-hidden="true">🎮</span><b>開始遊戲</b><small>每次抽 4 關・答對有星星 ★</small></button></div>`:''}
+    ${Gm.length?`<h2 class="sec2 game">🎮 遊戲</h2><div class="cgrid"><button class="scard game" data-act="mix"><span class="ci" aria-hidden="true">🎮</span><b>開始遊戲</b><small>4 關・有星星</small></button></div>`:''}
     <details class="fold scope"><summary>評估內容</summary><p>${esc(s.scope)}</p></details>`;
   tabs(ROOT);
 }
