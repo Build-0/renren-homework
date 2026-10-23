@@ -506,7 +506,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-24 07:00';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-24 07:04';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -792,7 +792,16 @@ const ICON_SVG={
     bodyOf('#2B3A55')+poly('41,67 50,86 59,67','#FFFFFF')+poly('47.5,69 52.5,69 54.5,87 50,94 45.5,87','#E0453A')
     +`<path d="M41 67 L33 92 M59 67 L67 92" stroke="${INK}" stroke-width="2" fill="none"/>`
     +neck(56,71)+ell(50,43,15,17,SKIN)+shp('M35 40 Q35 28 50 28 Q65 28 65 40 Q58 33 50 33 Q42 33 35 40Z','#2A2A2A')
-    +faceBits(44)+shp('M31 30 Q31 12 50 12 Q69 12 69 30Z','#F2C230')+shp('M29 30 H79 Q81 35 74 36 H29Z','#D9A400')+`<circle cx="50" cy="21" r="3" fill="#fff" stroke="${INK}" stroke-width="1.4"/>`)
+    +faceBits(44)+`<path d="M40.5 35.5 H47 M53 35.5 H59.5" stroke="#2A2A2A" stroke-width="2.6" stroke-linecap="round"/><path d="M42 50.5 Q46 46.5 50 49.5 Q54 46.5 58 50.5" fill="none" stroke="#2A2A2A" stroke-width="3.2" stroke-linecap="round"/>`
+    +shp('M31 30 Q31 10 50 10 Q69 10 69 30Z','#232A38')+shp('M31 24 H69 V30 H31Z','#FFFFFF',2)+shp('M29 30 H71 Q74 35 66 36 H34 Q26 35 29 30Z','#14181F')+`<circle cx="50" cy="17.5" r="4" fill="#F2C230" stroke="${INK}" stroke-width="1.6"/>`
+    +`<circle cx="50" cy="104" r="19" fill="none" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><circle cx="50" cy="104" r="19" fill="none" stroke="#4B5563" stroke-width="4.6"/>`),
+  firefighter:()=>SVI(
+    bodyOf('#F2A93B')+`<path d="M18 86 H82 M20 93 H80" stroke="#E8ECF2" stroke-width="4"/><path d="M18 86 H82 M20 93 H80" stroke="${INK}" stroke-width="1" opacity=".5"/>`
+    +poly('41,67 50,80 59,67','#3A3F4B')+`<path d="M50 80 L50 99" stroke="${INK}" stroke-width="2"/>`
+    +neck(57,72)+ell(50,44,15,17,SKIN)+shp('M35 41 Q35 32 50 32 Q65 32 65 41 Q58 36 50 36 Q42 36 35 41Z','#4A3728')
+    +faceBits(46)+`<circle cx="60" cy="52" r="3" fill="#8A8F99" opacity=".45"/>`
+    +shp('M31 33 Q31 10 50 10 Q69 10 69 33Z','#D93A2F')+shp('M26 33 H74 Q77 38 70 39 H30 Q23 38 26 33Z','#B52A21')+shp('M47 10 Q50 3 53 10Z','#B52A21')+poly('45.5,17 54.5,17 55.5,26 50,31 44.5,26','#F2C230',2)
+  )
 };
 const rI=x=>typeof x==='string'&&x[0]==='@'&&ICON_SVG[x.slice(1)]?ICON_SVG[x.slice(1)]():x;
 function resolveIcons(t){   // 將資料入面嘅 "@doctor" 記號換成 SVG
