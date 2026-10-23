@@ -94,16 +94,31 @@ body.hastabs #app{padding-bottom:92px}
 .pgtitle{margin:0;font-family:var(--kai);font-size:30px}
 .starbig{display:flex;align-items:baseline;gap:8px;font-size:34px;font-weight:900}
 .starbig .st{color:var(--sun);font-size:40px}
-.subjects{display:flex;flex-direction:column;gap:10px}
-.srow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:2px solid var(--ink);border-radius:18px;padding:10px 14px;box-shadow:0 3px 0 var(--ink)}
-.srow:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
-.srow .si{flex:none}
-.subjects .srow .word.ic{--s:40px}
-.srow .sm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.srow .sj-name{font-size:22px}
-.srow .sdate{font-size:13px;color:var(--soft);font-variant-numeric:tabular-nums}
-.srow .sr{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
-.srow .sprog{font-size:13px;color:var(--soft);font-variant-numeric:tabular-nums}
+.subjects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.srow{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;text-align:center;background:var(--card);border:2px solid var(--ink);border-radius:20px;padding:14px 8px 12px;box-shadow:0 4px 0 var(--ink)}
+.srow:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.subjects .srow .word.ic{--s:52px}
+.srow .sm{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.srow .sj-name{font-size:21px}
+.srow .sdate{font-size:12.5px;color:var(--soft);font-variant-numeric:tabular-nums}
+.srow .sr{display:flex;flex-direction:row;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 8px}
+.srow .sprog{font-size:12.5px;color:var(--soft);font-variant-numeric:tabular-nums}
+.cgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.scard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;min-height:120px;padding:12px 8px;background:color-mix(in srgb,var(--sky) 13%,var(--card));border:2px solid var(--sky);border-radius:20px;box-shadow:0 4px 0 var(--sky)}
+.scard:active{transform:translateY(3px);box-shadow:0 1px 0 var(--sky)}
+.scard .ci{font-size:36px;line-height:1}
+.scard b{font-family:var(--kai);font-size:20px;font-weight:700}
+.scard b .ok{color:var(--leaf)}
+.scard small{font-size:12.5px;color:var(--soft);line-height:1.4}
+.scard.list{background:var(--card);border-color:var(--ink);box-shadow:0 4px 0 var(--ink)}
+.scard.list:active{box-shadow:0 1px 0 var(--ink)}
+.scard.hero{grid-column:1/-1;flex-direction:row;gap:16px;min-height:104px;background:color-mix(in srgb,var(--sun) 30%,var(--card));border-color:var(--ink);box-shadow:0 4px 0 var(--ink)}
+.scard.hero:active{box-shadow:0 1px 0 var(--ink)}
+.scard.hero .ci{font-size:48px}
+.scard.hero .ht{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left}
+.scard.hero b{font-size:24px}
+.listpanel .preview{margin-top:8px}
+.listpanel .shufs{margin-bottom:6px}
 .when{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;font-size:17px}
 details.fold{background:var(--card);border:2px solid var(--rule);border-radius:16px;padding:0 14px}
 details.fold>summary{cursor:pointer;list-style:none;padding:12px 0;font-weight:700;font-size:16px;color:var(--soft)}
@@ -151,7 +166,7 @@ details.scope p{margin:0 0 6px;font-size:15px;line-height:1.6;color:var(--soft)}
 .pill.past{background:var(--rule);color:var(--soft)}
 
 /* subjects */
-.subjects{display:flex;flex-direction:column;gap:10px}
+.subjects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .subj{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:9px 11px 11px;box-shadow:0 3px 0 var(--ink);transition:transform .08s,box-shadow .08s}
 .subj:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
 .sj-top{display:flex;align-items:center;gap:8px;align-self:stretch}
@@ -485,7 +500,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-23 20:13';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-23 20:37';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -931,60 +946,71 @@ function renderUsageLog(){
     </section>`;
   tabs('parent');
 }
-/* ============ 科目頁：先學習（藍色）→ 再玩遊戲（黃色）；長清單收起來 ============
-   學習＝字卡、跟著數、字詞／句子／兒歌嘅內容；遊戲＝其餘（聽音選字、翻牌配對、句子填充、問答……） */
+/* ============ 科目頁：全部係方形卡片（同首頁一致），唔再有長條 ============
+   📖 學習卡片（藍）：字卡／跟著數，同埋「字詞／句子／兒歌」清單（撳入去先睇）
+   🎮 遊戲：一張大卡片「開始遊戲」，每次混合抽 4 關 */
 const LEARN_G=new Set(['cards','chant']);
 const isLearn=g=>LEARN_G.has(g);
 const hasDetail=it=>!!(it.words||it.letters||it.sentences||it.songs);
 const learnItems=s=>s.items.map((it,i)=>({it,i})).filter(({it})=>hasDetail(it)||(it.games||[]).some(isLearn));
 const gameItems=s=>s.items.map((it,i)=>({it,i})).filter(({it})=>(it.games||[]).some(g=>!isLearn(g)));
 const segLabel=it=>String(it.label).replace(/內容$/,'');
-const gbtn=(it,i,g)=>`<button class="gbtn ${isLearn(g)?'learn':'game'}" data-act="play" data-i="${i}" data-g="${g}"><span class="gi" aria-hidden="true">${GICON[g]||'▶'}</span>${GAMES[g][1]}${store.done[dkey(i,g)]?' <span class="ok">✓</span>':''}</button>`;
+const SHUF={};
+const skey=i=>`${SUBJ.id}:${i}`;
+let LISTI=0;
+function itemCount(it){
+  if(it.words)return `${it.words.length} 個字詞`;
+  if(it.letters)return `${it.letters.length} 個字母`;
+  if(it.sentences)return `${it.sentences.length} 句`;
+  if(it.songs)return `${it.songs.length} 首`;
+  return '';
+}
+const ITEM_ICON=it=>it.words?'🔤':it.letters?'🔠':it.sentences?'💬':'🎵';
 function renderSubject(){
   G=null;LOGVIEW=false;hush();
-  const s=SUBJ,lang=s.lang,L=learnItems(s),Gm=gameItems(s);
+  const s=SUBJ,L=learnItems(s),Gm=gameItems(s);
   const dates=s.dates.length>1?s.dates.map(x=>fmt(x).replace(/（.*?）/,'')).join('、'):fmt(s.dates[0]);
+  const cards=[];
+  L.forEach(({it,i})=>{
+    (it.games||[]).filter(isLearn).forEach(g=>cards.push(`<button class="scard" data-act="play" data-i="${i}" data-g="${g}"><span class="ci" aria-hidden="true">${GICON[g]||'📖'}</span><b>${GAMES[g][1]}${store.done[dkey(i,g)]?' <span class="ok">✓</span>':''}</b><small>${esc(segLabel(it))}</small></button>`));
+    if(hasDetail(it))cards.push(`<button class="scard list" data-act="list" data-i="${i}"><span class="ci" aria-hidden="true">${ITEM_ICON(it)}</span><b>${esc(segLabel(it))}</b><small>${itemCount(it)}</small></button>`);
+  });
   app.innerHTML=`
     <div class="bar"><button class="back" data-act="back">‹ 返回</button><div class="g-title">${esc(s.name)}</div></div>
     <div class="when"><b>${esc(dates)}</b>${pill(s.dates)}${s.pre?'<span class="small">提前評估</span>':''}</div>
-    <details class="fold scope"><summary>評估內容</summary><p>${esc(s.scope)}</p></details>
-    ${L.length?`<h2 class="sec2 learn">📖 先學習</h2>${L.map(({it,i})=>learnCard(it,i,lang)).join('')}`:''}
-    ${Gm.length?`<h2 class="sec2 game">🎮 再玩遊戲<span class="small">答對有星星 ★</span></h2>${Gm.map(({it,i})=>gameRow(it,i)).join('')}`:''}`;
+    ${cards.length?`<h2 class="sec2 learn">📖 學習</h2><div class="cgrid">${cards.join('')}</div>`:''}
+    ${Gm.length?`<h2 class="sec2 game">🎮 遊戲</h2><div class="cgrid"><button class="scard hero" data-act="mix"><span class="ci" aria-hidden="true">🎮</span><span class="ht"><b>開始遊戲</b><small>每次抽 4 關，題目混在一起<br>答對有星星 ★</small></span></button></div>`:''}
+    <details class="fold scope"><summary>評估內容</summary><p>${esc(s.scope)}</p></details>`;
   tabs(ROOT);
 }
-function gameRow(it,i){
-  const gs=(it.games||[]).filter(g=>!isLearn(g));
-  if(gs.length===1)return `<article class="item row1"><h3>${esc(segLabel(it))}</h3>${gbtn(it,i,gs[0])}</article>`;
-  return `<article class="item"><div class="ihead"><h3>${esc(segLabel(it))}</h3></div><div class="games">${gs.map(g=>gbtn(it,i,g)).join('')}</div></article>`;
-}
-const SHUF={};
-const skey=i=>`${SUBJ.id}:${i}`;
-function learnCard(it,i,lang){
+/* 清單頁：字詞／字母／句子／兒歌 */
+function renderList(){
+  G=null;LOGVIEW=false;hush();
+  const s=SUBJ,it=s.items[LISTI],i=LISTI,lang=s.lang;
   const mixed=SHUF[skey(i)],words=it.words?(mixed||it.words):null,letters=it.letters?(mixed||it.letters):null;
-  const canMix=!!(it.words||it.letters);
-  const learnBtns=(it.games||[]).filter(isLearn).map(g=>gbtn(it,i,g)).join('');
-  let detail='';
+  let body='';
   if(words||letters){
-    const list=words||letters,n=list.length;
-    const body=words
+    const list=words||letters;
+    body=`<div class="shufs"><button class="shuf ${mixed?'on':''}" data-act="shuf" data-i="${i}">🔀 ${mixed?'再打亂':'隨機排序'}</button>${mixed?`<button class="shuf" data-act="unshuf" data-i="${i}">↺ 原本次序</button>`:''}</div>
+      <p class="small">按一下字會讀出來${words?'。右上角：★ 已記住（至少兩天都答對）、↻ 隔了幾天，要複習':''}。</p>`
+    +(words
       ?`<div class="preview ${mixed?'mixed':''}">${words.map(w=>{const st=memState(lang,w);return `<button class="pv ${st==='got'||st==='due'?st:''}" data-act="pv" data-t="${esc(w)}" data-l="${lang}" aria-label="讀出 ${esc(w)}（${MEM_TXT[st]}）">${wv(w,'sm',lang)}</button>`;}).join('')}</div>`
-      :`<div class="preview ${mixed?'mixed':''}">${letters.map(L=>`<button class="pv" data-act="pv" data-t="${L}" data-l="en"><span class="en sm">${L}${L.toLowerCase()}</span></button>`).join('')}</div>`;
-    detail=`<details class="fold" ${mixed?'open':''}><summary>${words?'看全部字詞':'看全部字母'}（${n}）</summary>
-      <div class="shufs"><button class="shuf ${mixed?'on':''}" data-act="shuf" data-i="${i}">🔀 ${mixed?'再打亂':'隨機排序'}</button>${mixed?`<button class="shuf" data-act="unshuf" data-i="${i}">↺ 原本次序</button>`:''}</div>
-      ${body}
-      ${words?'<p class="small">字的右上角：★ 已記住（至少兩天都答對）、↻ 隔了幾天，要複習。</p>':''}</details>`;
+      :`<div class="preview ${mixed?'mixed':''}">${letters.map(L=>`<button class="pv" data-act="pv" data-t="${L}" data-l="en"><span class="en sm">${L}${L.toLowerCase()}</span></button>`).join('')}</div>`);
   }
-  if(it.sentences)detail=`<details class="fold"><summary>看全部句子（${it.sentences.length} 句）</summary><ul class="sents">${it.sentences.map(x=>`<li><button class="pvs" data-act="pv" data-t="${esc(x.pre+x.opts[0]+x.post)}" data-l="${lang}">${esc(x.pre)}<u>${x.opts.map(esc).join('／')}</u>${esc(x.post)}</button></li>`).join('')}</ul></details>`;
-  if(it.songs)detail=`<div class="songs">${it.songs.map(x=>{const n=songN(x),u=typeof x==='object'&&/^https?:\/\//.test(x.url||'')?x.url:'';
+  if(it.sentences)body=`<p class="small">按一下句子會讀出來。</p><ul class="sents">${it.sentences.map(x=>`<li><button class="pvs" data-act="pv" data-t="${esc(x.pre+x.opts[0]+x.post)}" data-l="${lang}">${esc(x.pre)}<u>${x.opts.map(esc).join('／')}</u>${esc(x.post)}</button></li>`).join('')}</ul>`;
+  if(it.songs)body=`<div class="songs">${it.songs.map(x=>{const n=songN(x),u=typeof x==='object'&&/^https?:\/\//.test(x.url||'')?x.url:'';
     return `<span class="songwrap"><button class="song" data-act="sing" data-n="${esc(n)}" aria-pressed="${!!store.sung[`${T.id}:${n}`]}"><span class="tick">✓</span>《${esc(n)}》</button>${u?`<a class="songlink" href="${esc(u)}" target="_blank" rel="noopener">▶ 聽歌</a>`:''}</span>`;}).join('')}</div><p class="small">複習完一首，按一下記起來。${it.songs.some(x=>typeof x==='object'&&x.url)?'有「▶ 聽歌」的可以按下去聽。':''}</p>`;
-  return `<article class="item"><div class="ihead"><h3>${esc(it.label)}</h3></div>${learnBtns?`<div class="games">${learnBtns}</div>`:''}${detail}</article>`;
+  app.innerHTML=`
+    <div class="bar"><button class="back" data-act="back">‹ 返回</button><div class="g-title">${esc(s.name)}・${esc(segLabel(it))}</div></div>
+    <section class="panel listpanel">${body}</section>`;
+  tabs(ROOT);
 }
 
 /* ============ 遊戲框 ============ */
 function renderGame(body){
   tabs(null);
   const back=G.review?'<button class="back" data-act="home">✕ 離開</button>':`<button class="back" data-act="subj">‹ ${esc(SUBJ.name)}</button>`;
-  app.innerHTML=`<div class="bar">${back}<div class="g-title">${GAMES[G.g][1]}</div></div><div class="gbody">${body}</div>`;
+  app.innerHTML=`<div class="bar">${back}<div class="g-title">${G.mix?`遊戲 <small>${G.mix.idx+1}／${G.mix.segs.length}</small>`:GAMES[G.g][1]}</div></div><div class="gbody">${body}</div>`;
 }
 const dots=()=>`<div class="dots" aria-label="第 ${G.r+1} 題，共 ${G.total} 題">${Array.from({length:G.total},(_,i)=>`<i class="${i<G.r?'on':i===G.r?'cur':''}"></i>`).join('')}</div>`;
 const replayBtn=()=>`<button class="speak" data-act="replay">${SPK}再聽一次</button>`;
@@ -1019,8 +1045,29 @@ function startGame(i,g){
   if(GEN[g]){G.qs=GEN[g](it);G.total=G.qs.length;quizRound();return;}
   ({cards:cardsInit,match:matchInit,lmatch:matchInit,order:orderInit,chant:chantInit,pickall:pickInit})[g]();
 }
+/* ---- 混合遊戲：每一科只有一個「開始遊戲」，每次抽 4 關（唔同題型混埋，每關幾題），唔使再揀聽音選字／翻牌配對 ---- */
+const SEG_Q=3;
+function startMix(){
+  const s=SUBJ,all=[];
+  s.items.forEach((it,i)=>(it.games||[]).filter(g=>!isLearn(g)).forEach(g=>all.push({i,g})));
+  if(!all.length)return;
+  const cnt=sg=>(store.done[dkey(sg.i,sg.g)]||0)+Math.random();   // 玩得少嘅優先，同次數就隨機
+  const segs=shuffle(all.sort((a,b)=>cnt(a)-cnt(b)).slice(0,4));
+  G={g:segs[0].g,it:s.items[segs[0].i],i:segs[0].i,lang:s.lang,earned:0,r:0,key:'',mix:{segs,idx:0}};
+  runSeg();
+}
+function runSeg(){
+  const sg=G.mix.segs[G.mix.idx],it=SUBJ.items[sg.i];
+  Object.assign(G,{g:sg.g,it,i:sg.i,key:dkey(sg.i,sg.g),r:0,lock:false,miss:0,streak:0,qs:null});
+  if(GEN[sg.g]){G.qs=GEN[sg.g](it).slice(0,SEG_Q);G.total=G.qs.length;quizRound();return;}
+  ({match:matchInit,lmatch:matchInit,order:orderInit,pickall:pickInit})[sg.g]();
+}
 function finish(){
   store.done[G.key]=(store.done[G.key]||0)+1;save();
+  if(G.mix&&G.mix.idx<G.mix.segs.length-1){   // 仲有下一關：靜靜哋接落去，唔使慶祝畫面
+    const g0=G;G.mix.idx++;chime(true);toast(`第 ${G.mix.idx+1} 關 ▶`,1200);
+    setTimeout(()=>{if(G===g0){runSeg();window.scrollTo(0,0);}},900);return;
+  }
   chime(true);setTimeout(()=>say('好叻呀仁仁！','yue'),300);
   const fall=Array.from({length:16},()=>`<i class="fall" style="left:${(Math.random()*100).toFixed(1)}%;animation-delay:${(Math.random()*1.6).toFixed(2)}s;font-size:${18+Math.random()*26|0}px">★</i>`).join('');
   app.insertAdjacentHTML('beforeend',`<div class="cele" role="dialog" aria-label="完成">${fall}
@@ -1204,7 +1251,7 @@ function flip(b){
 }
 
 /* ---- 排次序 ---- */
-function orderInit(){G.total=6;orderRound();}
+function orderInit(){G.total=G.mix?2:6;orderRound();}
 function orderRound(){
   G.nextN=1;G.miss=0;const useGrp=G.r%2===1,e=rand(EMO)[0];
   G.rs=[useGrp?'由少到多，順序撳':'由一開始，順序撳','yue'];
@@ -1240,7 +1287,7 @@ function chantStep(n,tok){
 
 /* ---- 揀晒藍色 ---- */
 const BLUE=['🫐','👖','🐳','📘','🧢','💙','🚙'],NOTBLUE=['🍎','🍌','🍊','🍓','🌽','🐥','🍋','🥕','🌻','🍅'];
-function pickInit(){G.total=4;pickRound();}
+function pickInit(){G.total=G.mix?2:4;pickRound();}
 function pickRound(){
   G.cells=shuffle([...shuffle(BLUE).slice(0,3).map(e=>({e,b:1})),...shuffle(NOTBLUE).slice(0,3).map(e=>({e,b:0}))]);
   G.found=0;G.miss=0;G.rs=['揀晒所有藍色嘅嘢出嚟','yue'];
@@ -1283,6 +1330,7 @@ function navToSubject(){if(NAV.length>1&&NAV[NAV.length-1].v==='game')history.ba
 function showView(st){
   G=null;hush();
   const v=(st&&st.v)||'home';
+  if(v==='list'&&st.id){SUBJ=T.subjects.find(s=>s.id===st.id)||SUBJ;if(SUBJ&&SUBJ.items[st.i]){LISTI=st.i;renderList();return;}}
   if((v==='subj'||v==='game')&&st.id){SUBJ=T.subjects.find(s=>s.id===st.id)||SUBJ;if(SUBJ){renderSubject();return;}}
   if(v==='log'){renderUsageLog();return;}
   if(ROOTS.includes(v))ROOT=v;
@@ -1306,16 +1354,18 @@ document.addEventListener('click',e=>{
     case 'open':SUBJ=T.subjects.find(s=>s.id===b.dataset.id);navPush('subj',{id:SUBJ.id});renderSubject();window.scrollTo(0,0);break;
     case 'home':navHome();break;
     case 'back':navBack();break;
+    case 'list':LISTI=+b.dataset.i;navPush('list',{id:SUBJ.id,i:LISTI});renderList();window.scrollTo(0,0);break;
     case 'tab':goTab(b.dataset.t);break;
     case 'usagelog':navPush('log');renderUsageLog();window.scrollTo(0,0);break;
     case 'review':if(reviewCandidates().length)navPush('game');startReview();window.scrollTo(0,0);break;
     case 'subj':navToSubject();break;
     case 'pv':say(b.dataset.t,b.dataset.l);break;
-    case 'shuf':{const i=+b.dataset.i,it=SUBJ.items[i],src=it.words||it.letters;let s;do{s=shuffle(src);}while(src.length>2&&s.join()===(SHUF[skey(i)]||src).join());SHUF[skey(i)]=s;renderSubject();chime(true);break;}
-    case 'unshuf':delete SHUF[skey(+b.dataset.i)];renderSubject();break;
+    case 'shuf':{const i=+b.dataset.i,it=SUBJ.items[i],src=it.words||it.letters;let s;do{s=shuffle(src);}while(src.length>2&&s.join()===(SHUF[skey(i)]||src).join());SHUF[skey(i)]=s;renderList();chime(true);break;}
+    case 'unshuf':delete SHUF[skey(+b.dataset.i)];renderList();break;
     case 'sing':{const k=`${T.id}:${b.dataset.n}`;store.sung[k]=!store.sung[k];save();b.setAttribute('aria-pressed',!!store.sung[k]);if(store.sung[k])chime(true);break;}
     case 'play':navPush('game',{id:SUBJ.id});startGame(+b.dataset.i,b.dataset.g);window.scrollTo(0,0);break;
-    case 'again':startGame(G.i,G.g);break;
+    case 'again':if(G.mix)startMix();else startGame(G.i,G.g);break;
+    case 'mix':navPush('game',{id:SUBJ.id});startMix();window.scrollTo(0,0);break;
     case 'replay':say(...G.rs);break;
     case 'pick':pick(b);break;
     case 'flip':flip(b);break;
