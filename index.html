@@ -91,6 +91,14 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 #tabbar .bd[hidden]{display:none}
 body.hastabs #app{padding-bottom:92px}
 .pvbadge{position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:80;padding:2px 10px;border-radius:999px;background:var(--ink);color:var(--card);font-size:11px;opacity:.75;pointer-events:none}
+.how-panel .starbig{margin-bottom:6px}
+.nextbar{margin:6px 0 10px}
+.nextbar .nb-top{display:flex;justify-content:space-between;align-items:baseline;font-size:17px;margin-bottom:6px}
+.nextbar .nb-top b{font-size:22px;color:var(--berry)}
+.nextbar .meter{height:14px}
+.how{margin:8px 0 0;padding-left:22px;font-size:15px;line-height:1.8;color:var(--soft)}
+.allgot{margin:6px 0;font-size:20px;font-weight:700}
+.stk.nxt{opacity:1;border:2px dashed var(--sun);font-size:26px;color:var(--sun);font-weight:900}
 .pgtitle{margin:0;font-family:var(--kai);font-size:30px}
 .starbig{display:flex;align-items:baseline;gap:8px;font-size:34px;font-weight:900}
 .starbig .st{color:var(--sun);font-size:40px}
@@ -495,7 +503,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-24 06:14';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-24 06:16';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -881,20 +889,30 @@ function renderHome(){
 }
 
 /* ============ 貼紙分頁 ============ */
+function stickerProg(){   // 距離下一張貼紙嘅進度
+  let s=store.stars;
+  for(const [cnt,c] of STK_STEPS){const k=Math.min(cnt,Math.floor(s/c));s-=k*c;if(k<cnt)return {done:false,into:s,cost:c,left:c-s};}
+  return {done:true,into:0,cost:1,left:0};
+}
+const stickerLeftLine=()=>{const p=stickerProg();return p.done?'':`<p class="small">離下一張貼紙還差 <b>${p.left}</b> 顆星</p>`;};
 function stickerBook(){
-  const n=stickersOwned(),left=starsToNext(),td=store.sd.d===dayKey()?store.sd.n:0;
-  return `<section class="panel"><div class="sb-head"><h2 class="sec">仁仁的貼紙簿</h2><span class="small">${n} / ${STICKERS.length}・${n>=STICKERS.length?'全部集齊！':`再存 ${left} 顆星就有新貼紙`}・今天 ${td}/${DAILY_MAX} 顆</span></div>
-    <div class="sbook">${STICKERS.map((st,i)=>`<span class="stk ${i<n?'got':''}"${i<n?` title="${st.n}" aria-label="${st.n}"`:''}>${i<n?st.s:''}</span>`).join('')}</div></section>`;
+  const n=stickersOwned(),done=n>=STICKERS.length;
+  return `<section class="panel"><div class="sb-head"><h2 class="sec">我的貼紙</h2><span class="small">${n} ／ ${STICKERS.length}</span></div>
+    <div class="sbook">${STICKERS.map((st,i)=>i<n?`<span class="stk got" title="${st.n}" aria-label="${st.n}">${st.s}</span>`:`<span class="stk${i===n&&!done?' nxt':''}">${i===n&&!done?'？':''}</span>`).join('')}</div></section>`;
 }
 function renderStickers(){
   G=null;SUBJ=null;LOGVIEW=false;ROOT='stickers';hush();
+  const p=stickerProg(),td=store.sd.d===dayKey()?store.sd.n:0;
   app.innerHTML=`
     <header class="top"><h1 class="pgtitle">🏆 貼紙</h1></header>
-    <div class="starbig"><span class="st">★</span><b class="starN">${store.stars}</b><span class="small">顆星</span></div>
+    <section class="panel how-panel">
+      <div class="starbig"><span class="st">★</span><b class="starN">${store.stars}</b><span class="small">顆星</span></div>
+      ${p.done?'<p class="allgot">🎉 貼紙全部集齊！</p>':`<div class="nextbar"><div class="nb-top"><span>再 <b>${p.left}</b> 顆星 → 🎁 新貼紙</span><span class="small">${p.into}／${p.cost}</span></div><div class="meter"><i style="width:${Math.round(p.into/p.cost*100)}%"></i></div></div>`}
+      <ol class="how"><li>答對題目 → 得到 ★ 星星</li><li>星星集夠 → 自動得到一張新貼紙</li><li>每天最多 ${DAILY_MAX} 顆（今天已得 <b>${td}</b> 顆）；同一題當天只算一次</li></ol>
+    </section>
     ${stickerBook()}`;
   tabs('stickers');
 }
-
 /* ============ 家長分頁：計時、各科難度時間、日程、備註 ============ */
 function renderParent(){
   G=null;SUBJ=null;LOGVIEW=false;ROOT='parent';hush();
@@ -1073,7 +1091,7 @@ function finish(){
   chime(true);setTimeout(()=>say('好叻呀仁仁！','yue'),300);
   const fall=Array.from({length:16},()=>`<i class="fall" style="left:${(Math.random()*100).toFixed(1)}%;animation-delay:${(Math.random()*1.6).toFixed(2)}s;font-size:${18+Math.random()*26|0}px">★</i>`).join('');
   app.insertAdjacentHTML('beforeend',`<div class="cele" role="dialog" aria-label="完成">${fall}
-    <div class="cele-box"><div class="big-star">★</div><h2>好棒喔，仁仁！</h2><p>這次得到 <b>${G.earned}</b> 顆星</p>${G.capped?'<p class="small">今天的星星已經拿滿了，明天再來！</p>':G.dupe&&!G.earned?'<p class="small">這些題目今天已經拿過星星了，明天再來拿新的！</p>':''}${G.newSticker?`<p class="newstk">新貼紙 <span>${G.newSticker.s}</span> ${G.newSticker.n}</p>`:''}
+    <div class="cele-box"><div class="big-star">★</div><h2>好棒喔，仁仁！</h2><p>這次得到 <b>${G.earned}</b> 顆星 ★</p>${G.newSticker?'':stickerLeftLine()}${G.capped?'<p class="small">今天的星星已經拿滿了，明天再來！</p>':G.dupe&&!G.earned?'<p class="small">這些題目今天已經拿過星星了，明天再來拿新的！</p>':''}${G.newSticker?`<p class="newstk">新貼紙 <span>${G.newSticker.s}</span> ${G.newSticker.n}</p>`:''}
     <div class="cele-row">${G.review?'<button class="btn" data-act="home">回主頁</button>':`<button class="btn" data-act="again">再玩一次</button><button class="btn ghost" data-act="subj">回到${esc(SUBJ.name)}</button><button class="btn ghost" data-act="home">回主頁</button>`}</div></div></div>`);
 }
 
