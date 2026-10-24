@@ -90,3 +90,5 @@ data/k1-t1.json     幼兒班第一段綜合評估（26/27 年度）全科內容
 
 ## 舊版
 Claude 網頁版 artifact：https://claude.ai/artifact/CxeMcbajCcJKcn4JvtQ4UF（私人連結；上咗 GitHub Pages 之後以 Pages 為準）
+
+- **拎到新貼紙會講出名**（announceThen()，答啱後／完成前先講「好叻！攞到新貼紙，○○」再去下一題）。**圖示要有意義**：唔好用語意唔對嘅 emoji（路燈≠燈泡、長椅≠椅子、水龍頭≠花灑）；舊 Windows 冇字形嘅 emoji（石頭、硬幣）已改自畫 SVG（@streetlamp/@bench/@tapOn/@tapOff/@bulbOff/@rock/@coin/@classmates/@citizens），喺 ICON_SVG。

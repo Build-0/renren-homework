@@ -511,7 +511,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-24 08:48';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-24 10:11';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -621,6 +621,16 @@ function afterSpeech(fn,minMs,maxMs=4500){
     }else setTimeout(tick,120);
   };
   setTimeout(tick,120);
+}
+/* 拎到新貼紙：先講晒「好叻！攞到新貼紙，○○」（同時畫面顯示貼紙＋名），講完先去下一步，唔會被下一題嘅朗讀打斷 */
+function announceThen(next){
+  const st=G.stickerNow;
+  if(!st){next();return;}
+  G.stickerNow=null;
+  const g0=G;
+  toast(`<span class="big">${st.s}</span>好叻！拿到新貼紙：${st.n}`,3600);
+  say(`好叻！攞到新貼紙，${st.n}`,'yue');
+  afterSpeech(()=>{if(G===g0)next();},2300,7000);
 }
 function diag(){
   if(sndErr)return `提示音播放失敗（${sndErr}）。請關閉靜音開關、調大音量，再試一次；仍然不行，請把這行字告訴我。`;
@@ -778,7 +788,12 @@ const SKIN='#F8CFAE';
 const faceBits=(y=40)=>`<circle cx="44" cy="${y}" r="2.2" fill="${INK}"/><circle cx="56" cy="${y}" r="2.2" fill="${INK}"/>${smile(44,y+8,12)}<circle cx="39.5" cy="${y+5}" r="2.6" fill="#F5A3A3" opacity=".6"/><circle cx="60.5" cy="${y+5}" r="2.6" fill="#F5A3A3" opacity=".6"/>`;
 const neck=(y0,y1)=>`<path d="M43.5 ${y0} V${y1} Q50 ${y1+6} 56.5 ${y1} V${y0}Z" fill="${SKIN}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>`;   // 脖子（頭同肩膊之間）
 const bodyOf=c=>shp('M12 99 Q12 68 50 66 Q88 68 88 99Z',c);
-const ICON_SVG={
+const SVO=inner=>`<svg class="ico" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${inner}</svg>`;   // 物件類圖示（唔裁邊）
+const kidBase=(cloth,hair)=>bodyOf(cloth)+poly('42,67 50,80 58,67','#FFFFFF')+poly('48,70 52,70 53,80 50,84 47,80','#E0453A')+neck(57,72)+ell(50,44,15,17,SKIN)+hair+faceBits(46);
+const kidBoy=()=>kidBase('#6FA8DC',shp('M34 42 Q33 23 50 23 Q67 23 66 42 Q58 31 50 31 Q42 31 34 42Z','#2A2A2A'));
+const kidGirl=()=>`<circle cx="29" cy="50" r="8" fill="#6B4226" stroke="${INK}" stroke-width="2"/><circle cx="71" cy="50" r="8" fill="#6B4226" stroke="${INK}" stroke-width="2"/>`+kidBase('#F28C8C',shp('M33 44 Q31 22 50 22 Q69 22 67 44 Q60 31 50 31 Q40 31 33 44Z','#6B4226'));
+const adultM=c=>bodyOf(c)+poly('41,67 50,84 59,67','#FFFFFF')+neck(57,72)+ell(50,44,15,17,SKIN)+shp('M34 40 Q33 24 50 24 Q67 24 66 40 Q58 31 50 31 Q42 31 34 40Z','#4A3728')+faceBits(46);
+const adultW=()=>bodyOf('#B085D6')+poly('40,67 50,80 60,67','#F8CFAE')+`<path d="M30 36 Q28 66 34 74 L66 74 Q72 66 70 36Z" fill="#2A2A2A" stroke="${INK}" stroke-width="2.5"/>`+neck(57,72)+ell(50,44,15,17,SKIN)+shp('M34 40 Q33 24 50 24 Q67 24 66 40 Q58 32 50 32 Q42 32 34 40Z','#2A2A2A')+faceBits(46);const ICON_SVG={
   doctor:()=>SVI(
     bodyOf('#FFFFFF')+poly('41,67 50,86 59,67','#5B8DEF')+`<path d="M50 86 L50 99" stroke="${INK}" stroke-width="2"/>`
     +`<path d="M35 70 Q30 90 44 92" fill="none" stroke="${INK}" stroke-width="5.5" stroke-linecap="round"/><path d="M35 70 Q30 90 44 92" fill="none" stroke="#6B7280" stroke-width="2.6" stroke-linecap="round"/><circle cx="46" cy="91" r="5" fill="#B7BEC9" stroke="${INK}" stroke-width="2"/>`
@@ -840,7 +855,42 @@ const ICON_SVG={
     +shp('M32 31 Q32 11 50 11 Q68 11 68 31Z','#2C5AA0')+shp('M30 31 H79 Q81 36 73 37 H30Z','#1E3F73')+`<circle cx="50" cy="12" r="2.4" fill="#1E3F73" stroke="${INK}" stroke-width="1.4"/>`
     +`</g>`
     +`<circle cx="26" cy="64" r="6" fill="${SKIN}" stroke="${INK}" stroke-width="2.2"/>`
-  )
+  ),
+  streetlamp:()=>SVO(
+    `<rect x="34" y="88" width="30" height="9" rx="3" fill="#434B58" stroke="${INK}" stroke-width="2.5"/><rect x="43" y="36" width="9" height="54" rx="3" fill="#6B7585" stroke="${INK}" stroke-width="2.5"/>`
+    +`<path d="M48 40 Q48 14 68 14" fill="none" stroke="${INK}" stroke-width="10" stroke-linecap="round"/><path d="M48 40 Q48 14 68 14" fill="none" stroke="#6B7585" stroke-width="5.5" stroke-linecap="round"/>`
+    +shp('M60 13 H86 L81 27 H65Z','#3E4655',2.5)+`<ellipse cx="73" cy="30" rx="9" ry="4" fill="#FFE27A" stroke="${INK}" stroke-width="2"/>`
+    +`<path d="M62 38 L57 48 M73 37 V50 M84 38 L89 48" stroke="#F2C230" stroke-width="3.4" stroke-linecap="round"/>`),
+  bench:()=>SVO(
+    `<path d="M20 60 V86 M80 60 V86" stroke="${INK}" stroke-width="10" stroke-linecap="round"/><path d="M20 60 V86 M80 60 V86" stroke="#5A4630" stroke-width="5" stroke-linecap="round"/>`
+    +shp('M14 28 H86 V37 H14Z','#C99660',2.5)+shp('M14 40 H86 V49 H14Z','#C99660',2.5)+shp('M8 54 H92 V64 H8Z','#B9854F',2.5)
+    +`<path d="M22 28 V62 M78 28 V62" stroke="${INK}" stroke-width="7" stroke-linecap="round"/><path d="M22 28 V62 M78 28 V62" stroke="#8A6236" stroke-width="3" stroke-linecap="round"/>`
+    +`<path d="M6 90 H94" stroke="#7BBF7D" stroke-width="5" stroke-linecap="round"/>`),
+  tapOn:()=>SVO(
+    `<path d="M10 30 H60 Q72 30 72 42 V48" fill="none" stroke="${INK}" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 30 H60 Q72 30 72 42 V48" fill="none" stroke="#B7BEC9" stroke-width="10.5" stroke-linecap="round" stroke-linejoin="round"/>`
+    +`<rect x="30" y="12" width="9" height="12" rx="2" fill="#E0453A" stroke="${INK}" stroke-width="2.2"/><rect x="21" y="7" width="27" height="7" rx="3.5" fill="#E0453A" stroke="${INK}" stroke-width="2.2"/>`
+    +shp('M62 46 H82 V54 H62Z','#8E97A5',2.5)+`<path d="M72 58 V88" stroke="#5BB8F0" stroke-width="8" stroke-linecap="round"/><path d="M72 58 V88" stroke="#BFE6FB" stroke-width="2.4" stroke-linecap="round"/>`
+    +`<ellipse cx="72" cy="94" rx="20" ry="5" fill="#8FD3F4" stroke="${INK}" stroke-width="2"/><circle cx="58" cy="82" r="3" fill="#8FD3F4" stroke="${INK}" stroke-width="1.4"/><circle cx="87" cy="80" r="2.6" fill="#8FD3F4" stroke="${INK}" stroke-width="1.4"/>`),
+  tapOff:()=>SVO(
+    `<path d="M10 30 H60 Q72 30 72 42 V48" fill="none" stroke="${INK}" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 30 H60 Q72 30 72 42 V48" fill="none" stroke="#B7BEC9" stroke-width="10.5" stroke-linecap="round" stroke-linejoin="round"/>`
+    +`<rect x="30" y="12" width="9" height="12" rx="2" fill="#E0453A" stroke="${INK}" stroke-width="2.2"/><rect x="21" y="7" width="27" height="7" rx="3.5" fill="#E0453A" stroke="${INK}" stroke-width="2.2"/>`
+    +shp('M62 46 H82 V54 H62Z','#8E97A5',2.5)
+    +`<circle cx="72" cy="80" r="15" fill="#2EA35A" stroke="${INK}" stroke-width="2.5"/><path d="M64 80 L70 86 L81 73" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`),
+  bulbOff:()=>SVO(
+    shp('M50 12 Q24 12 24 40 Q24 55 37 63 V72 H63 V63 Q76 55 76 40 Q76 12 50 12Z','#E4E8EE',2.5)
+    +`<path d="M43 63 V50 L50 43 L57 50 V63" fill="none" stroke="#9AA3B2" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`
+    +shp('M37 72 H63 V80 H37Z','#9AA3B2',2.5)+shp('M42 80 H58 V88 Q50 93 42 88Z','#7A8392',2.5)
+    +`<path d="M80 14 Q70 18 71 30 Q82 30 88 20 Q85 14 80 14Z" fill="#FFE27A" stroke="${INK}" stroke-width="2"/>`),
+  rock:()=>SVO(
+    shp('M12 76 Q8 50 30 38 Q48 26 68 36 Q94 48 88 74 Q50 90 12 76Z','#9AA1AD',2.8)
+    +`<path d="M26 52 Q40 42 56 44" fill="none" stroke="#C5CAD3" stroke-width="5" stroke-linecap="round"/><path d="M58 66 L66 58 L62 74" fill="none" stroke="#6F7683" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`),
+  coin:()=>SVO(
+    `<circle cx="50" cy="50" r="38" fill="#F2C230" stroke="${INK}" stroke-width="3"/><circle cx="50" cy="50" r="28" fill="none" stroke="#D9A400" stroke-width="3.4"/>`
+    +`<text x="50" y="64" font-size="40" font-weight="800" text-anchor="middle" fill="#B9831F" font-family="system-ui,sans-serif">$</text><path d="M26 32 Q32 24 42 22" fill="none" stroke="#FFF2B0" stroke-width="4" stroke-linecap="round"/>`),
+  classmates:()=>SVO(
+    `<g transform="translate(0 38) scale(.62)">${kidBoy()}</g><g transform="translate(40 38) scale(.62)">${kidGirl()}</g>`),
+  citizens:()=>SVO(
+    `<g transform="translate(-6 40) scale(.58)">${adultW()}</g><g transform="translate(46 40) scale(.58)">${adultM('#8C93A0')}</g><g transform="translate(20 28) scale(.66)">${adultM('#5B8DEF')}</g>`)
 };
 const rI=x=>typeof x==='string'&&x[0]==='@'&&ICON_SVG[x.slice(1)]?ICON_SVG[x.slice(1)]():x;
 function resolveIcons(t){   // 將資料入面嘅 "@doctor" 記號換成 SVG
@@ -883,8 +933,7 @@ function award(kw,first,lang,qid){
   save();
   document.querySelectorAll('.starN').forEach(e=>e.textContent=store.stars);
   const after=stickersOwned();
-  if(after>before){const st=STICKERS[after-1];G.newSticker=st;
-    setTimeout(()=>{toast(`<span class="big">${st.s}</span>拿到新貼紙：${st.n}！`,2600);say('攞到新貼紙！','yue');},700);}
+  if(after>before){const st=STICKERS[after-1];G.newSticker=st;G.stickerNow=st;}   // 之後喺答案讀完先報（announceThen），唔會被下一題打斷
 }
 function subjProgress(s){
   let total=0,done=0;
@@ -1174,6 +1223,7 @@ function runSeg(){
   ({match:matchInit,lmatch:matchInit,order:orderInit,pickall:pickInit})[sg.g]();
 }
 function finish(){
+  if(G.stickerNow){announceThen(finish);return;}   // 最後一題先拎到貼紙：先報完，先出完成畫面
   store.done[G.key]=(store.done[G.key]||0)+1;save();
   if(G.mix&&G.mix.idx<G.mix.segs.length-1){   // 仲有下一關：靜靜哋接落去，唔使慶祝畫面
     const g0=G;G.mix.idx++;chime(true);toast(`第 ${G.mix.idx+1} 關 ▶`,1200);
@@ -1289,7 +1339,7 @@ function pick(b){
     if(q.pop)b.insertAdjacentHTML('beforeend',`<span class="pop">${q.pop}</span>`);
     let wait=1600;
     if(q.ok){q.ok();wait=q.okWait||1800;}else wait=1100;   // 答啱只聽樂器提示音，唔逐題讚；完成成份先講「好叻呀」
-    afterSpeech(gd(()=>{G.r++;G.r>=G.total?finish():quizRound();}),wait);   // 等答案讀完先跳下一題（唔打斷）
+    afterSpeech(gd(()=>announceThen(()=>{G.r++;G.r>=G.total?finish():quizRound();})),wait);   // 等答案讀完先跳下一題（唔打斷）
   }else{
     // 答錯一次就跳題：唔俾再撳（否則會一直撳到啱為止）。標出正確答案、讀出嚟，無星星，然後去下一題
     G.lock=true;G.streak=0;
@@ -1374,7 +1424,7 @@ function ord(b){
   const n=+b.dataset.n;
   if(n===G.nextN){
     b.classList.add('right');b.disabled=true;say(CN[n],'yue');G.nextN++;
-    if(G.nextN>3){award(null,G.miss===0,G.lang,'r'+G.r);chime(true);afterSpeech(gd(()=>{G.r++;G.r>=G.total?finish():orderRound();}),1300);}
+    if(G.nextN>3){award(null,G.miss===0,G.lang,'r'+G.r);chime(true);afterSpeech(gd(()=>announceThen(()=>{G.r++;G.r>=G.total?finish():orderRound();})),1300);}
   }else{
     G.miss++;chime(false);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
   }
@@ -1410,7 +1460,7 @@ function pk(b){
   const c=G.cells[+b.dataset.i];
   if(c.b){
     b.classList.add('right');b.disabled=true;chime(true);
-    if(++G.found===3){award(null,G.miss===0,G.lang,'r'+G.r);chime(true);afterSpeech(gd(()=>{G.r++;G.r>=G.total?finish():pickRound();}),1300);}
+    if(++G.found===3){award(null,G.miss===0,G.lang,'r'+G.r);chime(true);afterSpeech(gd(()=>announceThen(()=>{G.r++;G.r>=G.total?finish():pickRound();})),1300);}
   }else{
     G.miss++;chime(false);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');say('呢個唔係藍色','yue');
   }
