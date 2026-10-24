@@ -291,7 +291,12 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .choice{position:relative;display:flex;justify-content:center;align-items:center;background:var(--card);border:2px solid var(--rule);border-radius:20px;padding:12px 6px;box-shadow:0 4px 0 var(--rule);min-height:110px;min-width:0}
 .choice.right{border-color:var(--leaf);box-shadow:0 4px 0 var(--leaf);animation:bounce .5s}
 .choice.wrong{opacity:.4;animation:shake .4s}
-.choice.reveal{border-color:var(--leaf);border-style:dashed;box-shadow:0 4px 0 var(--leaf)}   /* 答錯後：輕輕標出正確答案（不加星星） */
+.choice.reveal{background:color-mix(in srgb,var(--leaf) 26%,var(--card));border:4px solid var(--leaf);box-shadow:0 0 0 5px color-mix(in srgb,var(--leaf) 30%,transparent),0 4px 0 var(--leaf);animation:revealGlow .9s ease-in-out 3;opacity:1}   /* 答錯後：正確答案變成粗綠邊＋綠底＋閃爍＋標籤，其他選項變暗 */
+.choice.reveal::after{content:"✓ 正確答案";position:absolute;top:-13px;right:14px;background:var(--leaf);color:#fff;font-size:15px;font-weight:700;padding:2px 12px;border-radius:999px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.choice.dim{opacity:.35}
+.choice.wrong{opacity:1;background:color-mix(in srgb,var(--berry) 14%,var(--card));border-color:var(--berry);box-shadow:0 4px 0 var(--berry)}
+.choice.wrong::after{content:"✗";position:absolute;top:-12px;right:14px;background:var(--berry);color:#fff;font-size:15px;font-weight:700;width:26px;height:26px;line-height:26px;text-align:center;border-radius:50%}
+@keyframes revealGlow{0%,100%{transform:scale(1)}50%{transform:scale(1.025);box-shadow:0 0 0 9px color-mix(in srgb,var(--leaf) 35%,transparent),0 4px 0 var(--leaf)}}
 .fb{margin-top:14px;padding:12px 14px;border-radius:16px;background:var(--card);border:2px dashed var(--leaf);text-align:center;font-weight:700;animation:grow .4s both}
 .fb b{display:block;margin-top:4px;font-family:var(--kai);font-size:clamp(18px,5vw,22px)}
 .choice.shake{animation:shake .4s}
@@ -506,7 +511,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-24 07:04';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-24 08:27';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1256,8 +1261,8 @@ function pick(b){
     G.lock=true;G.streak=0;
     penalize(q.kw,q.lang||G.lang);
     G.miss++;b.classList.add('wrong');chime(false);
-    app.querySelectorAll('.choice').forEach(x=>{x.disabled=true;});
-    const rb=app.querySelectorAll('.choice')[q.a],g0=G;if(rb)rb.classList.add('reveal');
+    app.querySelectorAll('.choice').forEach(x=>{x.disabled=true;if(x!==b)x.classList.add('dim');});
+    const rb=app.querySelectorAll('.choice')[q.a],g0=G;if(rb){rb.classList.remove('dim');rb.classList.add('reveal');try{rb.scrollIntoView({block:'center',behavior:'smooth'});}catch(e){}}
     const gb=app.querySelector('.gbody');
     if(gb)gb.insertAdjacentHTML('beforeend','<div class="fb" role="status">👆 正確答案在這裡<b>沒關係，繼續加油喔，仁仁！</b></div>');
     const ans=((rb&&rb.textContent)||'').replace(/[^\p{L}\p{N}]/gu,'');
