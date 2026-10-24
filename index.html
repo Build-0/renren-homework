@@ -270,6 +270,9 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .gbtn.game{background:color-mix(in srgb,var(--sun) 24%,var(--card))}
 .gbtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
 .gbtn .ok{color:var(--leaf);font-weight:900}
+.sgroup{margin-top:18px}.sgroup h3{margin:0 0 10px;font-size:18px;display:flex;align-items:baseline;gap:8px}.sgroup h3 small{font-size:13px;color:var(--soft);font-weight:400}
+.sgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.sgrid .songwrap{display:block}.sgrid .song{width:100%;border-radius:16px;padding:12px 12px;font-size:19px;justify-content:flex-start}
+@media (max-width:360px){.sgrid{grid-template-columns:1fr}}
 .songs{display:flex;flex-wrap:wrap;gap:8px}
 .song{display:inline-flex;align-items:center;gap:8px;background:var(--paper);border:2px dashed var(--soft);border-radius:999px;padding:6px 14px;font-family:var(--kai);font-size:18px}
 .song .tick{width:20px;height:20px;border-radius:50%;border:2px solid var(--soft);display:grid;place-items:center;font-size:13px;font-family:var(--ui);font-weight:900}
@@ -524,7 +527,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-24 20:02';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-24 20:26';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1079,7 +1082,7 @@ function renderStickers(){
 function songsPanel(){   // 有遊戲嘅科目入面淨係歌名嘅項目（冇歌可聽）：由科目頁收埋，放呢度俾家長剔
   const rows=T.subjects.filter(s=>!songOnly(s)).flatMap(s=>s.items.filter(songItemOnly).map(it=>{
     const btns=it.songs.map(x=>{const n=songN(x);return `<span class="songwrap"><button class="song" data-act="sing" data-n="${esc(n)}" aria-pressed="${!!store.sung[T.id+':'+n]}"><span class="tick">✓</span>《${esc(n)}》</button></span>`;}).join('');
-    return `<div class="prow"><b>${esc(s.name)}・${esc(segLabel(it))}</b></div><div class="songs">${btns}</div>`;}));
+    return `<div class="sgroup"><h3>${esc(s.name)}<small>${esc(segLabel(it))}</small></h3><div class="songs sgrid">${btns}</div></div>`;}));
   return rows.length?`<section class="panel"><h2 class="sec">兒歌（只有歌名）</h2>${rows.join('')}<p class="small">這些兒歌沒有遊戲，複習完一首就按一下勾起來。</p></section>`:'';
 }
 function renderParent(){
