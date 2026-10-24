@@ -522,7 +522,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-24 19:40';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-24 19:50';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1033,10 +1033,11 @@ function subjRow(s){
   const range=ds[0]===ds[ds.length-1]?md(ds[0]):`${md(ds[0])} 至 ${md(ds[ds.length-1])}`;
   return `<section class="grp-sec ${cls||''}"><div class="grp-head"><h2 class="sec">${esc(title)}</h2><span class="grp-range">${esc(range)}</span></div><div class="subjects">${list.map(subjRow).join('')}</div></section>`;
 }
+const songOnly=s=>!s.items.some(it=>(it.games||[]).length);   // 只有歌曲、冇遊戲嘅科目（宗教、唱遊）：首頁收埋，喺家長分頁睇
 function renderHome(){
   G=null;SUBJ=null;LOGVIEW=false;ROOT='home';hush();
   const byDate=(a,b)=>nextDate(a).localeCompare(nextDate(b));
-  const pre=T.subjects.filter(s=>s.pre).sort(byDate),main=T.subjects.filter(s=>!s.pre).sort(byDate);
+  const subs=T.subjects.filter(s=>!songOnly(s)),pre=subs.filter(s=>s.pre).sort(byDate),main=subs.filter(s=>!s.pre).sort(byDate);
   const groups=[['提前評估',pre,'is-pre'],['主要評估',main,'is-main']].filter(g=>g[1].length)
     .sort((a,b)=>nextDate(a[1][0]).localeCompare(nextDate(b[1][0])));   // 區塊本身都按日期排
   app.innerHTML=`
@@ -1087,6 +1088,7 @@ function renderParent(){
       <div class="usage"><button class="btn ghost tbtn ${timerOn?'on':''}" id="timerBtn" data-act="timer">${timerLabel()}</button><span><span id="usage">${usageText()}</span> <button class="linkbtn" data-act="usagelog">查看記錄 ›</button></span></div>
       <p class="small">要按「開始計時」才會統計，閒置 5 分鐘自動結束。</p>
     </section>
+    ${T.subjects.some(songOnly)?`<section class="panel"><h2 class="sec">只有歌曲的科目</h2><div class="subjects">${T.subjects.filter(songOnly).sort((a,b)=>nextDate(a).localeCompare(nextDate(b))).map(subjRow).join('')}</div><p class="small">這些科目沒有遊戲，只有歌曲／祈禱文可以聽、可以勾選，所以不放在首頁。</p></section>`:''}
     <section class="panel">
       <h2 class="sec">各科難度與複習時間</h2>
       <div class="ptab">${rows}</div>
