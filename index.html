@@ -527,7 +527,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-24 20:26';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-24 20:28';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -539,7 +539,8 @@ async function checkUpdate(){
     if(!j.v||j.v===APP_VER||document.getElementById('updbar'))return;
     const bar=document.createElement('button');bar.id='updbar';bar.className='newver';bar.setAttribute('role','alert');
     bar.textContent='🔄 有新版本，點此更新';
-    bar.onclick=()=>{location.href=location.pathname+'?'+(PREVIEW?'preview=1&':'')+'v='+Date.now();};   // 同 hqms：加時間參數強制重新載入    document.body.appendChild(bar);
+    bar.onclick=()=>{location.href=location.pathname+'?'+(PREVIEW?'preview=1&':'')+'v='+Date.now();};   // 同 hqms：加時間參數強制重新載入
+    document.body.appendChild(bar);
   }catch(e){}
 }
 setInterval(checkUpdate,60*1000);
