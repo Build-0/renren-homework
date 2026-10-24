@@ -287,6 +287,17 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .ask{margin:0;font-family:var(--kai);font-weight:700;font-size:clamp(22px,6vw,30px);line-height:1.35;text-wrap:balance}
 .choices{display:grid;gap:12px}
 .choices.row{grid-template-columns:repeat(var(--n),minmax(0,1fr))}
+@media (min-width:700px){
+#app{max-width:1000px}
+.word.sm{--s:68px}.en.sm{font-size:40px}
+.pv{padding:10px 18px}.preview{gap:22px 18px}
+.scard{min-height:150px;gap:6px}.scard b{font-size:22px}.scard small{font-size:15px}.scard .ci{font-size:48px}
+.word.md.n1,.word.md.n2{--s:140px}.word.md.n3{--s:120px}
+.word.lg.n1{--s:300px}.word.lg.n2{--s:220px}.word.lg.n3{--s:180px}
+.word.mm.n1,.word.mm.n2{--s:84px}.word.mm.n3{--s:66px}
+.word.sn{--s:76px}
+.en.md{font-size:60px}.en.mm{font-size:44px}.en.lg{font-size:120px}
+}
 @media (min-width:640px){.choices.col{grid-template-columns:repeat(var(--n),minmax(0,1fr))}}
 .choice{position:relative;display:flex;justify-content:center;align-items:center;background:var(--card);border:2px solid var(--rule);border-radius:20px;padding:12px 6px;box-shadow:0 4px 0 var(--rule);min-height:110px;min-width:0}
 .choice.right{border-color:var(--leaf);box-shadow:0 4px 0 var(--leaf);animation:bounce .5s}
@@ -511,7 +522,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-24 10:11';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-24 19:37';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -623,6 +634,13 @@ function afterSpeech(fn,minMs,maxMs=4500){
   setTimeout(tick,120);
 }
 /* 拎到新貼紙：先講晒「好叻！攞到新貼紙，○○」（同時畫面顯示貼紙＋名），講完先去下一步，唔會被下一題嘅朗讀打斷 */
+const PRAISE_SAY=['叻叻豬！','好叻！','叻叻！','犀利！'];let lastPraise=-1;
+function praiseThen(next){
+  if(G.stickerNow){announceThen(next);return;}
+  let i;do{i=Math.floor(Math.random()*PRAISE_SAY.length);}while(i===lastPraise);lastPraise=i;
+  const g0=G;say(PRAISE_SAY[i],'yue');
+  afterSpeech(()=>{if(G===g0)next();},500,2500);
+}
 function announceThen(next){
   const st=G.stickerNow;
   if(!st){next();return;}
@@ -1338,8 +1356,8 @@ function pick(b){
     if([3,5,8].includes(G.streak))toast(`🔥 連續答對 ${G.streak} 題！`,1800);
     if(q.pop)b.insertAdjacentHTML('beforeend',`<span class="pop">${q.pop}</span>`);
     let wait=1600;
-    if(q.ok){q.ok();wait=q.okWait||1800;}else wait=1100;   // 答啱只聽樂器提示音，唔逐題讚；完成成份先講「好叻呀」
-    afterSpeech(gd(()=>announceThen(()=>{G.r++;G.r>=G.total?finish():quizRound();})),wait);   // 等答案讀完先跳下一題（唔打斷）
+    if(q.ok){q.ok();wait=q.okWait||1800;}else wait=700;   // 答啱只聽樂器提示音，唔逐題讚；完成成份先講「好叻呀」
+    afterSpeech(gd(()=>praiseThen(()=>{G.r++;G.r>=G.total?finish():quizRound();})),wait);   // 等答案讀完先跳下一題（唔打斷）
   }else{
     // 答錯一次就跳題：唔俾再撳（否則會一直撳到啱為止）。標出正確答案、讀出嚟，無星星，然後去下一題
     G.lock=true;G.streak=0;
@@ -1424,7 +1442,7 @@ function ord(b){
   const n=+b.dataset.n;
   if(n===G.nextN){
     b.classList.add('right');b.disabled=true;say(CN[n],'yue');G.nextN++;
-    if(G.nextN>3){award(null,G.miss===0,G.lang,'r'+G.r);chime(true);afterSpeech(gd(()=>announceThen(()=>{G.r++;G.r>=G.total?finish():orderRound();})),1300);}
+    if(G.nextN>3){award(null,G.miss===0,G.lang,'r'+G.r);chime(true);afterSpeech(gd(()=>praiseThen(()=>{G.r++;G.r>=G.total?finish():orderRound();})),1300);}
   }else{
     G.miss++;chime(false);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
   }
@@ -1460,7 +1478,7 @@ function pk(b){
   const c=G.cells[+b.dataset.i];
   if(c.b){
     b.classList.add('right');b.disabled=true;chime(true);
-    if(++G.found===3){award(null,G.miss===0,G.lang,'r'+G.r);chime(true);afterSpeech(gd(()=>announceThen(()=>{G.r++;G.r>=G.total?finish():pickRound();})),1300);}
+    if(++G.found===3){award(null,G.miss===0,G.lang,'r'+G.r);chime(true);afterSpeech(gd(()=>praiseThen(()=>{G.r++;G.r>=G.total?finish():pickRound();})),1300);}
   }else{
     G.miss++;chime(false);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');say('呢個唔係藍色','yue');
   }
