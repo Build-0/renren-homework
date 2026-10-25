@@ -111,7 +111,8 @@ body.hastabs #app{padding-bottom:92px}
 .subjects .srow .word.ic{--s:34px}
 .srow .sj-name{font-size:15px;line-height:1.15;white-space:nowrap}
 .srow .pill{font-size:11px;padding:1px 7px}
-.srow .mini{display:block;width:70%;height:4px;border-radius:2px;background:var(--rule);overflow:hidden;margin-top:2px}
+.srow .mini{display:block;width:70%;height:6px;border-radius:2px;background:var(--rule);overflow:hidden;margin-top:2px}
+.srow .pct{font-size:12px;font-weight:700;color:var(--leaf);line-height:1}
 .srow .mini i{display:block;height:100%;background:var(--leaf)}
 .cgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .scard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;min-height:92px;padding:8px 2px;background:color-mix(in srgb,var(--sky) 13%,var(--card));border:2px solid var(--sky);border-radius:16px;box-shadow:0 3px 0 var(--sky)}
@@ -527,7 +528,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-25 09:49';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-25 09:52';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1032,7 +1033,7 @@ function subjRow(s){
     <span class="si">${cells(m[0],'ic')}</span>
     <span class="sj-name">${esc(s.name)}</span>
     ${pillS(s.dates)}
-    <span class="mini"><i style="width:${t?Math.round(d/t*100):0}%"></i></span></button>`;
+    <span class="mini"><i style="width:${t?Math.round(d/t*100):0}%"></i></span><span class="pct">完成 ${t?Math.round(d/t*100):0}%</span></button>`;
 }function subjSection(title,list,cls){
   if(!list.length)return '';
   const ds=list.flatMap(s=>s.dates).sort(),md=d=>fmt(d).replace(/（.*?）/,'');
