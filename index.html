@@ -527,7 +527,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-25 09:47';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-25 09:48';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -598,7 +598,7 @@ function pickVoice(lang){
 }
 let lastU=null,spoke=false,ttsErr='';
 let sayTok=0;
-const LETTER_SAY={a:'ay',b:'bee',c:'see',d:'dee',e:'ee',f:'eff',g:'jee',h:'aitch',i:'eye',j:'jay',k:'kay',l:'el',m:'em',n:'en',o:'oh',p:'pee',q:'queue',r:'are',s:'ess',t:'tee',u:'you',v:'vee',w:'double you',x:'ex',y:'why',z:'zed'};
+const LETTER_SAY={a:'hey',b:'bee',c:'see',d:'dee',e:'ee',f:'eff',g:'jee',h:'aitch',i:'eye',j:'jay',k:'kay',l:'el',m:'em',n:'en',o:'oh',p:'pee',q:'queue',r:'are',s:'ess',t:'tee',u:'you',v:'vee',w:'double you',x:'ex',y:'why',z:'zed'};
 function say(text,lang,onend){
   if(!('speechSynthesis' in window)){ttsErr='nosupport';if(onend)setTimeout(onend,700);return;}
   const ss=window.speechSynthesis; if(!voices.length)loadVoices();
