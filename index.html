@@ -254,6 +254,10 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .preview{display:flex;flex-wrap:wrap;gap:14px 12px}
 .pv{background:var(--card);border:2px solid var(--rule);padding:6px 12px;position:relative;border-radius:14px}
 .pv.got::after{content:"★";position:absolute;top:-9px;right:-7px;color:var(--sun);font-size:16px;text-shadow:0 0 2px var(--card)}
+#picpop{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:70;display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 26px;background:var(--card);border:3px solid var(--ink);border-radius:28px;box-shadow:0 6px 0 var(--ink);pointer-events:none;animation:picin .35s cubic-bezier(.3,1.6,.5,1) both}
+#picpop span{font-size:min(34vw,170px);line-height:1;display:block}#picpop span .ico{width:1em;height:1em}
+#picpop b{font-family:var(--print);font-size:26px}
+@keyframes picin{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
 .pv.on{background:var(--sun);border-color:var(--ink);transform:scale(1.12);box-shadow:0 4px 0 var(--ink);z-index:2}
 .pvs.on{background:color-mix(in srgb,var(--sun) 45%,transparent);border-radius:10px}
 .pv.due{border-style:dashed;border-color:var(--sun)}
@@ -531,7 +535,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-25 09:56';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-25 09:57';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -628,7 +632,13 @@ function say(text,lang,onend){
   // 取消上一句之後要等一陣（iPhone 太快 speak 會被吞咗），由 80ms 改為 250ms
   if(ss.speaking||ss.pending){if(curU)curU.done=true;ss.cancel();setTimeout(()=>go(false),250);}else go(false);
 }
-let curU=null,pvT=0;
+let curU=null,pvT=0,popT=0;
+function picPop(w){   // 撳字詞表嘅字：同時彈出相應嘅大圖（有配圖先彈）
+  document.getElementById('picpop')?.remove();clearTimeout(popT);
+  const e=PIC[w];if(!e)return;
+  const d=document.createElement('div');d.id='picpop';d.setAttribute('aria-hidden','true');d.innerHTML=`<span>${e}</span><b>${esc(w)}</b>`;
+  document.body.appendChild(d);popT=setTimeout(()=>d.remove(),1800);
+}
 const speechBusy=()=>!!curU&&!curU.done&&Date.now()<curU.until;
 function hush(){if(curU)curU.done=true;try{speechSynthesis.cancel();}catch(e){}}
 document.addEventListener('pointerdown',()=>{try{if(window.speechSynthesis&&speechSynthesis.paused)speechSynthesis.resume();}catch(e){}},{capture:true,passive:true});
@@ -1559,7 +1569,7 @@ document.addEventListener('click',e=>{
     case 'usagelog':navPush('log');renderUsageLog();window.scrollTo(0,0);break;
     case 'review':if(reviewCandidates().length)navPush('game');startReview();window.scrollTo(0,0);break;
     case 'subj':navToSubject();break;
-    case 'pv':{say(b.dataset.t,b.dataset.l);app.querySelectorAll('.pv.on,.pvs.on').forEach(x=>x.classList.remove('on'));b.classList.add('on');clearTimeout(pvT);pvT=setTimeout(()=>b.classList.remove('on'),1400);break;}   // 撳咗邊個，邊個亮起（讀緊）
+    case 'pv':{say(b.dataset.t,b.dataset.l);app.querySelectorAll('.pv.on,.pvs.on').forEach(x=>x.classList.remove('on'));b.classList.add('on');clearTimeout(pvT);pvT=setTimeout(()=>b.classList.remove('on'),1400);picPop(b.dataset.t);break;}   // 撳咗邊個，邊個亮起（讀緊）
 
     case 'shuf':{const i=+b.dataset.i,it=SUBJ.items[i],src=it.words||it.letters;let s;do{s=shuffle(src);}while(src.length>2&&s.join()===(SHUF[skey(i)]||src).join());SHUF[skey(i)]=s;renderList();chime(true);break;}
     case 'unshuf':delete SHUF[skey(+b.dataset.i)];renderList();break;
