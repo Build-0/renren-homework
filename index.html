@@ -270,8 +270,8 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .gbtn.game{background:color-mix(in srgb,var(--sun) 24%,var(--card))}
 .gbtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
 .gbtn .ok{color:var(--leaf);font-weight:900}
-.sgroup{margin-top:18px}.sgroup h3{margin:0 0 10px;font-size:18px;display:flex;align-items:baseline;gap:8px}.sgroup h3 small{font-size:13px;color:var(--soft);font-weight:400}
-.sgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.sgrid .songwrap{display:block}.sgrid .song{width:100%;border-radius:16px;padding:12px 12px;font-size:19px;justify-content:flex-start}
+.sgroup{margin-top:12px}.sgroup h3{margin:0 0 6px;font-size:18px;display:flex;align-items:baseline;gap:8px}.sgroup h3 small{font-size:13px;color:var(--soft);font-weight:400}
+.sgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.sgrid .songwrap{display:block}.sgrid .song{width:100%;border-radius:12px;padding:7px 8px;font-size:16px;gap:6px;text-align:left;justify-content:flex-start}
 @media (max-width:360px){.sgrid{grid-template-columns:1fr}}
 .songs{display:flex;flex-wrap:wrap;gap:8px}
 .song{display:inline-flex;align-items:center;gap:8px;background:var(--paper);border:2px dashed var(--soft);border-radius:999px;padding:6px 14px;font-family:var(--kai);font-size:18px}
@@ -527,7 +527,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-25 09:48';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-25 09:49';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1080,11 +1080,12 @@ function renderStickers(){
   tabs('stickers');
 }
 /* ============ 家長分頁：計時、各科難度時間、日程、備註 ============ */
-function songsPanel(){   // 有遊戲嘅科目入面淨係歌名嘅項目（冇歌可聽）：由科目頁收埋，放呢度俾家長剔
-  const rows=[...T.subjects].sort((a,b)=>nextDate(a).localeCompare(nextDate(b))).flatMap(s=>s.items.filter(songItemOnly).map(it=>{
-    const btns=it.songs.map(x=>{const n=songN(x);return `<span class="songwrap"><button class="song" data-act="sing" data-n="${esc(n)}" aria-pressed="${!!store.sung[T.id+':'+n]}"><span class="tick">✓</span>《${esc(n)}》</button></span>`;}).join('');
-    return `<div class="sgroup"><h3>${esc(s.name)}<small>${esc(segLabel(it))}</small></h3><div class="songs sgrid">${btns}</div></div>`;}));
-  return rows.length?`<section class="panel"><h2 class="sec">歌曲與兒歌</h2>${rows.join('')}<p class="small">這些歌沒有遊戲（宗教、唱遊整科都只有歌），所以不放在首頁。複習完一首就按一下勾起來。</p></section>`:'';
+function songsPanel(){   // 全部歌曲／兒歌（冇遊戲）一個清單：每科一組，兩粒一行，盡量短
+  const rows=[...T.subjects].sort((a,b)=>nextDate(a).localeCompare(nextDate(b))).map(s=>{
+    const its=s.items.filter(songItemOnly);if(!its.length)return '';
+    const btns=its.flatMap(it=>it.songs).map(x=>{const n=songN(x);return `<span class="songwrap"><button class="song" data-act="sing" data-n="${esc(n)}" aria-pressed="${!!store.sung[T.id+':'+n]}"><span class="tick">✓</span>${esc(n)}</button></span>`;}).join('');
+    return `<div class="sgroup"><h3>${esc(s.name)}</h3><div class="songs sgrid">${btns}</div></div>`;}).filter(Boolean);
+  return rows.length?`<section class="panel"><h2 class="sec">歌曲與兒歌</h2>${rows.join('')}<p class="small">這些歌沒有遊戲，所以不放在首頁。複習完一首就按一下勾起來。</p></section>`:'';
 }
 function renderParent(){
   G=null;SUBJ=null;LOGVIEW=false;ROOT='parent';hush();
