@@ -265,6 +265,11 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .reviewbar b{font-family:var(--kai);font-size:22px}
 .reviewbar span{font-size:14px;color:var(--soft)}
 .reviewbar:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.qa{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.qab{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;text-align:left;background:var(--card);border:2px solid var(--rule);border-radius:16px;padding:10px 14px;font-family:var(--kai)}
+.qab.on{background:var(--sun);border-color:var(--ink)}
+.qq{font-size:18px;color:var(--soft);line-height:1.4}
+.qa-a{display:flex;align-items:center;gap:10px}.qa-a b{font-size:24px}.qi{font-size:34px;line-height:1}.qi .ico{width:1em;height:1em}
 .sents{margin:0;padding:0;list-style:none;display:grid;gap:2px}
 .sents li.gs{margin-top:14px;padding-top:16px;border-top:3px dashed var(--rule)}
 .pvs{background:none;border:0;padding:6px 0;text-align:left;font-family:var(--kai);font-size:26px;line-height:1.5}
@@ -534,7 +539,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-25 10:08';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-25 19:50';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1169,7 +1174,7 @@ function renderUsageLog(){
 const LEARN_G=new Set(['cards','chant']);
 const isLearn=g=>LEARN_G.has(g);
 const songItemOnly=it=>!!it.songs&&!it.words&&!it.letters&&!it.sentences&&!(it.games||[]).length;
-const hasDetail=it=>!!(it.words||it.letters||it.sentences||it.songs);
+const hasDetail=it=>!!(it.words||it.letters||it.sentences||it.songs||it.quiz);
 const learnItems=s=>s.items.map((it,i)=>({it,i})).filter(({it})=>!(songItemOnly(it)&&!songOnly(s))&&(hasDetail(it)||(it.games||[]).some(isLearn)));
 const gameItems=s=>s.items.map((it,i)=>({it,i})).filter(({it})=>(it.games||[]).some(g=>!isLearn(g)));
 const segLabel=it=>String(it.label).replace(/內容$/,'');
@@ -1181,11 +1186,12 @@ function itemCount(it){
   if(it.letters)return `${it.letters.length} 個字母`;
   if(it.sentences)return `${it.sentences.length} 句`;
   if(it.songs)return `${it.songs.length} 首`;
+  if(it.quiz)return `${it.quiz.length} 題`;
   return '';
 }
 const LEARN_SUB={cards:'一張一張學',chant:'1 到 30'};   // 學習卡副標題（唔再重複老師嘅項目名，免得同清單卡撞名）
 const ITEM_NAME=it=>it.words?'字詞表':it.letters?'字母表':it.sentences?'句子表':segLabel(it);   // 清單卡名稱
-const ITEM_ICON=it=>it.words?'🔤':it.letters?'🔠':it.sentences?'💬':'🎵';
+const ITEM_ICON=it=>it.words?'🔤':it.letters?'🔠':it.sentences?'💬':it.quiz?'💡':'🎵';
 function renderSubject(){
   G=null;LOGVIEW=false;hush();
   const s=SUBJ,L=learnItems(s),Gm=gameItems(s);
@@ -1217,6 +1223,7 @@ function renderList(){
       ?`<div class="preview ${mixed?'mixed':''}">${words.map(w=>{const st=memState(lang,w);return `<button class="pv ${st==='got'||st==='due'?st:''}" data-act="pv" data-t="${esc(w)}" data-l="${lang}" aria-label="讀出 ${esc(w)}（${MEM_TXT[st]}）">${wv(w,'sm',lang)}</button>`;}).join('')}</div>`
       :`<div class="preview ${mixed?'mixed':''}">${letters.map(L=>`<button class="pv" data-act="pv" data-t="${L}" data-l="en"><span class="en sm">${L}${L.toLowerCase()}</span></button>`).join('')}</div>`);
   }
+  if(it.quiz)body=`<p class="small">每一題的答案都在這裡，按一下會讀出題目和答案。</p><ul class="qa">${it.quiz.map(x=>{const a=x.o[0];return `<li><button class="qab" data-act="pv" data-t="${esc((x.say||x.q)+'　'+(a[2]||a[1]))}" data-l="yue"><span class="qq">${esc(x.q)}</span><span class="qa-a"><span class="qi">${a[0]}</span><b>${esc(a[1])}</b></span></button></li>`;}).join('')}</ul>`;
   if(it.sentences)body=`<p class="small">按一下句子會讀出來。</p><ul class="sents">${it.sentences.flatMap((x,xi)=>x.opts.map((o,oi)=>`<li class="${oi===0&&xi>0?'gs':''}"><button class="pvs" data-act="pv" data-t="${esc(x.pre+o+x.post)}" data-l="${lang}">${esc(x.pre)}<u>${esc(o)}</u>${esc(x.post)}</button></li>`)).join('')}</ul>`;   // 每個選項一句，逐句讀（唔係只讀第一個）
   if(it.songs)body=`<div class="songs">${it.songs.map(x=>{const n=songN(x),u=typeof x==='object'&&/^https?:\/\//.test(x.url||'')?x.url:'';
     return `<span class="songwrap"><button class="song" data-act="sing" data-n="${esc(n)}" aria-pressed="${!!store.sung[`${T.id}:${n}`]}"><span class="tick">✓</span>《${esc(n)}》</button>${u?`<a class="songlink" href="${esc(u)}" target="_blank" rel="noopener">▶ 聽歌</a>`:''}</span>`;}).join('')}</div><p class="small">複習完一首，按一下記起來。${it.songs.some(x=>typeof x==='object'&&x.url)?'有「▶ 聽歌」的可以按下去聽。':''}</p>`;
@@ -1589,7 +1596,7 @@ document.addEventListener('click',e=>{
     case 'usagelog':navPush('log');renderUsageLog();window.scrollTo(0,0);break;
     case 'review':if(reviewCandidates(b.dataset.k||'wrong').length)navPush('game');startReview(b.dataset.k||'wrong');window.scrollTo(0,0);break;
     case 'subj':navToSubject();break;
-    case 'pv':{say(b.dataset.t,b.dataset.l);app.querySelectorAll('.pv.on,.pvs.on').forEach(x=>x.classList.remove('on'));b.classList.add('on');clearTimeout(pvT);pvT=setTimeout(()=>b.classList.remove('on'),1400);picPop(b,b.dataset.t);break;}   // 撳咗邊個，邊個亮起（讀緊）
+    case 'pv':{say(b.dataset.t,b.dataset.l);app.querySelectorAll('.pv.on,.pvs.on,.qab.on').forEach(x=>x.classList.remove('on'));b.classList.add('on');clearTimeout(pvT);pvT=setTimeout(()=>b.classList.remove('on'),1400);picPop(b,b.dataset.t);break;}   // 撳咗邊個，邊個亮起（讀緊）
 
     case 'shuf':{const i=+b.dataset.i,it=SUBJ.items[i],src=it.words||it.letters;let s;do{s=shuffle(src);}while(src.length>2&&s.join()===(SHUF[skey(i)]||src).join());SHUF[skey(i)]=s;renderList();chime(true);break;}
     case 'unshuf':delete SHUF[skey(+b.dataset.i)];renderList();break;
