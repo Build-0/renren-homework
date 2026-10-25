@@ -375,7 +375,7 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 @media (min-width:640px){.ngrid{grid-template-columns:repeat(10,minmax(0,1fr))}}
 .nb{aspect-ratio:1;max-width:100%;border:2px solid var(--rule);background:var(--card);border-radius:12px;font-family:var(--print);font-weight:700;font-size:clamp(20px,6vw,28px)}
 .nb.lit{background:var(--sun);border-color:var(--ink);color:#1D2A38;transform:scale(1.08)}
-.nb.seen{border-color:var(--leaf)}
+.nb.seen{border-color:var(--leaf);border-width:3px;background:color-mix(in srgb,var(--leaf) 14%,var(--card))}
 .crow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .pgrid .choice{min-height:96px}
@@ -531,7 +531,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-25 09:55';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-25 09:56';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1576,7 +1576,7 @@ document.addEventListener('click',e=>{
     case 'prev':case 'next':{const n=G.list.length;G.ci=(G.ci+(a==='next'?1:-1)+n)%n;renderCards();break;}
     case 'chgo':G.tok++;chantStep(1,G.tok);break;
     case 'chstop':G.tok++;hush();app.querySelectorAll('.nb.lit').forEach(x=>x.classList.remove('lit'));break;
-    case 'cnum':G.tok++;say(b.dataset.n,'yue');b.classList.add('seen');break;
+    case 'cnum':{G.tok++;say(b.dataset.n,'yue');app.querySelectorAll('.nb.lit').forEach(x=>x.classList.remove('lit'));b.classList.add('lit','seen');clearTimeout(pvT);pvT=setTimeout(()=>b.classList.remove('lit'),1400);break;}   // 撳咗邊個，邊個亮起
     case 'timer':setTimer(!timerOn);break;
     case 'test':{   // 依次試：答啱提示音 → 答錯提示音 → 讀音
       spoke=false;ttsErr='';sndErr='';chime(true);
