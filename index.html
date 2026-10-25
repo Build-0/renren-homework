@@ -262,7 +262,8 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .reviewbar b{font-family:var(--kai);font-size:22px}
 .reviewbar span{font-size:14px;color:var(--soft)}
 .reviewbar:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
-.sents{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.sents{margin:0;padding:0;list-style:none;display:grid;gap:2px}
+.sents li.gs{margin-top:14px;padding-top:16px;border-top:3px dashed var(--rule)}
 .pvs{background:none;border:0;padding:6px 0;text-align:left;font-family:var(--kai);font-size:26px;line-height:1.5}
 .pvs u{text-decoration-color:var(--grid);text-decoration-thickness:2px;text-underline-offset:4px}
 .gpanel{display:grid;gap:14px}.ggroup h4{margin:0 0 8px;font-size:17px}
@@ -530,7 +531,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-25 09:54';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-25 09:55';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1195,7 +1196,7 @@ function renderList(){
       ?`<div class="preview ${mixed?'mixed':''}">${words.map(w=>{const st=memState(lang,w);return `<button class="pv ${st==='got'||st==='due'?st:''}" data-act="pv" data-t="${esc(w)}" data-l="${lang}" aria-label="讀出 ${esc(w)}（${MEM_TXT[st]}）">${wv(w,'sm',lang)}</button>`;}).join('')}</div>`
       :`<div class="preview ${mixed?'mixed':''}">${letters.map(L=>`<button class="pv" data-act="pv" data-t="${L}" data-l="en"><span class="en sm">${L}${L.toLowerCase()}</span></button>`).join('')}</div>`);
   }
-  if(it.sentences)body=`<p class="small">按一下句子會讀出來。</p><ul class="sents">${it.sentences.flatMap(x=>x.opts.map(o=>`<li><button class="pvs" data-act="pv" data-t="${esc(x.pre+o+x.post)}" data-l="${lang}">${esc(x.pre)}<u>${esc(o)}</u>${esc(x.post)}</button></li>`)).join('')}</ul>`;   // 每個選項一句，逐句讀（唔係只讀第一個）
+  if(it.sentences)body=`<p class="small">按一下句子會讀出來。</p><ul class="sents">${it.sentences.flatMap((x,xi)=>x.opts.map((o,oi)=>`<li class="${oi===0&&xi>0?'gs':''}"><button class="pvs" data-act="pv" data-t="${esc(x.pre+o+x.post)}" data-l="${lang}">${esc(x.pre)}<u>${esc(o)}</u>${esc(x.post)}</button></li>`)).join('')}</ul>`;   // 每個選項一句，逐句讀（唔係只讀第一個）
   if(it.songs)body=`<div class="songs">${it.songs.map(x=>{const n=songN(x),u=typeof x==='object'&&/^https?:\/\//.test(x.url||'')?x.url:'';
     return `<span class="songwrap"><button class="song" data-act="sing" data-n="${esc(n)}" aria-pressed="${!!store.sung[`${T.id}:${n}`]}"><span class="tick">✓</span>《${esc(n)}》</button>${u?`<a class="songlink" href="${esc(u)}" target="_blank" rel="noopener">▶ 聽歌</a>`:''}</span>`;}).join('')}</div><p class="small">複習完一首，按一下記起來。${it.songs.some(x=>typeof x==='object'&&x.url)?'有「▶ 聽歌」的可以按下去聽。':''}</p>`;
   app.innerHTML=`
