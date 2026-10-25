@@ -254,7 +254,7 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .preview{display:flex;flex-wrap:wrap;gap:14px 12px}
 .pv{background:var(--card);border:2px solid var(--rule);padding:6px 12px;position:relative;border-radius:14px}
 .pv.got::after{content:"★";position:absolute;top:-9px;right:-7px;color:var(--sun);font-size:16px;text-shadow:0 0 2px var(--card)}
-.picbub{position:absolute;right:-12px;top:-40px;z-index:5;width:52px;height:52px;display:grid;place-items:center;font-size:32px;line-height:1;background:var(--card);border:2.5px solid var(--ink);border-radius:50%;box-shadow:0 3px 0 var(--ink);pointer-events:none;animation:bub .4s cubic-bezier(.3,1.7,.5,1) both}
+.picbub{position:absolute;right:-6px;bottom:calc(100% + 12px);z-index:5;width:48px;height:48px;display:grid;place-items:center;font-size:30px;line-height:1;background:var(--card);border:2.5px solid var(--ink);border-radius:50%;box-shadow:0 3px 0 var(--ink);pointer-events:none;animation:bub .4s cubic-bezier(.3,1.7,.5,1) both}
 .picbub .ico{width:1em;height:1em}
 @keyframes bub{0%{transform:scale(.2) translateY(14px);opacity:0}100%{transform:scale(1);opacity:1}}
 .pv.on{background:var(--sun);border-color:var(--ink);transform:scale(1.12);box-shadow:0 4px 0 var(--ink);z-index:2}
@@ -534,7 +534,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-25 09:59';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-25 10:01';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
