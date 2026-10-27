@@ -539,7 +539,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-27 19:50';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-27 20:01';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1517,7 +1517,7 @@ function chantStep(n,tok){
   app.querySelectorAll('.nb.lit').forEach(x=>x.classList.remove('lit'));
   if(n>30){award(null,true,G.lang,'chant');finish();return;}
   const b=app.querySelector(`.nb[data-n="${n}"]`);if(b){b.classList.add('lit','seen');}
-  let moved=false;const adv=()=>{if(moved)return;moved=true;setTimeout(()=>chantStep(n+1,tok),180);};
+  let moved=false;const adv=()=>{if(moved)return;moved=true;setTimeout(()=>chantStep(n+1,tok),520);};
   say(String(n),'yue',adv);setTimeout(adv,2600);
 }
 
