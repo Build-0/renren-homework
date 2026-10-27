@@ -539,7 +539,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-25 19:50';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-27 19:50';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1444,7 +1444,7 @@ function renderCards(){
   const k=st==='got'?(mm.b>=3?3:2):st==='new'?0:1;
   renderGame(`
     <div class="fc-count">${G.ci+1} / ${G.list.length}</div>
-    <button class="flash" data-act="sayc" aria-label="讀出 ${esc(w)}">${wv(w,'lg',G.lang)}<span class="pic">${PIC[w]||''}</span></button>
+    <button class="flash" data-act="sayc" aria-label="讀出 ${esc(w)}">${wv(w,'lg',G.lang)}</button>
     <div class="kstars" aria-label="${MEM_TXT[st]}">${'★'.repeat(k)}<span class="dim">${'★'.repeat(3-k)}</span></div>
     <p class="small" style="text-align:center">${MEM_TXT[st]}</p>
     <div class="nav"><button class="round" data-act="prev" aria-label="上一個">‹</button><button class="round speakr" data-act="sayc" aria-label="再讀一次">${SPK}</button><button class="round" data-act="next" aria-label="下一個">›</button></div>`);
