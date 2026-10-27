@@ -539,7 +539,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-27 20:01';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-27 20:02';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -616,7 +616,7 @@ function say(text,lang,onend){
   const ss=window.speechSynthesis; if(!voices.length)loadVoices();
   const tok=++sayTok;   // 只認最新一次：新嘅朗讀會取代舊嘅
   const go=retry=>{ if(tok!==sayTok)return; try{
-    const u=new SpeechSynthesisUtterance(lang==='en'&&/^[A-Za-z]$/.test(text)?LETTER_SAY[text.toLowerCase()]:text);   // 單個大寫字母 iOS 會讀「capital A」，改用字母名拼音直接讀 A B C
+    const u=new SpeechSynthesisUtterance(lang==='en'&&/^[A-Za-z]$/.test(text)?LETTER_SAY[text.toLowerCase()]:(lang==='en'?text:'，'+text));   // 中文前面加逗號：語音引擎起步會吞咗第一個音，前面留一小段靜音   // 單個大寫字母 iOS 會讀「capital A」，改用字母名拼音直接讀 A B C
     u.lang=lang==='cmn'?'zh-CN':lang==='en'?'en-GB':'zh-HK';
     const v=pickVoice(lang); if(v)u.voice=v;
     u.rate=lang==='en'?.6:.8; u.volume=1;   // 英文慢啲（K1 要聽清楚每個音）；廣東話／國語 .8
@@ -1413,7 +1413,7 @@ function pick(b){
     if([3,5,8].includes(G.streak))toast(`🔥 連續答對 ${G.streak} 題！`,1800);
     if(q.pop)b.insertAdjacentHTML('beforeend',`<span class="pop">${q.pop}</span>`);
     let wait=1600;
-    if(q.ok){q.ok();wait=q.okWait||1800;}else wait=700;   // 答啱只聽樂器提示音，唔逐題讚；完成成份先講「好叻呀」
+    if(q.ok){const g1=G;setTimeout(()=>{if(G===g1)q.ok();},350);wait=(q.okWait||1800)+350;}else wait=700;   // 等提示音響完先讀答案，唔好搶聲道   // 答啱只聽樂器提示音，唔逐題讚；完成成份先講「好叻呀」
     afterSpeech(gd(()=>praiseThen(()=>{G.r++;G.r>=G.total?finish():quizRound();})),wait);   // 等答案讀完先跳下一題（唔打斷）
   }else{
     // 答錯一次就跳題：唔俾再撳（否則會一直撳到啱為止）。標出正確答案、讀出嚟，無星星，然後去下一題
