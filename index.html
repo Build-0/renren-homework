@@ -539,7 +539,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-27 20:02';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-27 20:03';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1423,14 +1423,14 @@ function pick(b){
     app.querySelectorAll('.choice').forEach(x=>{x.disabled=true;if(x!==b)x.classList.add('dim');});
     const rb=app.querySelectorAll('.choice')[q.a],g0=G;if(rb){rb.classList.remove('dim');rb.classList.add('reveal');try{rb.scrollIntoView({block:'center',behavior:'smooth'});}catch(e){}}
     const gb=app.querySelector('.gbody');
-    if(gb)gb.insertAdjacentHTML('beforeend','<div class="fb" role="status">👆 正確答案在這裡<b>沒關係，繼續加油喔，仁仁！</b></div>');
+    if(gb)gb.insertAdjacentHTML('beforeend','<div class="fb" role="status">👆 正確答案在這裡<b>沒關係，繼續加油喔！</b></div>');
     const ans=((rb&&rb.textContent)||'').replace(/[^\p{L}\p{N}]/gu,'');
     setTimeout(()=>{   // 等柔和提示音完咗，先讀出正確答案，再鼓勵
       if(G!==g0)return;
       if(q.ok)q.ok();else if(q.kw)say(q.kw,q.lang||G.lang);else if(q.sayLang)say(q.say,q.sayLang);else if(ans)say(ans,'yue');
       afterSpeech(()=>{
         if(G!==g0)return;
-        say('唔緊要，繼續加油仁仁！','yue');
+        say('唔緊要，繼續加油！','yue');
         afterSpeech(()=>{if(G!==g0)return;G.r++;G.r>=G.total?finish():quizRound();},1500);
       },q.okWait||1500);
     },900);
