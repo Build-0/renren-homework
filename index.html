@@ -186,6 +186,15 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .sj-tag{display:block;font-size:15px;color:var(--soft);margin-top:2px}
 .sj-meta{font-size:12.5px;color:var(--soft);line-height:1.4;font-variant-numeric:tabular-nums}
 .sj-meta>span{display:block}
+.map{display:flex;flex-direction:column;gap:0;padding:4px 0 10px}
+.stop{position:relative;width:44%;max-width:180px}.stop.l{align-self:flex-start;margin-left:6%}.stop.r{align-self:flex-end;margin-right:6%}
+.stop .srow{min-height:92px;padding-top:6px;padding-bottom:6px}
+.conn{display:block;width:100%;height:30px;overflow:visible}.conn path{stroke:var(--sun);stroke-width:5;stroke-dasharray:2 11;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.mapcar{position:absolute;bottom:-14px;left:-14px;font-size:34px;z-index:2;animation:idle 1.6s ease-in-out infinite;filter:drop-shadow(0 2px 0 rgba(0,0,0,.15))}
+.mapstar{position:absolute;top:-14px;right:-8px;font-size:26px;z-index:2}
+.pretag{position:absolute;left:8px;top:-9px;z-index:2;background:var(--sun);color:#1D2A38;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px}
+.mapend{align-self:center;display:flex;flex-direction:column;align-items:center;font-size:44px;line-height:1;margin-top:8px}.mapend small{font-size:12px;color:var(--soft);margin-top:2px}
+@media (min-width:700px){.stop{width:30%;max-width:260px}.stop .srow{min-height:150px}}
 .grp-sec{--gc:var(--soft)}
 .grp-sec.is-pre{--gc:var(--sun)}
 .grp-sec.is-main{--gc:var(--sky)}
@@ -294,6 +303,11 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 /* games */
 .gbody{display:flex;flex-direction:column;gap:16px}
 .mascot{font-size:84px;line-height:1;display:inline-block;animation:idle 2s ease-in-out infinite}
+.parcel{position:fixed;z-index:60;font-style:normal;font-size:34px;transform:translate(-50%,-50%);transition:transform .6s cubic-bezier(.4,0,.6,1);pointer-events:none;margin:-17px 0 0 -17px}
+.house .word.mm.n1,.house .word.mm.n2,.house .word.mm.n3{--s:min(8vw,34px)}.house .en.mm{font-size:clamp(15px,4.4vw,24px);overflow-wrap:anywhere}
+@media (min-width:700px){.house .word.mm.n1,.house .word.mm.n2,.house .word.mm.n3{--s:56px}.house .en.mm{font-size:30px}}
+.house{display:flex;flex-direction:column;align-items:center;gap:4px}.house .roof{font-style:normal;font-size:44px;line-height:1}
+.choice.got{background:color-mix(in srgb,var(--leaf) 22%,var(--card))}.choice.got::after{content:'✓ 收到了';position:absolute;top:-12px;right:10px;background:var(--leaf);color:#fff;font-size:14px;font-weight:700;padding:2px 10px;border-radius:999px}
 .mascot.chomp{animation:chomp .6s}
 @keyframes idle{50%{transform:translateY(-6px) rotate(-3deg)}}
 @keyframes chomp{0%{transform:scale(1)}30%{transform:scale(1.4,.8)}60%{transform:scale(.9,1.3) rotate(8deg)}100%{transform:scale(1)}}
@@ -436,7 +450,7 @@ const QN=n=>n===2?'兩':CN[n];   // 數字後面跟量詞要讀「兩」：兩�
 const PRAISE=['好棒喔！','答對了！','太棒了！','好厲害！','真厲害！'];
 const GICON={cards:'🃏',hear:'👂',match:'🧩',sent:'✍️',count:'🔢',order:'↕️',chant:'🎵',next:'➡️',sort:'🗂️',color:'🎨',shape:'🔷',pickall:'👆',review:'🔁',letter:'🔤',lmatch:'🔠',picword:'🖼️',wetdry:'💧',quiz:'❓'};   // 遊戲掣前面嘅小圖示
 const GAMES={
-  cards:['認','字卡'], feed:['餵','餵恐龍'], hear:['聽','聽音選字'], match:['配','翻牌配對'], sent:['句','句子填充'],
+  cards:['認','字卡'], feed:['餵','餵恐龍'], deliver:['送','車車送貨'], hear:['聽','聽音選字'], match:['配','翻牌配對'], sent:['句','句子填充'],
   count:['數','數一數'], order:['序','排順序'], chant:['唱','跟著數'], next:['接','下一個是什麼'],
   sort:['類','分類'], color:['色','選顏色'], shape:['形','選形狀'], pickall:['選','全部選出來'], review:['複','今天複習'],
   letter:['A','聽音選字母'], lmatch:['a','大小寫配對'], picword:['圖','看圖選字'],
@@ -551,7 +565,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-28 11:45';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-28 11:48';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1084,14 +1098,17 @@ function subjRow(s){
 const songOnly=s=>!s.items.some(it=>(it.games||[]).length);   // 只有歌曲、冇遊戲嘅科目（宗教、唱遊）：首頁收埋，喺家長分頁睇
 function renderHome(){
   G=null;SUBJ=null;LOGVIEW=false;ROOT='home';hush();
-  const byDate=(a,b)=>nextDate(a).localeCompare(nextDate(b));
-  const subs=T.subjects.filter(s=>!songOnly(s)),pre=subs.filter(s=>s.pre).sort(byDate),main=subs.filter(s=>!s.pre).sort(byDate);
-  const groups=[['提前評估',pre,'is-pre'],['主要評估',main,'is-main']].filter(g=>g[1].length)
-    .sort((a,b)=>nextDate(a[1][0]).localeCompare(nextDate(b[1][0])));   // 區塊本身都按日期排
+  const subs=T.subjects.filter(s=>!songOnly(s)).sort((x,y)=>nextDate(x).localeCompare(nextDate(y)));   // 路線：按評估日期，一站一站
+  const cur=subs.findIndex(s=>{const [d,t]=subjProgress(s);return !(t&&d/t>=.8);});   // 車車停喺第一個未夠 80% 嘅站
+  const stops=subs.map((s,k)=>{
+    const side=k%2?'r':'l',conn=k?`<svg class="conn ${side}" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path d="${side==='r'?'M25 0 C25 30 75 10 75 40':'M75 0 C75 30 25 10 25 40'}" fill="none"/></svg>`:'';
+    const [d,t]=subjProgress(s),done=t&&d/t>=.8;
+    return conn+`<div class="stop ${side}">${k===cur?'<b class="mapcar" aria-hidden="true">🚗</b>':''}${done?'<b class="mapstar" aria-hidden="true">⭐</b>':''}${s.pre?'<small class="pretag">提前評估</small>':''}${subjRow(s)}</div>`;
+  }).join('');
   app.innerHTML=`
     <header class="top"><div><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1><div class="ver">版本 ${APP_VER}</div></div></header>
     ${voiceNote()}
-    ${groups.map(g=>subjSection(g[0],g[1],g[2])).join('')}`;
+    <section class="map" aria-label="學習地圖">${stops}<div class="mapend">🏁<small>評估日</small></div></section>`;
   tabs('home');
 }
 
@@ -1256,6 +1273,13 @@ const trackPct=r=>Math.min(100,Math.round(r/Math.max(1,G.total)*100));
 const dots=()=>{G.car=G.car||(G.mix&&G.mix.car)||rand(CARS_RUN);if(G.mix)G.mix.car=G.car;return `<div class="track" role="img" aria-label="第 ${G.r+1} 題，共 ${G.total} 題"><span class="lane"><b class="car" style="left:${trackPct(G.r)}%">${G.car}</b></span><span class="flag">🏁</span></div>`;};
 function feedFly(b,q){
   const m=app.querySelector('.mascot');if(!m)return;
+  if(q.deliver){
+    const a=b.getBoundingClientRect(),c=m.getBoundingClientRect(),p=document.createElement('i');
+    p.className='parcel';p.textContent='📦';p.style.cssText=`left:${c.left+c.width/2}px;top:${c.top+c.height/2}px`;document.body.appendChild(p);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{p.style.transform=`translate(${a.left+a.width/2-c.left-c.width/2}px,${a.top+a.height/2-c.top-c.height/2}px) scale(.8)`;}));
+    m.classList.add('chomp');
+    setTimeout(()=>{p.remove();b.classList.add('got');const r=b.querySelector('.roof');if(r)r.textContent='🏡';},650);return;
+  }
   if(!q.feed){m.classList.add('chomp');return;}
   const a=b.getBoundingClientRect(),c=m.getBoundingClientRect();
   b.style.animation='none';b.style.zIndex=30;b.style.transition='transform .55s ease-in,opacity .55s';
@@ -1311,7 +1335,7 @@ function startGame(i,g){
 const SEG_Q=3;
 function startMix(){
   const s=SUBJ,all=[];
-  s.items.forEach((it,i)=>{(it.games||[]).filter(g=>!isLearn(g)).forEach(g=>all.push({i,g}));if(it.words&&it.words.length>=3)all.push({i,g:'feed'});});
+  s.items.forEach((it,i)=>{(it.games||[]).filter(g=>!isLearn(g)).forEach(g=>all.push({i,g}));if(it.words&&it.words.length>=3){all.push({i,g:'feed'});all.push({i,g:'deliver'});}});
   if(!all.length)return;
   const cnt=sg=>(store.done[dkey(sg.i,sg.g)]||0)+Math.random();   // 玩得少嘅優先，同次數就隨機
   const segs=shuffle(all.sort((a,b)=>cnt(a)-cnt(b)).slice(0,4));
@@ -1352,6 +1376,11 @@ const GEN={
     return ws.map(w=>{const m=mix([w,...shuffle(it.words.filter(x=>x!==w)).slice(0,2)].map(x=>wv(x,'md',lang)));
       const say=lang==='yue'?'恐龍想要'+w:w;
       return {say,sayLang:lang==='yue'?'yue':lang,prompt:`<span class="mascot feed">${dino}</span>`,ask:lang==='en'?'恐龍想要哪一個字？聽聽看':'恐龍想要哪一個字？聽聽看',...m,wide:true,kw:w,lang,feed:1,pop:PIC[w]};});
+  },
+  deliver(it){   // 車車送貨：車車講出包裹要送去邊間屋（邊個字），撳啱嗰間屋
+    const lang=G.lang,ws=prioritized(lang,it.words).slice(0,Math.min(8,it.words.length)),truck=rand(['🚚','🚛','🚐']);
+    return ws.map(w=>{const m=mix([w,...shuffle(it.words.filter(x=>x!==w)).slice(0,2)].map(x=>`<span class="house"><i class="roof">🏠</i>${wv(x,'mm',lang)}</span>`));
+      return {say:lang==='yue'?'包裹要送去'+w:w,sayLang:lang,prompt:`<span class="mascot deliver">${truck}</span>`,ask:'包裹要送到哪一間？聽聽看',...m,wide:false,kw:w,lang,deliver:1,pop:PIC[w]};});
   },
   picword(it){
     const ws=prioritized('en',it.words).slice(0,Math.min(8,it.words.length));
