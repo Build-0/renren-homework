@@ -436,7 +436,7 @@ const QN=n=>n===2?'兩':CN[n];   // 數字後面跟量詞要讀「兩」：兩�
 const PRAISE=['好棒喔！','答對了！','太棒了！','好厲害！','真厲害！'];
 const GICON={cards:'🃏',hear:'👂',match:'🧩',sent:'✍️',count:'🔢',order:'↕️',chant:'🎵',next:'➡️',sort:'🗂️',color:'🎨',shape:'🔷',pickall:'👆',review:'🔁',letter:'🔤',lmatch:'🔠',picword:'🖼️',wetdry:'💧',quiz:'❓'};   // 遊戲掣前面嘅小圖示
 const GAMES={
-  cards:['認','字卡'], hear:['聽','聽音選字'], match:['配','翻牌配對'], sent:['句','句子填充'],
+  cards:['認','字卡'], feed:['餵','餵恐龍'], hear:['聽','聽音選字'], match:['配','翻牌配對'], sent:['句','句子填充'],
   count:['數','數一數'], order:['序','排順序'], chant:['唱','跟著數'], next:['接','下一個是什麼'],
   sort:['類','分類'], color:['色','選顏色'], shape:['形','選形狀'], pickall:['選','全部選出來'], review:['複','今天複習'],
   letter:['A','聽音選字母'], lmatch:['a','大小寫配對'], picword:['圖','看圖選字'],
@@ -551,7 +551,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-28 11:41';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-28 11:45';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1254,6 +1254,14 @@ function renderGame(body){
 const CARS_RUN=['🚗','🚒','🚌','🚓','🏎️','🚜','🦖'];
 const trackPct=r=>Math.min(100,Math.round(r/Math.max(1,G.total)*100));
 const dots=()=>{G.car=G.car||(G.mix&&G.mix.car)||rand(CARS_RUN);if(G.mix)G.mix.car=G.car;return `<div class="track" role="img" aria-label="第 ${G.r+1} 題，共 ${G.total} 題"><span class="lane"><b class="car" style="left:${trackPct(G.r)}%">${G.car}</b></span><span class="flag">🏁</span></div>`;};
+function feedFly(b,q){
+  const m=app.querySelector('.mascot');if(!m)return;
+  if(!q.feed){m.classList.add('chomp');return;}
+  const a=b.getBoundingClientRect(),c=m.getBoundingClientRect();
+  b.style.animation='none';b.style.zIndex=30;b.style.transition='transform .55s ease-in,opacity .55s';
+  b.style.transform=`translate(${c.left+c.width/2-a.left-a.width/2}px,${c.top+c.height/2-a.top-a.height/2}px) scale(.15)`;b.style.opacity='0';
+  setTimeout(()=>{m.classList.add('chomp');},450);
+}
 function burst(el){   // 答啱：喺嗰粒掣爆出一把星星，車車向前衝
   const car=app.querySelector('.track .car');if(car){car.style.left=trackPct(G.r+1)+'%';car.classList.add('go');}
   if(!el)return;const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
@@ -1303,7 +1311,7 @@ function startGame(i,g){
 const SEG_Q=3;
 function startMix(){
   const s=SUBJ,all=[];
-  s.items.forEach((it,i)=>(it.games||[]).filter(g=>!isLearn(g)).forEach(g=>all.push({i,g})));
+  s.items.forEach((it,i)=>{(it.games||[]).filter(g=>!isLearn(g)).forEach(g=>all.push({i,g}));if(it.words&&it.words.length>=3)all.push({i,g:'feed'});});
   if(!all.length)return;
   const cnt=sg=>(store.done[dkey(sg.i,sg.g)]||0)+Math.random();   // 玩得少嘅優先，同次數就隨機
   const segs=shuffle(all.sort((a,b)=>cnt(a)-cnt(b)).slice(0,4));
@@ -1338,6 +1346,12 @@ const GEN={
     const lang=G.lang,ws=prioritized(lang,it.words).slice(0,Math.min(8,it.words.length));
     return ws.map(w=>{const m=mix([w,...shuffle(it.words.filter(x=>x!==w)).slice(0,2)].map(x=>wv(x,'md',lang)));
       return {say:w,prompt:`<span class="mascot">${rand(['🦖','🦕','🐲'])}</span>`,ask:lang==='en'?'恐龍說了哪一個英文字？':'恐龍說了哪一個字？',...m,wide:true,kw:w,pop:PIC[w]};});
+  },
+  feed(it){   // 餵恐龍：恐龍講出想要邊個字，揀啱嘅字餵俾佢（越餵越大）
+    const lang=G.lang,ws=prioritized(lang,it.words).slice(0,Math.min(8,it.words.length)),dino=rand(['🦖','🦕','🐲']);
+    return ws.map(w=>{const m=mix([w,...shuffle(it.words.filter(x=>x!==w)).slice(0,2)].map(x=>wv(x,'md',lang)));
+      const say=lang==='yue'?'恐龍想要'+w:w;
+      return {say,sayLang:lang==='yue'?'yue':lang,prompt:`<span class="mascot feed">${dino}</span>`,ask:lang==='en'?'恐龍想要哪一個字？聽聽看':'恐龍想要哪一個字？聽聽看',...m,wide:true,kw:w,lang,feed:1,pop:PIC[w]};});
   },
   picword(it){
     const ws=prioritized('en',it.words).slice(0,Math.min(8,it.words.length));
@@ -1423,13 +1437,14 @@ function quizRound(){
   const q=G.qs[G.r];G.lock=false;G.miss=0;G.rs=[q.say,q.sayLang||G.lang];
   renderGame(`${dots()}<div class="qcard">${q.prompt||''}${q.ask?`<p class="ask">${esc(q.ask)}</p>`:''}</div>${replayBtn()}
     <div class="choices ${q.wide?'col':'row'}" style="--n:${q.opts.length}">${q.opts.map((o,i)=>`<button class="choice" data-act="pick" data-i="${i}">${o}</button>`).join('')}</div>`);
+  const fm=app.querySelector('.mascot.feed');if(fm)fm.style.fontSize=(78+G.r*16)+'px';
   say(...G.rs);
 }
 function pick(b){
   if(G.lock)return;
   const i=+b.dataset.i,q=G.qs[G.r];
   if(i===q.a){
-    G.lock=true;b.classList.add('right');burst(b);app.querySelector('.mascot')?.classList.add('chomp');award(q.kw,G.miss===0,q.lang,q.qid||'r'+G.r);chime(true);   // 題目編號：內容固定嘅題用 qid／字；隨機產生嘅題用「第幾題」
+    G.lock=true;b.classList.add('right');burst(b);feedFly(b,q);award(q.kw,G.miss===0,q.lang,q.qid||'r'+G.r);chime(true);   // 題目編號：內容固定嘅題用 qid／字；隨機產生嘅題用「第幾題」
     G.streak=G.miss===0?(G.streak||0)+1:0;
     if([3,5,8].includes(G.streak))toast(`🔥 連續答對 ${G.streak} 題！`,1800);
     if(q.pop)b.insertAdjacentHTML('beforeend',`<span class="pop">${q.pop}</span>`);
