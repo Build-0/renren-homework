@@ -95,3 +95,4 @@ data/k1-t1.json     幼兒班第一段綜合評估（26/27 年度）全科內容
 Claude 網頁版 artifact：https://claude.ai/artifact/CxeMcbajCcJKcn4JvtQ4UF（私人連結；上咗 GitHub Pages 之後以 Pages 為準）
 
 - **拎到新貼紙會講出名**（announceThen()，答啱後／完成前先講「好叻！攞到新貼紙，○○」再去下一題）。**圖示要有意義**：唔好用語意唔對嘅 emoji（路燈≠燈泡、長椅≠椅子、水龍頭≠花灑）；舊 Windows 冇字形嘅 emoji（石頭、硬幣）已改自畫 SVG（@streetlamp/@bench/@tapOn/@tapOff/@bulbOff/@rock/@coin/@classmates/@citizens），喺 ICON_SVG。
+- **玩法要好玩、專心（Benny 2026-10-28：仁仁冇辦法專心睇字詞，字卡冇用）**：科目頁唔再放「字卡」（`cards` 遊戲仍喺程式，但卡片隱藏）；遊戲頂部係**賽車跑道**（`dots()`／`trackPct()`：車車隨答啱向終點衝，每次隨機車款），答啱喺該掣爆星星（`burst()`），聽音揀字有恐龍吉祥物（`.mascot`，答啱會做動作）。之後想加更多玩法（餵恐龍、車車送貨等）都跟呢個方向：有角色、有動作、有即時回應。
