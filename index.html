@@ -302,6 +302,7 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 
 /* games */
 .gbody{display:flex;flex-direction:column;gap:16px}
+.mascot svg{width:1.15em;height:1.15em;display:block}
 .mascot{font-size:84px;line-height:1;display:inline-block;animation:idle 2s ease-in-out infinite}
 .parcel{position:fixed;z-index:60;font-style:normal;font-size:34px;transform:translate(-50%,-50%);transition:transform .6s cubic-bezier(.4,0,.6,1);pointer-events:none;margin:-17px 0 0 -17px}
 .house .word.mm.n1,.house .word.mm.n2,.house .word.mm.n3{--s:min(8vw,34px)}.house .en.mm{font-size:clamp(15px,4.4vw,24px);overflow-wrap:anywhere}
@@ -565,7 +566,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-28 11:48';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-28 11:49';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1268,7 +1269,7 @@ function renderGame(body){
   const back=G.review?'<button class="back" data-act="home">✕ 離開</button>':`<button class="back" data-act="subj">‹ ${esc(SUBJ.name)}</button>`;
   app.innerHTML=`<div class="bar">${back}<div class="g-title">${G.mix?`遊戲 <small>${G.mix.idx+1}／${G.mix.segs.length}</small>`:GAMES[G.g][1]}</div></div><div class="gbody">${body}</div>`;
 }
-const CARS_RUN=['🚗','🚒','🚌','🚓','🏎️','🚜','🦖'];
+const CARS_RUN=['🚗','🚒','🚌','🚓','🏎️','🚜'];
 const trackPct=r=>Math.min(100,Math.round(r/Math.max(1,G.total)*100));
 const dots=()=>{G.car=G.car||(G.mix&&G.mix.car)||rand(CARS_RUN);if(G.mix)G.mix.car=G.car;return `<div class="track" role="img" aria-label="第 ${G.r+1} 題，共 ${G.total} 題"><span class="lane"><b class="car" style="left:${trackPct(G.r)}%">${G.car}</b></span><span class="flag">🏁</span></div>`;};
 function feedFly(b,q){
@@ -1369,10 +1370,10 @@ const GEN={
   hear(it){
     const lang=G.lang,ws=prioritized(lang,it.words).slice(0,Math.min(8,it.words.length));
     return ws.map(w=>{const m=mix([w,...shuffle(it.words.filter(x=>x!==w)).slice(0,2)].map(x=>wv(x,'md',lang)));
-      return {say:w,prompt:`<span class="mascot">${rand(['🦖','🦕','🐲'])}</span>`,ask:lang==='en'?'恐龍說了哪一個英文字？':'恐龍說了哪一個字？',...m,wide:true,kw:w,pop:PIC[w]};});
+      return {say:w,prompt:`<span class="mascot">${rand(DINOS).s()}</span>`,ask:lang==='en'?'恐龍說了哪一個英文字？':'恐龍說了哪一個字？',...m,wide:true,kw:w,pop:PIC[w]};});
   },
   feed(it){   // 餵恐龍：恐龍講出想要邊個字，揀啱嘅字餵俾佢（越餵越大）
-    const lang=G.lang,ws=prioritized(lang,it.words).slice(0,Math.min(8,it.words.length)),dino=rand(['🦖','🦕','🐲']);
+    const lang=G.lang,ws=prioritized(lang,it.words).slice(0,Math.min(8,it.words.length)),dino=rand(DINOS).s();
     return ws.map(w=>{const m=mix([w,...shuffle(it.words.filter(x=>x!==w)).slice(0,2)].map(x=>wv(x,'md',lang)));
       const say=lang==='yue'?'恐龍想要'+w:w;
       return {say,sayLang:lang==='yue'?'yue':lang,prompt:`<span class="mascot feed">${dino}</span>`,ask:lang==='en'?'恐龍想要哪一個字？聽聽看':'恐龍想要哪一個字？聽聽看',...m,wide:true,kw:w,lang,feed:1,pop:PIC[w]};});
