@@ -566,7 +566,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-28 11:49';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-10-28 11:50';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1099,17 +1099,14 @@ function subjRow(s){
 const songOnly=s=>!s.items.some(it=>(it.games||[]).length);   // 只有歌曲、冇遊戲嘅科目（宗教、唱遊）：首頁收埋，喺家長分頁睇
 function renderHome(){
   G=null;SUBJ=null;LOGVIEW=false;ROOT='home';hush();
-  const subs=T.subjects.filter(s=>!songOnly(s)).sort((x,y)=>nextDate(x).localeCompare(nextDate(y)));   // 路線：按評估日期，一站一站
-  const cur=subs.findIndex(s=>{const [d,t]=subjProgress(s);return !(t&&d/t>=.8);});   // 車車停喺第一個未夠 80% 嘅站
-  const stops=subs.map((s,k)=>{
-    const side=k%2?'r':'l',conn=k?`<svg class="conn ${side}" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path d="${side==='r'?'M25 0 C25 30 75 10 75 40':'M75 0 C75 30 25 10 25 40'}" fill="none"/></svg>`:'';
-    const [d,t]=subjProgress(s),done=t&&d/t>=.8;
-    return conn+`<div class="stop ${side}">${k===cur?'<b class="mapcar" aria-hidden="true">🚗</b>':''}${done?'<b class="mapstar" aria-hidden="true">⭐</b>':''}${s.pre?'<small class="pretag">提前評估</small>':''}${subjRow(s)}</div>`;
-  }).join('');
+  const byDate=(a,b)=>nextDate(a).localeCompare(nextDate(b));
+  const subs=T.subjects.filter(s=>!songOnly(s)),pre=subs.filter(s=>s.pre).sort(byDate),main=subs.filter(s=>!s.pre).sort(byDate);
+  const groups=[['提前評估',pre,'is-pre'],['主要評估',main,'is-main']].filter(g=>g[1].length)
+    .sort((a,b)=>nextDate(a[1][0]).localeCompare(nextDate(b[1][0])));   // 區塊本身都按日期排
   app.innerHTML=`
     <header class="top"><div><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1><div class="ver">版本 ${APP_VER}</div></div></header>
     ${voiceNote()}
-    <section class="map" aria-label="學習地圖">${stops}<div class="mapend">🏁<small>評估日</small></div></section>`;
+    ${groups.map(g=>subjSection(g[0],g[1],g[2])).join('')}`;
   tabs('home');
 }
 
