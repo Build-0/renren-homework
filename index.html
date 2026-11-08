@@ -799,7 +799,7 @@ const SW={blue:['#2B6CE0','藍色'],red:['#E0453A','紅色'],yellow:['#F2C230','
 const swv=c=>`<span class="sw" style="background:${SW[c][0]}" aria-label="${SW[c][1]}"></span>`;
 const SHAPES={circle:'<circle cx="40" cy="40" r="32"/>',square:'<rect x="9" y="9" width="62" height="62" rx="3"/>',triangle:'<path d="M40 7 75 71H5z"/>',rect:'<rect x="4" y="18" width="72" height="44" rx="3"/>',diamond:'<path d="M40 4 74 40 40 76 6 40z"/>',star:'<path d="M40 5l10.5 22.5 24.5 2.5-18.5 16.5 5.5 24.5L40 58 18 71l5.5-24.5L5 30l24.5-2.5z"/>'};
 const SHAPE_NAME={circle:'圓形',square:'正方形',rect:'長方形',triangle:'三角形',diamond:'菱形',star:'星形'};
-const pickTarget=(all,main)=>Math.random()<.4?main:rand(all.filter(x=>x!==main));   // 大綱字面係藍色／圓形，所以佔多啲；其他都會考
+const pickTarget=(all,main)=>Math.random()<.3?main:rand(all.filter(x=>x!==main));   // 大綱字面係藍色／圓形，所以佔多啲；其他都會考
 const shv=s=>`<svg class="shp" viewBox="0 0 80 80" aria-hidden="true">${SHAPES[s]}</svg>`;
 const wetv=(e,wet)=>`<span class="wet ${wet?'is':''}"><span class="pe">${e}</span>${wet?'<i>💧</i><i>💧</i><i>💧</i>':''}</span>`;
 const starPill=()=>`<div class="stars" aria-label="星星"><span class="st">★</span><b class="starN">${store.stars}</b></div>`;
