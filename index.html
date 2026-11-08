@@ -797,7 +797,9 @@ const grp=(e,n)=>`<span class="grp">${Array(n).fill(`<i>${e}</i>`).join('')}</sp
 const numv=n=>`<span class="numv"><b>${n}</b>${n<=3?`<small>${CN[n]}</small>`:''}</span>`;
 const SW={blue:['#2B6CE0','藍色'],red:['#E0453A','紅色'],yellow:['#F2C230','黃色'],green:['#2EA35A','綠色']};
 const swv=c=>`<span class="sw" style="background:${SW[c][0]}" aria-label="${SW[c][1]}"></span>`;
-const SHAPES={circle:'<circle cx="40" cy="40" r="32"/>',square:'<rect x="9" y="9" width="62" height="62" rx="3"/>',triangle:'<path d="M40 7 75 71H5z"/>',star:'<path d="M40 5l10.5 22.5 24.5 2.5-18.5 16.5 5.5 24.5L40 58 18 71l5.5-24.5L5 30l24.5-2.5z"/>'};
+const SHAPES={circle:'<circle cx="40" cy="40" r="32"/>',square:'<rect x="9" y="9" width="62" height="62" rx="3"/>',triangle:'<path d="M40 7 75 71H5z"/>',rect:'<rect x="4" y="18" width="72" height="44" rx="3"/>',diamond:'<path d="M40 4 74 40 40 76 6 40z"/>',star:'<path d="M40 5l10.5 22.5 24.5 2.5-18.5 16.5 5.5 24.5L40 58 18 71l5.5-24.5L5 30l24.5-2.5z"/>'};
+const SHAPE_NAME={circle:'圓形',square:'正方形',rect:'長方形',triangle:'三角形',diamond:'菱形',star:'星形'};
+const pickTarget=(all,main)=>Math.random()<.4?main:rand(all.filter(x=>x!==main));   // 大綱字面係藍色／圓形，所以佔多啲；其他都會考
 const shv=s=>`<svg class="shp" viewBox="0 0 80 80" aria-hidden="true">${SHAPES[s]}</svg>`;
 const wetv=(e,wet)=>`<span class="wet ${wet?'is':''}"><span class="pe">${e}</span>${wet?'<i>💧</i><i>💧</i><i>💧</i>':''}</span>`;
 const starPill=()=>`<div class="stars" aria-label="星星"><span class="st">★</span><b class="starN">${store.stars}</b></div>`;
@@ -1420,14 +1422,17 @@ const GEN={
     });
   },
   color(){
-    return Array.from({length:6},()=>{const m=mix(['blue',...shuffle(['red','yellow','green']).slice(0,2)].map(swv));
-      return {say:'邊個係藍色？',ask:'哪一個是藍色？',...m,ok:()=>say('係藍色！','yue'),okWait:1400};});
+    return Array.from({length:6},()=>{
+      const t=pickTarget(Object.keys(SW),'blue'),nm=SW[t][1],m=mix([t,...shuffle(Object.keys(SW).filter(x=>x!==t)).slice(0,2)].map(swv));
+      return {say:`邊個係${nm}？`,ask:`哪一個是${nm}？`,...m,ok:()=>say(`係${nm}！`,'yue'),okWait:1400};});
   },
   shape(){
     return Array.from({length:6},(_,k)=>{
-      const list=k%2===0?['circle',...shuffle(['square','triangle','star']).slice(0,2)].map(shv)
-        :[rand(ROUND),...shuffle(NOTROUND).slice(0,2)].map(e=>pc(e));
-      return {say:k%2===0?'邊個係圓形？':'邊樣嘢係圓形？',ask:k%2===0?'哪一個是圓形？':'哪一樣東西是圓形？',...mix(list),ok:()=>say('係圓形！','yue'),okWait:1400};
+      const t=pickTarget(Object.keys(SHAPES),'circle'),nm=SHAPE_NAME[t];
+      if(t==='circle'&&k%2){const m=mix([rand(ROUND),...shuffle(NOTROUND).slice(0,2)].map(e=>pc(e)));
+        return {say:'邊樣嘢係圓形？',ask:'哪一樣東西是圓形？',...m,ok:()=>say('係圓形！','yue'),okWait:1400};}
+      const m=mix([t,...shuffle(Object.keys(SHAPES).filter(x=>x!==t)).slice(0,2)].map(shv));
+      return {say:`邊個係${nm}？`,ask:`哪一個是${nm}？`,...m,ok:()=>say(`係${nm}！`,'yue'),okWait:1400};
     });
   },
   letter(it){
@@ -1591,12 +1596,13 @@ function chantStep(n,tok){
 }
 
 /* ---- 揀晒藍色 ---- */
-const BLUE=['🫐','👖','🐳','📘','🧢','💙','💧'],NOTBLUE=['🍎','🍌','🍊','🍓','🌽','🐥','🍋','🥕','🌻','🍅'];
+const COLITEMS={blue:['🫐','👖','🐳','📘','🧢','💙','💧'],red:['🍎','🍓','🍅','🌹','❤️','🚒'],yellow:['🍌','🍋','🌻','🐥','⭐','🌽'],green:['🥒','🐸','🥦','🍏','🐢','🌲']};
 function pickInit(){G.total=G.mix?2:4;pickRound();}
 function pickRound(){
-  G.cells=shuffle([...shuffle(BLUE).slice(0,3).map(e=>({e,b:1})),...shuffle(NOTBLUE).slice(0,3).map(e=>({e,b:0}))]);
-  G.found=0;G.miss=0;G.rs=['揀晒所有藍色嘅嘢出嚟','yue'];
-  renderGame(`${dots()}<div class="qcard"><p class="ask">請選出所有藍色的東西</p><p class="small">一共有 3 個</p></div>${replayBtn()}
+  const t=pickTarget(Object.keys(COLITEMS),'blue'),nm=SW[t][1],others=Object.keys(COLITEMS).filter(x=>x!==t).flatMap(k=>COLITEMS[k]);
+  G.cells=shuffle([...shuffle(COLITEMS[t]).slice(0,3).map(e=>({e,b:1})),...shuffle(others).slice(0,3).map(e=>({e,b:0}))]);
+  G.found=0;G.miss=0;G.nm=nm;G.rs=[`揀晒所有${nm}嘅嘢出嚟`,'yue'];
+  renderGame(`${dots()}<div class="qcard"><p class="ask">請選出所有${nm}的東西</p><p class="small">一共有 3 個</p></div>${replayBtn()}
     <div class="pgrid">${G.cells.map((c,i)=>`<button class="choice" data-act="pk" data-i="${i}">${pc(c.e)}</button>`).join('')}</div>`);
   say(...G.rs);
 }
@@ -1606,7 +1612,7 @@ function pk(b){
     b.classList.add('right');b.disabled=true;chime(true);
     if(++G.found===3){award(null,G.miss===0,G.lang,'r'+G.r);chime(true);afterSpeech(gd(()=>praiseThen(()=>{G.r++;G.r>=G.total?finish():pickRound();})),1300);}
   }else{
-    G.miss++;chime(false);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');say('呢個唔係藍色','yue');
+    G.miss++;chime(false);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');say('呢個唔係'+G.nm,'yue');
   }
 }
 
