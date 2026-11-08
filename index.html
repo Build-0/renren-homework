@@ -359,8 +359,8 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 
 /* visuals */
 .pc{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
-.pe{font-size:clamp(44px,13vw,64px);line-height:1}
-.qcard .pe{font-size:clamp(64px,20vw,110px)}
+.pe{font-size:clamp(44px,13vw,64px);line-height:1.2;padding-bottom:4px}
+.qcard .pe{line-height:1.25;padding-bottom:8px;font-size:clamp(64px,20vw,110px)}
 .pcap{font-family:var(--kai);font-weight:700;font-size:clamp(16px,4.4vw,22px);line-height:1.25;text-wrap:balance}
 .grp{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;font-size:clamp(34px,10vw,52px);line-height:1}
 .grp i{font-style:normal}
@@ -435,6 +435,12 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 @keyframes spin{0%{transform:rotate(-180deg) scale(.2)}100%{transform:rotate(0) scale(1)}}
 @keyframes fall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(110vh) rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.fall{display:none}}
+/* 選項入面嘅字：按字數同選項闊度計大小，長詞（例如「垃圾桶」「清潔工」）唔會超出邊界 */
+.choice{container-type:inline-size}
+.word.k1{--k:1}.word.k2{--k:2}.word.k3{--k:3}.word.k4{--k:4}.word.k5{--k:5}.word.k6{--k:6}
+.choice .word.md:is(.n1,.n2,.n3){--s:min(104px,calc((100cqw - 24px)/var(--k)))}
+@media (min-width:700px){.choice .word.md:is(.n1,.n2,.n3){--s:min(140px,calc((100cqw - 24px)/var(--k)))}}
+.choice .en.md{overflow-wrap:anywhere;max-width:100%}
 </style>
 </head>
 <body>
@@ -566,7 +572,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-08 17:11';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-08 17:23';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -784,7 +790,7 @@ function webChime(ok){
 
 /* ============ 畫面零件 ============ */
 let PIC={};
-function cells(w,size){const cs=[...w];return `<span class="word ${size} n${Math.min(cs.length,3)}">${cs.map(c=>`<span class="tz"><span>${c}</span></span>`).join('')}</span>`;}
+function cells(w,size){const cs=[...w];return `<span class="word ${size} n${Math.min(cs.length,3)} k${Math.min(cs.length,6)}">${cs.map(c=>`<span class="tz"><span>${c}</span></span>`).join('')}</span>`;}
 const wv=(w,size,lang)=>lang==='en'?`<span class="en ${size}">${esc(w)}</span>`:cells(w,size);
 const pc=(e,c)=>`<span class="pc"><span class="pe">${e}</span>${c?`<span class="pcap">${esc(c)}</span>`:''}</span>`;
 const grp=(e,n)=>`<span class="grp">${Array(n).fill(`<i>${e}</i>`).join('')}</span>`;
@@ -1585,7 +1591,7 @@ function chantStep(n,tok){
 }
 
 /* ---- 揀晒藍色 ---- */
-const BLUE=['🫐','👖','🐳','📘','🧢','💙','🚙'],NOTBLUE=['🍎','🍌','🍊','🍓','🌽','🐥','🍋','🥕','🌻','🍅'];
+const BLUE=['🫐','👖','🐳','📘','🧢','💙','💧'],NOTBLUE=['🍎','🍌','🍊','🍓','🌽','🐥','🍋','🥕','🌻','🍅'];
 function pickInit(){G.total=G.mix?2:4;pickRound();}
 function pickRound(){
   G.cells=shuffle([...shuffle(BLUE).slice(0,3).map(e=>({e,b:1})),...shuffle(NOTBLUE).slice(0,3).map(e=>({e,b:0}))]);
