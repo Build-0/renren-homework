@@ -274,7 +274,9 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .reviewbar b{font-family:var(--kai);font-size:22px}
 .reviewbar span{font-size:14px;color:var(--soft)}
 .reviewbar:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
-.qgrp{margin-top:14px}.qgrp:first-of-type{margin-top:6px}.qgrp h3{margin:0 0 8px;font-size:17px;padding:6px 10px;background:color-mix(in srgb,var(--sky) 14%,var(--card));border-radius:12px;border-left:5px solid var(--sky)}
+.qgrp{margin-top:14px}.qgrp:first-of-type{margin-top:6px}.seqbtn{margin-left:auto;font-family:var(--ui);font-size:13px;font-weight:700;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:3px 10px;box-shadow:0 2px 0 var(--ink)}
+.qgrp h3,.wd h3{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.qgrp h3 span,.wd h3 span{flex:1 1 auto}
+.qgrp h3{margin:0 0 8px;font-size:17px;padding:6px 10px;background:color-mix(in srgb,var(--sky) 14%,var(--card));border-radius:12px;border-left:5px solid var(--sky)}
 .qa{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
 .wdgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}.wd{display:flex;flex-direction:column;gap:8px;min-width:0}.wd h3{margin:0 0 2px;font-size:19px;text-align:center;padding:6px;border-radius:12px}
 .wd.wet h3{background:color-mix(in srgb,#6FB6F0 25%,var(--card))}.wd.dry h3{background:color-mix(in srgb,#F2C230 28%,var(--card))}
@@ -577,7 +579,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-08 17:41';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-08 17:43';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -674,7 +676,19 @@ function say(text,lang,onend){
   // 取消上一句之後要等一陣（iPhone 太快 speak 會被吞咗），由 80ms 改為 250ms
   if(ss.speaking||ss.pending){if(curU)curU.done=true;ss.cancel();setTimeout(()=>go(false),250);}else go(false);
 }
-let curU=null,pvT=0,popT=0;
+let curU=null,pvT=0,popT=0,seqTok=0;
+function playSeq(sec){   // 順序播放：先讀題目，再逐張卡讀出答案（讀緊嗰張亮起）
+  if(!sec)return;const tok=++seqTok,cards=[...sec.querySelectorAll('.qab')];
+  app.querySelectorAll('.qab.on').forEach(x=>x.classList.remove('on'));
+  const step=i=>{
+    if(tok!==seqTok||!document.body.contains(cards[0]))return;
+    cards.forEach(x=>x.classList.remove('on'));
+    if(i>=cards.length)return;
+    const c=cards[i];c.classList.add('on');try{c.scrollIntoView({block:'nearest',behavior:'smooth'});}catch(e){}
+    say(c.dataset.a||c.dataset.t,'yue');afterSpeech(()=>step(i+1),700);
+  };
+  say(sec.dataset.q||'','yue');afterSpeech(()=>step(0),900);
+}
 function picPop(btn,w){   // 撳字詞表嘅字：喺嗰個字右上角彈出相應嘅細圖（有配圖先彈）
   document.querySelectorAll('.picbub').forEach(x=>x.remove());clearTimeout(popT);
   const e=PIC[w];if(!e)return;
@@ -1266,10 +1280,10 @@ function renderList(){
       ?`<div class="preview ${mixed?'mixed':''}">${words.map(w=>{const st=memState(lang,w);return `<button class="pv ${st==='got'||st==='due'?st:''}" data-act="pv" data-t="${esc(w)}" data-l="${lang}" aria-label="讀出 ${esc(w)}（${MEM_TXT[st]}）">${wv(w,'sm',lang)}</button>`;}).join('')}</div>`
       :`<div class="preview ${mixed?'mixed':''}">${letters.map(L=>`<button class="pv" data-act="pv" data-t="${L}" data-l="en"><span class="en sm">${L}${L.toLowerCase()}</span></button>`).join('')}</div>`);
   }
-  if(it.contrast){const col=(t,cls,list,say)=>`<div class="wd ${cls}"><h3>${t}</h3>${list.map(x=>`<button class="qab" data-act="pv" data-t="${esc((x[2]||x[1])+'，'+say)}" data-l="yue"><span class="qa-a"><span class="qi">${x[0]}</span><b>${esc(x[1])}</b></span></button>`).join('')}</div>`;
+  if(it.contrast){const col=(t,cls,list,say)=>`<div class="wd ${cls}" data-q="${say==='係濕嘅'?'濕嘅嘢有':'乾嘅嘢有'}"><h3><span>${t}</span><button class="seqbtn" data-act="seq">▶ 順序播放</button></h3>${list.map(x=>`<button class="qab" data-act="pv" data-t="${esc((x[2]||x[1])+'，'+say)}" data-a="${esc(x[2]||x[1])}" data-l="yue"><span class="qa-a"><span class="qi">${x[0]}</span><b>${esc(x[1])}</b></span></button>`).join('')}</div>`;
     body=`<p class="small">按一下會讀出來。</p><div class="wdgrid">${col('💧 濕的','wet',it.contrast.wet,'係濕嘅')}${col('☀️ 乾的','dry',it.contrast.dry,'係乾嘅')}</div>`;}
   if(it.quiz){const gs=[];it.quiz.forEach(x=>{let g=gs.find(y=>y.q===x.q);if(!g){g={q:x.q,xs:[]};gs.push(g);}g.xs.push(x);});   // 同一條題目嘅答案放埋一組，唔同題目分開
-    body=`<p class="small">每一題的答案都在這裡，按一下會讀出題目和答案。</p>${gs.map(g=>`<section class="qgrp"><h3>${esc(g.q)}</h3><ul class="qa">${g.xs.map(x=>{const a=x.o[0];return `<li><button class="qab" data-act="pv" data-t="${esc((x.say||x.q)+'　'+(a[2]||a[1]))}" data-l="yue"><span class="qa-a"><span class="qi">${a[0]}</span><b>${esc(a[1])}</b></span></button></li>`;}).join('')}</ul></section>`).join('')}`;}
+    body=`<p class="small">每一題的答案都在這裡，按一下會讀出題目和答案。</p>${gs.map(g=>`<section class="qgrp" data-q="${esc(g.xs[0].say||g.q)}"><h3><span>${esc(g.q)}</span><button class="seqbtn" data-act="seq">▶ 順序播放</button></h3><ul class="qa">${g.xs.map(x=>{const a=x.o[0];return `<li><button class="qab" data-act="pv" data-t="${esc((x.say||x.q)+'　'+(a[2]||a[1]))}" data-a="${esc(a[2]||a[1])}" data-l="yue"><span class="qa-a"><span class="qi">${a[0]}</span><b>${esc(a[1])}</b></span></button></li>`;}).join('')}</ul></section>`).join('')}`;}
   if(it.sentences)body=`<p class="small">按一下句子會讀出來。</p><ul class="sents">${it.sentences.flatMap((x,xi)=>x.opts.map((o,oi)=>`<li class="${oi===0&&xi>0?'gs':''}"><button class="pvs" data-act="pv" data-t="${esc(x.pre+o+x.post)}" data-l="${lang}">${esc(x.pre)}<u>${esc(o)}</u>${esc(x.post)}</button></li>`)).join('')}</ul>`;   // 每個選項一句，逐句讀（唔係只讀第一個）
   if(it.songs)body=`<div class="songs">${it.songs.map(x=>{const n=songN(x),u=typeof x==='object'&&/^https?:\/\//.test(x.url||'')?x.url:'';
     return `<span class="songwrap"><button class="song" data-act="sing" data-n="${esc(n)}" aria-pressed="${!!store.sung[`${T.id}:${n}`]}"><span class="tick">✓</span>《${esc(n)}》</button>${u?`<a class="songlink" href="${esc(u)}" target="_blank" rel="noopener">▶ 聽歌</a>`:''}</span>`;}).join('')}</div><p class="small">複習完一首，按一下記起來。${it.songs.some(x=>typeof x==='object'&&x.url)?'有「▶ 聽歌」的可以按下去聽。':''}</p>`;
@@ -1685,6 +1699,7 @@ document.addEventListener('click',e=>{
     case 'usagelog':navPush('log');renderUsageLog();window.scrollTo(0,0);break;
     case 'review':if(reviewCandidates(b.dataset.k||'wrong').length)navPush('game');startReview(b.dataset.k||'wrong');window.scrollTo(0,0);break;
     case 'subj':navToSubject();break;
+    case 'seq':{playSeq(b.closest('.qgrp,.wd'));break;}
     case 'pv':{say(b.dataset.t,b.dataset.l);app.querySelectorAll('.pv.on,.pvs.on,.qab.on').forEach(x=>x.classList.remove('on'));b.classList.add('on');clearTimeout(pvT);pvT=setTimeout(()=>b.classList.remove('on'),1400);picPop(b,b.dataset.t);break;}   // 撳咗邊個，邊個亮起（讀緊）
 
     case 'shuf':{const i=+b.dataset.i,it=SUBJ.items[i],src=it.words||it.letters;let s;do{s=shuffle(src);}while(src.length>2&&s.join()===(SHUF[skey(i)]||src).join());SHUF[skey(i)]=s;renderList();chime(true);break;}
