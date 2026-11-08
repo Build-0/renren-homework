@@ -275,7 +275,9 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .reviewbar span{font-size:14px;color:var(--soft)}
 .reviewbar:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
 .qa{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
-.wdgrid{display:grid;gap:14px}.wd{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;align-content:start}.wd h3{grid-column:1/-1;margin:0;font-size:20px}
+.wdgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}.wd{display:flex;flex-direction:column;gap:8px;min-width:0}.wd h3{margin:0 0 2px;font-size:19px;text-align:center;padding:6px;border-radius:12px}
+.wd.wet h3{background:color-mix(in srgb,#6FB6F0 25%,var(--card))}.wd.dry h3{background:color-mix(in srgb,#F2C230 28%,var(--card))}
+.wd .qab{min-height:0;height:auto;flex-direction:row;justify-content:flex-start;gap:8px;padding:8px 10px;text-align:left}.wd .qa-a{flex-direction:row;gap:8px;align-items:center}.wd .qi{font-size:30px}
 .wd.wet .qab{border-color:#6FB6F0}.wd.dry .qab{border-color:#F2C230}.wd .qa-a b{font-size:15px}
 .qab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;min-height:120px;text-align:center;background:var(--card);border:2px solid var(--rule);border-radius:16px;padding:8px 6px;font-family:var(--kai);box-shadow:0 3px 0 var(--rule)}
 .qab.on{background:var(--sun);border-color:var(--ink)}
@@ -574,7 +576,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-08 17:32';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-08 17:40';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
