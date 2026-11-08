@@ -566,7 +566,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-10-28 11:50';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-08 17:11';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1367,18 +1367,18 @@ const GEN={
   hear(it){
     const lang=G.lang,ws=prioritized(lang,it.words).slice(0,Math.min(8,it.words.length));
     return ws.map(w=>{const m=mix([w,...shuffle(it.words.filter(x=>x!==w)).slice(0,2)].map(x=>wv(x,'md',lang)));
-      return {say:w,prompt:`<span class="mascot">${rand(DINOS).s()}</span>`,ask:lang==='en'?'恐龍說了哪一個英文字？':'恐龍說了哪一個字？',...m,wide:true,kw:w,pop:PIC[w]};});
+      return {say:w,prompt:`<span class="mascot">${rand(DINOS).s()}</span>`,ask:lang==='en'?'聽聽看，是哪一個英文字？':'聽聽看，是哪一個字？',...m,wide:true,kw:w,pop:PIC[w]};});
   },
   feed(it){   // 餵恐龍：恐龍講出想要邊個字，揀啱嘅字餵俾佢（越餵越大）
     const lang=G.lang,ws=prioritized(lang,it.words).slice(0,Math.min(8,it.words.length)),dino=rand(DINOS).s();
     return ws.map(w=>{const m=mix([w,...shuffle(it.words.filter(x=>x!==w)).slice(0,2)].map(x=>wv(x,'md',lang)));
-      const say=lang==='yue'?'恐龍想要'+w:w;
-      return {say,sayLang:lang==='yue'?'yue':lang,prompt:`<span class="mascot feed">${dino}</span>`,ask:lang==='en'?'恐龍想要哪一個字？聽聽看':'恐龍想要哪一個字？聽聽看',...m,wide:true,kw:w,lang,feed:1,pop:PIC[w]};});
+      const say=w;   // 只讀字本身：「恐龍想要老師」呢類句子冇意思，仲會搶走小朋友對「字」嘅注意
+      return {say,sayLang:lang==='yue'?'yue':lang,prompt:`<span class="mascot feed">${dino}</span>`,ask:'聽聽看，是哪一個字？',...m,wide:true,kw:w,lang,feed:1,pop:PIC[w]};});
   },
   deliver(it){   // 車車送貨：車車講出包裹要送去邊間屋（邊個字），撳啱嗰間屋
     const lang=G.lang,ws=prioritized(lang,it.words).slice(0,Math.min(8,it.words.length)),truck=rand(['🚚','🚛','🚐']);
     return ws.map(w=>{const m=mix([w,...shuffle(it.words.filter(x=>x!==w)).slice(0,2)].map(x=>`<span class="house"><i class="roof">🏠</i>${wv(x,'mm',lang)}</span>`));
-      return {say:lang==='yue'?'包裹要送去'+w:w,sayLang:lang,prompt:`<span class="mascot deliver">${truck}</span>`,ask:'包裹要送到哪一間？聽聽看',...m,wide:false,kw:w,lang,deliver:1,pop:PIC[w]};});
+      return {say:w,sayLang:lang,prompt:`<span class="mascot deliver">${truck}</span>`,ask:'聽聽看，送到哪一間？',...m,wide:false,kw:w,lang,deliver:1,pop:PIC[w]};});
   },
   picword(it){
     const ws=prioritized('en',it.words).slice(0,Math.min(8,it.words.length));
