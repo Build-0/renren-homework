@@ -572,7 +572,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-08 17:23';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-08 17:25';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -818,6 +818,7 @@ function pillS(dates){
   if(d===0)return '<span class="pill today">今天</span>';
   return `<span class="pill ${d<=10?'soon':d<=20?'up':'far'}">${d} 天</span>`;
 }
+const finished=s=>daysTo(s.dates[s.dates.length-1])<0;   // 評估日已過（考完）
 const nextDate=s=>s.dates.find(d=>daysTo(d)>=0)||s.dates[s.dates.length-1];
 
 /* ============ 狀態 ============ */
@@ -1108,7 +1109,7 @@ const songOnly=s=>!s.items.some(it=>(it.games||[]).length);   // 只有歌曲、
 function renderHome(){
   G=null;SUBJ=null;LOGVIEW=false;ROOT='home';hush();
   const byDate=(a,b)=>nextDate(a).localeCompare(nextDate(b));
-  const subs=T.subjects.filter(s=>!songOnly(s)),pre=subs.filter(s=>s.pre).sort(byDate),main=subs.filter(s=>!s.pre).sort(byDate);
+  const subs=T.subjects.filter(s=>!songOnly(s)&&!finished(s)),pre=subs.filter(s=>s.pre).sort(byDate),main=subs.filter(s=>!s.pre).sort(byDate);
   const groups=[['提前評估',pre,'is-pre'],['主要評估',main,'is-main']].filter(g=>g[1].length)
     .sort((a,b)=>nextDate(a[1][0]).localeCompare(nextDate(b[1][0])));   // 區塊本身都按日期排
   app.innerHTML=`
@@ -1166,6 +1167,7 @@ function renderParent(){
       <div class="usage"><button class="btn ghost tbtn ${timerOn?'on':''}" id="timerBtn" data-act="timer">${timerLabel()}</button><span><span id="usage">${usageText()}</span> <button class="linkbtn" data-act="usagelog">查看記錄 ›</button></span></div>
       <p class="small">要按「開始計時」才會統計，閒置 5 分鐘自動結束。</p>
     </section>
+    ${T.subjects.some(finished)?`<section class="panel"><h2 class="sec">已考完的科目</h2><div class="subjects">${T.subjects.filter(finished).map(subjRow).join('')}</div><p class="small">評估日已過，所以不放在首頁，也不再出現在「複習」和「溫故」。想再玩可以從這裡進去。</p></section>`:''}
     ${songsPanel()}
     <section class="panel">
       <h2 class="sec">各科難度與複習時間</h2>
@@ -1313,7 +1315,7 @@ function orList(caps){return caps.length<2?caps.join(''):caps.slice(0,-1).join('
 /* ---- 今日重溫：跨科目，專揀「要重溫」同「學緊但今日未溫」嘅字 ---- */
 function reviewCandidates(kind){   // kind 'wrong'＝複習（答錯過／學緊未記牢）；'old'＝溫故（已記住，隔咗幾天要再確認）
   const seen=new Set(),out=[];
-  T.subjects.forEach(s=>s.items.forEach(it=>(it.words||[]).forEach(w=>{
+  T.subjects.filter(s=>!finished(s)).forEach(s=>s.items.forEach(it=>(it.words||[]).forEach(w=>{
     const k=mkey(s.lang,w);if(seen.has(k))return;seen.add(k);
     const st=memState(s.lang,w),m=store.mem[k];
     if(kind==='old'?st==='due':(st==='learn'&&m.d!==dayKey()))out.push({w,lang:s.lang,pool:it.words,rank:memRank(s.lang,w)-(m&&m.w>0&&kind!=='old'?1:0)});
