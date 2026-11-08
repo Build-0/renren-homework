@@ -275,6 +275,8 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .reviewbar span{font-size:14px;color:var(--soft)}
 .reviewbar:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
 .qa{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.wdgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.wd{display:grid;gap:10px;align-content:start}.wd h3{margin:0;font-size:20px}
+.wd.wet .qab{border-color:#6FB6F0}.wd.dry .qab{border-color:#F2C230}.wd .qa-a b{font-size:18px}
 .qab{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;text-align:left;background:var(--card);border:2px solid var(--rule);border-radius:16px;padding:10px 14px;font-family:var(--kai)}
 .qab.on{background:var(--sun);border-color:var(--ink)}
 .qq{font-size:18px;color:var(--soft);line-height:1.4}
@@ -572,7 +574,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-08 17:30';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-08 17:32';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1211,7 +1213,7 @@ function renderUsageLog(){
 const LEARN_G=new Set(['cards','chant']);
 const isLearn=g=>LEARN_G.has(g);
 const songItemOnly=it=>!!it.songs&&!it.words&&!it.letters&&!it.sentences&&!(it.games||[]).length;
-const hasDetail=it=>!!(it.words||it.letters||it.sentences||it.songs||it.quiz);
+const hasDetail=it=>!!(it.words||it.letters||it.sentences||it.songs||it.quiz||it.contrast);
 const learnItems=s=>s.items.map((it,i)=>({it,i})).filter(({it})=>!(songItemOnly(it)&&!songOnly(s))&&(hasDetail(it)||(it.games||[]).some(isLearn)));
 const gameItems=s=>s.items.map((it,i)=>({it,i})).filter(({it})=>(it.games||[]).some(g=>!isLearn(g)));
 const segLabel=it=>String(it.label).replace(/內容$/,'');
@@ -1224,11 +1226,12 @@ function itemCount(it){
   if(it.sentences)return `${it.sentences.length} 句`;
   if(it.songs)return `${it.songs.length} 首`;
   if(it.quiz)return `${it.quiz.length} 題`;
+  if(it.contrast)return `${it.contrast.wet.length+it.contrast.dry.length} 個例子`;
   return '';
 }
 const LEARN_SUB={cards:'一張一張學',chant:'1 到 30'};   // 學習卡副標題（唔再重複老師嘅項目名，免得同清單卡撞名）
 const ITEM_NAME=it=>it.words?'字詞表':it.letters?'字母表':it.sentences?'句子表':segLabel(it);   // 清單卡名稱
-const ITEM_ICON=it=>it.words?'🔤':it.letters?'🔠':it.sentences?'💬':it.quiz?'💡':'🎵';
+const ITEM_ICON=it=>it.words?'🔤':it.letters?'🔠':it.sentences?'💬':it.quiz?'💡':it.contrast?'💧':'🎵';
 function renderSubject(){
   G=null;LOGVIEW=false;hush();
   const s=SUBJ,L=learnItems(s),Gm=gameItems(s);
@@ -1260,6 +1263,8 @@ function renderList(){
       ?`<div class="preview ${mixed?'mixed':''}">${words.map(w=>{const st=memState(lang,w);return `<button class="pv ${st==='got'||st==='due'?st:''}" data-act="pv" data-t="${esc(w)}" data-l="${lang}" aria-label="讀出 ${esc(w)}（${MEM_TXT[st]}）">${wv(w,'sm',lang)}</button>`;}).join('')}</div>`
       :`<div class="preview ${mixed?'mixed':''}">${letters.map(L=>`<button class="pv" data-act="pv" data-t="${L}" data-l="en"><span class="en sm">${L}${L.toLowerCase()}</span></button>`).join('')}</div>`);
   }
+  if(it.contrast){const col=(t,cls,list,say)=>`<div class="wd ${cls}"><h3>${t}</h3>${list.map(x=>`<button class="qab" data-act="pv" data-t="${esc((x[2]||x[1])+'，'+say)}" data-l="yue"><span class="qa-a"><span class="qi">${x[0]}</span><b>${esc(x[1])}</b></span></button>`).join('')}</div>`;
+    body=`<p class="small">按一下會讀出來。</p><div class="wdgrid">${col('💧 濕的','wet',it.contrast.wet,'係濕嘅')}${col('☀️ 乾的','dry',it.contrast.dry,'係乾嘅')}</div>`;}
   if(it.quiz)body=`<p class="small">每一題的答案都在這裡，按一下會讀出題目和答案。</p><ul class="qa">${it.quiz.map(x=>{const a=x.o[0];return `<li><button class="qab" data-act="pv" data-t="${esc((x.say||x.q)+'　'+(a[2]||a[1]))}" data-l="yue"><span class="qq">${esc(x.q)}</span><span class="qa-a"><span class="qi">${a[0]}</span><b>${esc(a[1])}</b></span></button></li>`;}).join('')}</ul>`;
   if(it.sentences)body=`<p class="small">按一下句子會讀出來。</p><ul class="sents">${it.sentences.flatMap((x,xi)=>x.opts.map((o,oi)=>`<li class="${oi===0&&xi>0?'gs':''}"><button class="pvs" data-act="pv" data-t="${esc(x.pre+o+x.post)}" data-l="${lang}">${esc(x.pre)}<u>${esc(o)}</u>${esc(x.post)}</button></li>`)).join('')}</ul>`;   // 每個選項一句，逐句讀（唔係只讀第一個）
   if(it.songs)body=`<div class="songs">${it.songs.map(x=>{const n=songN(x),u=typeof x==='object'&&/^https?:\/\//.test(x.url||'')?x.url:'';
