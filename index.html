@@ -274,13 +274,13 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* æ
 .reviewbar b{font-family:var(--kai);font-size:22px}
 .reviewbar span{font-size:14px;color:var(--soft)}
 .reviewbar:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
-.qa{margin:0;padding:0;list-style:none;display:grid;gap:10px}
-.wdgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.wd{display:grid;gap:10px;align-content:start}.wd h3{margin:0;font-size:20px}
-.wd.wet .qab{border-color:#6FB6F0}.wd.dry .qab{border-color:#F2C230}.wd .qa-a b{font-size:18px}
-.qab{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;text-align:left;background:var(--card);border:2px solid var(--rule);border-radius:16px;padding:10px 14px;font-family:var(--kai)}
+.qa{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.wdgrid{display:grid;gap:14px}.wd{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;align-content:start}.wd h3{grid-column:1/-1;margin:0;font-size:20px}
+.wd.wet .qab{border-color:#6FB6F0}.wd.dry .qab{border-color:#F2C230}.wd .qa-a b{font-size:15px}
+.qab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;min-height:120px;text-align:center;background:var(--card);border:2px solid var(--rule);border-radius:16px;padding:8px 6px;font-family:var(--kai);box-shadow:0 3px 0 var(--rule)}
 .qab.on{background:var(--sun);border-color:var(--ink)}
-.qq{font-size:18px;color:var(--soft);line-height:1.4}
-.qa-a{display:flex;align-items:center;gap:10px}.qa-a b{font-size:24px}.qi{font-size:34px;line-height:1}.qi .ico{width:1em;height:1em}
+.qq{order:3;font-size:11px;color:var(--soft);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.qa-a{display:flex;flex-direction:column;align-items:center;gap:2px}.qa-a b{font-size:18px;line-height:1.2}.qi{font-size:40px;line-height:1.1}.qi .ico{width:1em;height:1em}
 .sents{margin:0;padding:0;list-style:none;display:grid;gap:2px}
 .sents li.gs{margin-top:14px;padding-top:16px;border-top:3px dashed var(--rule)}
 .pvs{background:none;border:0;padding:6px 0;text-align:left;font-family:var(--kai);font-size:26px;line-height:1.5}
