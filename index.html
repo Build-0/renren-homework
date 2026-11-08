@@ -572,7 +572,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-08 17:25';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-08 17:26';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1598,7 +1598,7 @@ function chantStep(n,tok){
 }
 
 /* ---- 揀晒藍色 ---- */
-const COLITEMS={blue:['🫐','👖','🐳','📘','🧢','💙','💧'],red:['🍎','🍓','🍅','🌹','❤️','🚒'],yellow:['🍌','🍋','🌻','🐥','⭐','🌽'],green:['🥒','🐸','🥦','🍏','🐢','🌲']};
+const COLITEMS={blue:['🌊','👖','🐳','📘','🧢','💙','💧'],red:['🍎','🍓','🍅','🌹','❤️','🚒'],yellow:['🍌','🍋','🌻','🐥','⭐','🌽'],green:['🥒','🐸','🥦','🍏','🐢','🌲']};
 function pickInit(){G.total=G.mix?2:4;pickRound();}
 function pickRound(){
   const t=pickTarget(Object.keys(COLITEMS),'blue'),nm=SW[t][1],others=Object.keys(COLITEMS).filter(x=>x!==t).flatMap(k=>COLITEMS[k]);
