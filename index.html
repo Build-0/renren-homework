@@ -459,6 +459,8 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .tcard b{font-size:17px}.tcard small{font-size:11px;color:var(--soft);text-align:center;line-height:1.25}
 .tcard.on{border-color:var(--ink);box-shadow:0 3px 0 var(--ink);background:color-mix(in srgb,var(--sun) 22%,var(--card))}
 .tcard .tdone{position:absolute;top:-8px;right:6px;font-style:normal;font-size:10px;font-weight:700;background:var(--leaf);color:#fff;border-radius:999px;padding:1px 7px}
+.gh{margin:18px 0 8px;font-size:17px;display:flex;align-items:baseline;gap:8px;border-left:5px solid var(--sky);padding-left:8px}.gh small{font-size:12px;color:var(--soft);font-weight:400}
+.listpanel .gh:first-of-type{margin-top:12px}
 </style>
 </head>
 <body>
@@ -590,7 +592,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-20 19:15';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-20 19:18';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1303,7 +1305,9 @@ function renderList(){
     body=`<div class="shufs"><button class="shuf ${mixed?'on':''}" data-act="shuf" data-i="${i}">🔀 ${mixed?'再打亂':'隨機排序'}</button>${mixed?`<button class="shuf" data-act="unshuf" data-i="${i}">↺ 原本次序</button>`:''}</div>
       <p class="small">按一下字會讀出來${words?'。右上角：★ 已記住（至少兩天都答對）、↻ 隔了幾天，要複習':''}。</p>`
     +(words
-      ?`<div class="preview ${mixed?'mixed':''}">${words.map(w=>{const st=memState(lang,w);return `<button class="pv ${st==='got'||st==='due'?st:''}" data-act="pv" data-t="${esc(w)}" data-l="${lang}" aria-label="讀出 ${esc(w)}（${MEM_TXT[st]}）">${wv(w,'sm',lang)}</button>`;}).join('')}</div>`
+      ?(()=>{const pvb=w=>{const st=memState(lang,w);return `<button class="pv ${st==='got'||st==='due'?st:''}" data-act="pv" data-t="${esc(w)}" data-l="${lang}" aria-label="讀出 ${esc(w)}（${MEM_TXT[st]}）">${wv(w,'sm',lang)}</button>`;};
+        if(it.groups&&!mixed)return it.groups.map(([n,ws])=>`<h3 class="gh">${esc(n)}<small>${ws.length}</small></h3><div class="preview">${ws.map(pvb).join('')}</div>`).join('');   // 全部一版：按類別分段，一頁睇晒
+        return `<div class="preview ${mixed?'mixed':''}">${words.map(pvb).join('')}</div>`;})()
       :`<div class="preview ${mixed?'mixed':''}">${letters.map(L=>`<button class="pv" data-act="pv" data-t="${L}" data-l="en"><span class="en sm">${L}${L.toLowerCase()}</span></button>`).join('')}</div>`);
   }
   if(it.topics)body=`<p class="small">這一段學的活動內容，按一下會讀出來。</p><ul class="qa tp">${it.topics.map(x=>`<li><button class="qab" data-act="pv" data-t="${esc(x[1])}" data-l="yue"><span class="qa-a"><span class="qi">${x[0]}</span><b>${esc(x[1])}</b></span></button></li>`).join('')}</ul>`;
