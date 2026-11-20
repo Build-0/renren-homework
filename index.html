@@ -461,6 +461,41 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .tcard .tdone{position:absolute;top:-8px;right:6px;font-style:normal;font-size:10px;font-weight:700;background:var(--leaf);color:#fff;border-radius:999px;padding:1px 7px}
 .gh{margin:18px 0 8px;font-size:17px;display:flex;align-items:baseline;gap:8px;border-left:5px solid var(--sky);padding-left:8px}.gh small{font-size:12px;color:var(--soft);font-weight:400}
 .listpanel .gh:first-of-type{margin-top:12px}
+/* ===== 童趣皮膚（Benny 2026-11-20：太大人化，冇童趣）：暖色底、彩色卡片、跳動角色。淺色模式先套用 ===== */
+@media (prefers-color-scheme: light){
+ :root{--paper:#FFF3D1;--rule:#F2DCA0;--soft:#6B5A3C}
+ body{background-color:var(--paper)}
+}
+.hello{display:flex;align-items:center;gap:10px;margin-top:10px}
+.hmas{width:84px;height:84px;flex:none;animation:idle 2.2s ease-in-out infinite}.hmas svg{width:100%;height:100%;display:block}
+.bubble{position:relative;background:#fff;border:3px solid var(--ink);border-radius:20px;padding:8px 14px;font-family:var(--kai);font-weight:700;font-size:20px;box-shadow:0 3px 0 var(--ink)}
+.bubble::before{content:"";position:absolute;left:-12px;top:50%;width:14px;height:14px;background:#fff;border-left:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:translateY(-50%) rotate(45deg)}
+.srow{background:color-mix(in srgb,var(--c,var(--sky)) 16%,#fff);border:3px solid var(--c,var(--ink));box-shadow:0 5px 0 var(--c,var(--ink));border-radius:22px;transition:transform .12s}
+.srow:active{transform:translateY(4px) scale(.97);box-shadow:0 1px 0 var(--c,var(--ink))}
+.srow .sj-name{font-size:17px;font-weight:700}
+.tcard{border-width:3px;border-radius:20px}
+.tcard.on{background:#FFE08A}
+.scard{border-width:3px;border-radius:22px;transition:transform .12s}.scard:active{transform:scale(.95)}
+.qcard{background:#FFFBEA;border:3px solid #FFC94D;border-radius:26px;box-shadow:0 4px 0 #FFC94D}
+.choice{border-width:3px;border-radius:24px;transition:transform .12s}
+.choice:active{transform:scale(.96)}
+.choices>.choice:nth-child(4n+1){background:#FFE4E4;border-color:#F28B8B;box-shadow:0 5px 0 #F28B8B}
+.choices>.choice:nth-child(4n+2){background:#FFF3B8;border-color:#F0C230;box-shadow:0 5px 0 #F0C230}
+.choices>.choice:nth-child(4n+3){background:#D6F5E0;border-color:#5CC48A;box-shadow:0 5px 0 #5CC48A}
+.choices>.choice:nth-child(4n+4){background:#DCEEFF;border-color:#6FB0F0;box-shadow:0 5px 0 #6FB0F0}
+.choice.right{border-color:var(--leaf)!important;box-shadow:0 5px 0 var(--leaf)!important}
+.choice.wrong{background:#FFD6DC!important;border-color:var(--berry)!important}
+.choice.reveal{border-color:var(--leaf)!important;background:#CFF3DC!important}
+.choice.got{background:#CFF3DC!important}
+.pgrid .choice{background:#fff}
+.lane{border-bottom-color:#F0C230}
+#tabbar{border-top:4px solid #F0C230;background:#FFFBEA;border-radius:22px 22px 0 0}
+#tabbar button.on{background:#FFE08A}
+.back{border-width:3px}
+.btn{border-radius:999px}
+.pv{border-width:3px;border-radius:18px;background:#fff}
+.pv:nth-child(3n+1){border-color:#F28B8B}.pv:nth-child(3n+2){border-color:#F0C230}.pv:nth-child(3n){border-color:#5CC48A}
+.pv.got,.pv.due{border-color:inherit}
 </style>
 </head>
 <body>
@@ -592,7 +627,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-20 19:19';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-20 19:20';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1160,6 +1195,7 @@ function renderHome(){
     .sort((a,b)=>nextDate(a[1][0]).localeCompare(nextDate(b[1][0])));   // 區塊本身都按日期排
   app.innerHTML=`
     <header class="top"><div><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1><div class="ver">版本 ${APP_VER}</div></div></header>
+    <div class="hello"><span class="hmas" aria-hidden="true">${rand(DINOS).s()}</span><span class="bubble">${rand(['今天玩什麼？','一起來玩吧！','你好呀！','準備好了嗎？','出發囉！'])}</span></div>
     ${voiceNote()}
     ${termCards()}${termLine()}
     ${groups.map(g=>subjSection(g[0],g[1],g[2])).join('')}`;
