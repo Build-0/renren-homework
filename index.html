@@ -451,6 +451,11 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .scard.list{container-type:inline-size}
 .scard.list b{font-size:clamp(11px,calc((100cqw - 10px)/var(--n,8)),15px)}   /* 長標題自動縮細，盡量一行放得落 */
 @media (min-width:700px){.scard.list b{font-size:clamp(12px,calc((100cqw - 14px)/var(--n,8)),22px)}}
+.tcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tcard{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px 8px;background:var(--card);border:2px solid var(--rule);border-radius:16px;box-shadow:0 3px 0 var(--rule);font-family:var(--kai);min-width:0}
+.tcard b{font-size:17px}.tcard small{font-size:11px;color:var(--soft);text-align:center;line-height:1.25}
+.tcard.on{border-color:var(--ink);box-shadow:0 3px 0 var(--ink);background:color-mix(in srgb,var(--sun) 22%,var(--card))}
+.tcard .tdone{position:absolute;top:-8px;right:6px;font-style:normal;font-size:10px;font-weight:700;background:var(--leaf);color:#fff;border-radius:999px;padding:1px 7px}
 </style>
 </head>
 <body>
@@ -582,7 +587,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-20 18:56';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-20 19:09';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -833,6 +838,7 @@ function pill(dates){
   const cls=d<=10?'soon':d<=20?'up':'far';   // 10 天內紅、11–20 天黃、21 天或以上藍
   return `<span class="pill ${cls}">還有 ${d} 天</span>`;
 }
+const termPill=s=>T.tentative?'<span class="pill far">待定</span>':pillS(s.dates);
 function pillS(dates){
   const up=dates.find(d=>daysTo(d)>=0);
   if(!up)return '<span class="pill past">已考</span>';
@@ -1119,7 +1125,7 @@ function subjRow(s){
   return `<button class="srow" data-act="open" data-id="${s.id}" style="--c:${m[2]}" aria-label="${esc(s.name)}，${esc(dates)}，完成 ${pc}%">
     <span class="si">${cells(m[0],'ic')}</span>
     <span class="sj-name">${esc(s.name)}</span>
-    ${pillS(s.dates)}
+    ${termPill(s)}
     <span class="mini ${pcl}"><i style="width:${pc}%"></i></span><span class="pct ${pcl}">完成 ${pc}%</span></button>`;
 }function subjSection(title,list,cls){
   if(!list.length)return '';
@@ -1128,15 +1134,22 @@ function subjRow(s){
   return `<section class="grp-sec ${cls||''}"><div class="grp-head"><h2 class="sec">${esc(title)}</h2><span class="grp-range">${esc(range)}</span></div><div class="subjects">${list.map(subjRow).join('')}</div></section>`;
 }
 const songOnly=s=>!s.items.some(it=>(it.games||[]).length);   // 只有歌曲、冇遊戲嘅科目（宗教、唱遊）：首頁收埋，喺家長分頁睇
+function termCards(){   // 每一段（階段）一張卡：第一段評估、第二段、第三段
+  return `<section class="tcards" aria-label="階段">${TERMS.map((t,i)=>{
+    const done=t.subjects.every(finished)&&!t.tentative;
+    return `<button class="tcard ${t===T?'on':''}" data-act="term" data-i="${i}" aria-pressed="${t===T}"><b>${esc(t.short||t.name)}</b><small>${esc(t.when||'')}</small>${done?'<i class="tdone">已考完</i>':''}</button>`;}).join('')}</section>`;
+}
+function selectTerm(i){T=TERMS[i];try{localStorage.setItem('renren-zi-term',T.id);}catch(e){}SUBJ=null;renderHome();}
 function renderHome(){
   G=null;SUBJ=null;LOGVIEW=false;ROOT='home';hush();
   const byDate=(a,b)=>nextDate(a).localeCompare(nextDate(b));
-  const subs=T.subjects.filter(s=>!songOnly(s)&&!finished(s)),pre=subs.filter(s=>s.pre).sort(byDate),main=subs.filter(s=>!s.pre).sort(byDate);
+  const subs=T.subjects.filter(s=>!songOnly(s)),pre=subs.filter(s=>s.pre).sort(byDate),main=subs.filter(s=>!s.pre).sort(byDate);
   const groups=[['提前評估',pre,'is-pre'],['主要評估',main,'is-main']].filter(g=>g[1].length)
     .sort((a,b)=>nextDate(a[1][0]).localeCompare(nextDate(b[1][0])));   // 區塊本身都按日期排
   app.innerHTML=`
     <header class="top"><div><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1><div class="ver">版本 ${APP_VER}</div></div></header>
     ${voiceNote()}
+    ${termCards()}
     ${groups.map(g=>subjSection(g[0],g[1],g[2])).join('')}`;
   tabs('home');
 }
@@ -1189,7 +1202,6 @@ function renderParent(){
       <div class="usage"><button class="btn ghost tbtn ${timerOn?'on':''}" id="timerBtn" data-act="timer">${timerLabel()}</button><span><span id="usage">${usageText()}</span> <button class="linkbtn" data-act="usagelog">查看記錄 ›</button></span></div>
       <p class="small">要按「開始計時」才會統計，閒置 5 分鐘自動結束。</p>
     </section>
-    ${T.subjects.some(finished)?`<section class="panel"><h2 class="sec">已考完的科目</h2><div class="subjects">${T.subjects.filter(finished).map(subjRow).join('')}</div><p class="small">評估日已過，所以不放在首頁，也不再出現在「複習」和「溫故」。想再玩可以從這裡進去。</p></section>`:''}
     ${songsPanel()}
     <section class="panel">
       <h2 class="sec">各科難度與複習時間</h2>
@@ -1255,7 +1267,7 @@ const ITEM_ICON=it=>it.icon?it.icon:it.words?'🔤':it.letters?'🔠':it.sentenc
 function renderSubject(){
   G=null;LOGVIEW=false;hush();
   const s=SUBJ,L=learnItems(s),Gm=gameItems(s);
-  const dates=s.dates.length>1?s.dates.map(x=>fmt(x).replace(/（.*?）/,'')).join('、'):fmt(s.dates[0]);
+  const dates=T.tentative?'日期待定':s.dates.length>1?s.dates.map(x=>fmt(x).replace(/（.*?）/,'')).join('、'):fmt(s.dates[0]);
   const cards=[];
   L.forEach(({it,i})=>{
     (it.games||[]).filter(g=>isLearn(g)&&g!=='cards').forEach(g=>cards.push(`<button class="scard" data-act="play" data-i="${i}" data-g="${g}"><span class="ci" aria-hidden="true">${GICON[g]||'📖'}</span><b>${GAMES[g][1]}${store.done[dkey(i,g)]?' <span class="ok">✓</span>':''}</b><small>${g==='chant'?`1 到 ${it.max||30}`:(LEARN_SUB[g]||esc(segLabel(it)))}</small></button>`));
@@ -1263,7 +1275,7 @@ function renderSubject(){
   });
   app.innerHTML=`
     <div class="bar"><button class="back" data-act="back">‹ 返回</button><div class="g-title">${esc(s.name)}</div></div>
-    <div class="when"><b>${esc(dates)}</b>${pill(s.dates)}${s.pre?'<span class="small">提前評估</span>':''}</div>
+    <div class="when"><b>${esc(dates)}</b>${T.tentative?'':pill(s.dates)}${s.pre?'<span class="small">提前評估</span>':''}</div>
     ${cards.length?`<h2 class="sec2 learn">📖 學習</h2><div class="cgrid">${cards.join('')}</div>`:''}
     ${Gm.length?`<h2 class="sec2 game">🎮 遊戲</h2><div class="cgrid"><button class="scard game" data-act="mix"><span class="ci" aria-hidden="true">🎮</span><b>開始遊戲</b><small>4 關・有星星</small></button></div>`:''}
     <details class="fold scope"><summary>評估內容</summary><p>${esc(s.scope)}</p></details>`;
@@ -1341,7 +1353,7 @@ function orList(caps){return caps.length<2?caps.join(''):caps.slice(0,-1).join('
 /* ---- 今日重溫：跨科目，專揀「要重溫」同「學緊但今日未溫」嘅字 ---- */
 function reviewCandidates(kind){   // kind 'wrong'＝複習（答錯過／學緊未記牢）；'old'＝溫故（已記住，隔咗幾天要再確認）
   const seen=new Set(),out=[];
-  T.subjects.filter(s=>!finished(s)).forEach(s=>s.items.forEach(it=>(it.words||[]).forEach(w=>{
+  TERMS.flatMap(t=>t.subjects).filter(s=>!finished(s)).forEach(s=>s.items.forEach(it=>(it.words||[]).forEach(w=>{
     const k=mkey(s.lang,w);if(seen.has(k))return;seen.add(k);
     const st=memState(s.lang,w),m=store.mem[k];
     if(kind==='old'?st==='due':(st==='learn'&&m.d!==dayKey()))out.push({w,lang:s.lang,pool:it.words,rank:memRank(s.lang,w)-(m&&m.w>0&&kind!=='old'?1:0)});
@@ -1703,6 +1715,7 @@ document.addEventListener('click',e=>{
     case 'usagelog':navPush('log');renderUsageLog();window.scrollTo(0,0);break;
     case 'review':if(reviewCandidates(b.dataset.k||'wrong').length)navPush('game');startReview(b.dataset.k||'wrong');window.scrollTo(0,0);break;
     case 'subj':navToSubject();break;
+    case 'term':selectTerm(+b.dataset.i);window.scrollTo(0,0);break;
     case 'seq':{playSeq(b.closest('.qgrp,.wd'));break;}
     case 'pv':{say(b.dataset.t,b.dataset.l);app.querySelectorAll('.pv.on,.pvs.on,.qab.on').forEach(x=>x.classList.remove('on'));b.classList.add('on');clearTimeout(pvT);pvT=setTimeout(()=>b.classList.remove('on'),1400);picPop(b,b.dataset.t);break;}   // 撳咗邊個，邊個亮起（讀緊）
 
@@ -1738,7 +1751,8 @@ async function boot(){
     const list=await (await fetch('data/terms.json',{cache:'no-cache'})).json();
     TERMS=await Promise.all(list.map(f=>fetch('data/'+f,{cache:'no-cache'}).then(r=>r.json())));
     TERMS.forEach(t=>{resolveIcons(t);Object.assign(PIC,t.pics||{});});
-    T=TERMS[TERMS.length-1];
+    {let sid='';try{sid=localStorage.getItem('renren-zi-term')||'';}catch(e){}
+     T=TERMS.find(t=>t.id===sid)||TERMS.find(t=>t.subjects.some(x=>!finished(x)))||TERMS[TERMS.length-1];}
     renderHome();
     try{history.replaceState({v:'home',d:0},'');}catch(e){}
     if(PREVIEW){const b=document.createElement('div');b.className='pvbadge';b.textContent='預覽模式・不會改動真實進度';document.body.appendChild(b);}
