@@ -446,8 +446,8 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 /* 選項入面嘅字：按字數同選項闊度計大小，長詞（例如「垃圾桶」「清潔工」）唔會超出邊界 */
 .choice{container-type:inline-size}
 .word.k1{--k:1}.word.k2{--k:2}.word.k3{--k:3}.word.k4{--k:4}.word.k5{--k:5}.word.k6{--k:6}
-.choice .word.md:is(.n1,.n2,.n3){--s:min(104px,calc((100cqw - 24px)/var(--k)))}
-@media (min-width:700px){.choice .word.md:is(.n1,.n2,.n3){--s:min(140px,calc((100cqw - 24px)/var(--k)))}}
+.choice .word.md:is(.n1,.n2,.n3){--s:min(120px,calc((100cqw - 24px)/var(--kc,3)))}   /* 同一題入面所有選項字一樣大：按最長嗰個詞計（--kc 由程式設定） */
+@media (min-width:700px){.choice .word.md:is(.n1,.n2,.n3){--s:min(160px,calc((100cqw - 20px)/var(--kc,3)))}}
 .choice .en.md{overflow-wrap:anywhere;max-width:100%}
 .scard.list{container-type:inline-size}
 .scard.list b{font-size:clamp(11px,calc((100cqw - 10px)/var(--n,8)),15px)}   /* 長標題自動縮細，盡量一行放得落 */
@@ -592,7 +592,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-20 19:18';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-20 19:19';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1533,6 +1533,7 @@ function quizRound(){
   const q=G.qs[G.r];G.lock=false;G.miss=0;G.rs=[q.say,q.sayLang||G.lang];
   renderGame(`${dots()}<div class="qcard">${q.prompt||''}${q.ask?`<p class="ask">${esc(q.ask)}</p>`:''}</div>${replayBtn()}
     <div class="choices ${q.wide?'col':'row'}" style="--n:${q.opts.length}">${q.opts.map((o,i)=>`<button class="choice" data-act="pick" data-i="${i}">${o}</button>`).join('')}</div>`);
+  {const ch=app.querySelector('.choices');if(ch){let m=1;ch.querySelectorAll('.word').forEach(wd=>{m=Math.max(m,wd.querySelectorAll('.tz').length);});ch.style.setProperty('--kc',m);}}
   const fm=app.querySelector('.mascot.feed');if(fm)fm.style.fontSize=(78+G.r*16)+'px';
   say(...G.rs);
 }
