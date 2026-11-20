@@ -498,6 +498,25 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .pv{border-width:3px;border-radius:18px;background:#fff}
 .pv:nth-child(3n+1){border-color:#F28B8B}.pv:nth-child(3n+2){border-color:#F0C230}.pv:nth-child(3n){border-color:#5CC48A}
 .pv.got,.pv.due{border-color:inherit}
+.khome{display:flex;flex-direction:column;align-items:center;gap:18px;padding:4px 0 10px}
+.khome .hello{align-self:stretch;justify-content:center}
+.bigplay{display:flex;align-items:center;justify-content:center;gap:16px;width:100%;max-width:520px;min-height:150px;border:4px solid var(--ink);border-radius:36px;background:linear-gradient(#FF8A5B,#F0523A);color:#fff;box-shadow:0 8px 0 #A52A18;font-family:var(--kai);animation:pulse 1.8s ease-in-out infinite}
+.bigplay:active{transform:translateY(6px);box-shadow:0 2px 0 #A52A18}
+.bp-ico{font-size:64px;line-height:1;text-shadow:0 3px 0 rgba(0,0,0,.25)}.bp-t{font-size:56px;font-weight:700;letter-spacing:.08em;text-shadow:0 3px 0 rgba(0,0,0,.25)}
+@keyframes pulse{50%{transform:scale(1.03)}}
+.eggbox{display:flex;align-items:center;gap:16px;width:100%;max-width:520px;padding:12px 16px;background:#fff;border:3px solid #6FB6F0;border-radius:28px;box-shadow:0 4px 0 #6FB6F0}
+.eggbox .egg{width:78px;height:94px;flex:none}.et{display:flex;flex-direction:column;gap:4px}.et b{font-family:var(--kai);font-size:21px;line-height:1.3}.et small{font-size:14px;color:var(--soft)}
+.subjlink{padding:10px 22px;border:3px solid var(--ink);border-radius:999px;background:#fff;font-weight:700;font-size:16px;box-shadow:0 3px 0 var(--ink)}
+.egg.wob{animation:wob .9s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes wob{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.eggmini{margin-left:auto;display:flex;align-items:center;gap:4px;background:#fff;border:3px solid #6FB6F0;border-radius:999px;padding:2px 12px 2px 8px;font-weight:700;font-size:14px}
+.eggmini .egg{width:26px;height:32px}
+#hatch{position:fixed;inset:0;z-index:100;background:rgba(20,40,70,.55);display:grid;place-items:center;overflow:hidden}
+#hatch .fall{position:absolute;top:-30px;animation:fall 2.6s linear infinite;font-style:normal}
+.hbox{position:relative;z-index:1;background:#fff;border:4px solid var(--ink);border-radius:32px;box-shadow:0 8px 0 var(--ink);padding:22px 36px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;animation:grow .5s cubic-bezier(.3,1.6,.5,1) both}
+.hbox .hegg{width:70px;height:84px}.hbox .hegg svg{width:100%;height:100%}
+.hbox .hst{width:min(46vw,200px);height:min(46vw,200px);display:grid;place-items:center;font-size:min(34vw,150px);line-height:1;animation:bounce .8s ease-in-out 3}.hbox .hst svg{width:100%;height:100%}
+.hbox b{font-family:var(--kai);font-size:30px}.hbox span{font-size:22px;font-weight:700;color:var(--berry)}
 </style>
 </head>
 <body>
@@ -629,7 +648,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-20 19:38';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-20 19:43';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -782,9 +801,17 @@ function praiseThen(next){
   const g0=G;say(PRAISE_SAY[i],'yue');
   afterSpeech(()=>{if(G===g0)next();},500,2500);
 }
+function hatchShow(st){
+  document.getElementById('hatch')?.remove();
+  const d=document.createElement('div');d.id='hatch';d.setAttribute('role','dialog');
+  const sp=Array.from({length:14},()=>`<i class="fall" style="left:${(Math.random()*100).toFixed(1)}%;animation-delay:${(Math.random()*1.2).toFixed(2)}s;font-size:${18+Math.random()*24|0}px">${rand(['⭐','✨','🌟'])}</i>`).join('');
+  d.innerHTML=`${sp}<div class="hbox"><div class="hegg">${eggSVG(1,true)}</div><div class="hst">${st.s}</div><b>蛋孵出來啦！</b><span>${esc(st.n)}</span></div>`;
+  d.onclick=()=>d.remove();document.body.appendChild(d);setTimeout(()=>d.remove(),3800);
+}
 function announceThen(next){
   const st=G.stickerNow;
   if(!st){next();return;}
+  hatchShow(st);
   G.stickerNow=null;
   const g0=G;
   toast(`<span class="big">${st.s}</span>好叻！拿到新貼紙：${st.n}`,3600);
@@ -1247,7 +1274,7 @@ function reviewBar(){
 }
 /* ============ 底部分頁（首頁／複習／貼紙／家長） ============ */
 let ROOT='home';
-const ROOTS=['home','stickers','parent'];
+const ROOTS=['home','subjects','stickers','parent'];
 function tabs(active){
   const t=document.getElementById('tabbar');if(!t)return;
   if(active===null){t.hidden=true;document.body.classList.remove('hastabs');return;}
@@ -1258,7 +1285,7 @@ function tabs(active){
 }
 function renderRoot(v){
   v=v||ROOT;
-  if(v==='stickers')renderStickers();else if(v==='parent')renderParent();else renderHome();
+  if(v==='stickers')renderStickers();else if(v==='parent')renderParent();else if(v==='subjects')renderSubjectsHome();else renderHome();
 }
 
 /* ============ 首頁：只放科目，一科一行 ============ */
@@ -1289,17 +1316,66 @@ function termLine(){   // 有起止日期嘅階段：寫明由幾號到幾號、
   const total=dayDiff(T.start,T.end)+1,left=daysTo(T.end);
   return `<p class="termline"><b>${md(T.start)} → ${md(T.end)}</b>・共 ${total} 天${T.weeks?`（${esc(T.weeks)}）`:''}<br>${md(T.end)}是這一段的最後一天（評估日期老師還沒公布）${left>=0?`，還有 <b>${left}</b> 天`:''}</p>`;
 }
-function selectTerm(i){T=TERMS[i];try{localStorage.setItem('renren-zi-term',T.id);}catch(e){}SUBJ=null;renderHome();}
+function selectTerm(i){T=TERMS[i];try{localStorage.setItem('renren-zi-term',T.id);}catch(e){}SUBJ=null;renderSubjectsHome();}
+/* ============ 小朋友首頁：一個大掣「開始玩」＋蛋（星星進度）；選科目收埋 ============ */
+function eggSVG(f,done){   // f：0–1，蛋裂開幾多
+  const cr=[];
+  if(f>=.2)cr.push('<path d="M34 64 L42 54 L50 66 L58 54" fill="none"/>');
+  if(f>=.4)cr.push('<path d="M26 78 L36 70 L44 82 L54 72 L62 84" fill="none"/>');
+  if(f>=.6)cr.push('<path d="M20 60 L30 52 L40 60 M62 62 L72 52 L82 62" fill="none"/>');
+  if(f>=.8)cr.push('<path d="M30 40 L40 32 L50 42 L60 30 L70 42" fill="none"/>');
+  return `<svg class="egg${f>=.6&&!done?' wob':''}${done?' gold':''}" viewBox="0 0 100 120" aria-hidden="true"><defs><linearGradient id="eg${done?'g':'n'}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${done?'#FFE27A':'#FFFBEA'}"/><stop offset="1" stop-color="${done?'#F2B120':'#F7DDA0'}"/></linearGradient></defs>
+  <ellipse cx="50" cy="114" rx="30" ry="4" fill="#000" opacity=".14"/>
+  <path d="M50 6 C20 6 8 50 8 76 C8 100 28 114 50 114 C72 114 92 100 92 76 C92 50 80 6 50 6Z" fill="url(#eg${done?'g':'n'})" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>
+  <g fill="#6FB6F0" opacity=".55"><circle cx="30" cy="36" r="5"/><circle cx="70" cy="30" r="3.4"/><circle cx="74" cy="92" r="5"/></g><g fill="#F28B8B" opacity=".55"><circle cx="40" cy="96" r="4"/><circle cx="64" cy="60" r="3.2"/><circle cx="24" cy="70" r="3"/></g>
+  <g stroke="${INK}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${cr.join('')}</g>
+  ${f>=.8&&!done?'<path d="M44 14 L50 4 L56 14Z" fill="#FFB300" stroke="'+INK+'" stroke-width="2" stroke-linejoin="round"/>':''}</svg>`;
+}
+function eggState(){const p=stickerProg(),today=store.sd.d===dayKey()?store.sd.n:0;return {p,done:p.done,f:p.done?1:p.into/p.cost,today};}
+function eggMini(){const e=eggState();return `<span class="eggmini" title="再 ${e.p.left} 顆星孵出新貼紙">${eggSVG(e.f,e.done)}<b>${e.done?'✓':e.p.into+'／'+e.p.cost}</b></span>`;}
+function endlessPool(){
+  const out=[];
+  T.subjects.filter(x=>!x.info&&!finished(x)&&!songOnly(x)).forEach(x=>x.items.forEach((it,i)=>{
+    (it.games||[]).filter(g=>!isLearn(g)).forEach(g=>out.push({s:x,i,g}));
+    if(it.words&&it.words.length>=3){out.push({s:x,i,g:'feed'});out.push({s:x,i,g:'deliver'});}
+  }));
+  return out;
+}
+const segKey=sg=>`${T.id}:${sg.s.id}:${sg.i}:${sg.g}`;
+function pickSeg(last){   // 玩得少嘅優先、同次數隨機、盡量唔連續玩同一關
+  let pool=endlessPool();if(!pool.length)return null;
+  if(last&&pool.length>1)pool=pool.filter(x=>segKey(x)!==segKey(last));
+  return pool.map(x=>({x,c:(store.done[segKey(x)]||0)+Math.random()*2})).sort((p,q)=>p.c-q.c)[0].x;
+}
+function startEndless(){
+  const sg=pickSeg(null);if(!sg){toast('這一段暫時沒有遊戲，去「選科目」看看',2200);return;}
+  SUBJ=sg.s;G={g:sg.g,lang:sg.s.lang,earned:0,r:0,key:'',mix:{endless:true,idx:0,segs:[sg]}};
+  navPush('game');runSeg();window.scrollTo(0,0);
+}
 function renderHome(){
   G=null;SUBJ=null;LOGVIEW=false;ROOT='home';hush();
+  const e=eggState(),capped=e.today>=DAILY_MAX;
+  app.innerHTML=`
+    <header class="top"><div><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1><div class="ver">版本 ${APP_VER}</div></div></header>
+    ${voiceNote()}
+    <section class="khome">
+      <div class="hello"><span class="hmas" aria-hidden="true">${rand(DINOS).s()}</span><span class="bubble">${rand(['今天玩什麼？','一起來玩吧！','你好呀！','準備好了嗎？','出發囉！','來孵蛋吧！'])}</span></div>
+      <button class="bigplay" data-act="endless"><span class="bp-ico">▶</span><span class="bp-t">開始玩</span></button>
+      <div class="eggbox">${eggSVG(e.f,e.done)}<div class="et"><b>${e.done?'貼紙集滿了！':`再 ${e.p.left} 顆星，孵出新貼紙`}</b><small>${capped?'今天的星星拿滿了，明天再來孵蛋！':`⭐ 今天 ${e.today}／${DAILY_MAX}`}</small></div></div>
+      <button class="subjlink" data-act="subjects">📚 學習・選科目</button>
+    </section>`;
+  tabs('home');
+}
+
+function renderSubjectsHome(){   // 選科目頁（家長／學習用）：階段卡片、各科卡片
+  G=null;SUBJ=null;LOGVIEW=false;ROOT='subjects';hush();
   const byDate=(a,b)=>nextDate(a).localeCompare(nextDate(b));
   const subs=T.subjects.filter(s=>!songOnly(s)),pre=subs.filter(s=>s.pre).sort(byDate),main=subs.filter(s=>!s.pre).sort(byDate);
   const CORE=['yue','math','eng','gs','cmn'];
   const groups=(pre.length?[['提前評估',pre,'is-pre'],['主要評估',main,'is-main']]:[['主要科目',main.filter(x=>CORE.includes(x.id)),'is-main'],['其他活動',main.filter(x=>!CORE.includes(x.id)),'is-pre']]).filter(g=>g[1].length)
     .sort((a,b)=>nextDate(a[1][0]).localeCompare(nextDate(b[1][0])));   // 區塊本身都按日期排
   app.innerHTML=`
-    <header class="top"><div><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1><div class="ver">版本 ${APP_VER}</div></div></header>
-    <div class="hello"><span class="hmas" aria-hidden="true">${rand(DINOS).s()}</span><span class="bubble">${rand(['今天玩什麼？','一起來玩吧！','你好呀！','準備好了嗎？','出發囉！'])}</span></div>
+    <div class="bar"><button class="back" data-act="tab" data-t="home">‹ 返回</button><div class="g-title">選科目</div></div>
     ${voiceNote()}
     ${termCards()}${termLine()}
     ${groups.map(g=>subjSection(g[0],g[1],g[2])).join('')}`;
@@ -1467,8 +1543,9 @@ function renderList(){
 /* ============ 遊戲框 ============ */
 function renderGame(body){
   tabs(null);
-  const back=G.review?'<button class="back" data-act="home">✕ 離開</button>':`<button class="back" data-act="subj">‹ ${esc(SUBJ.name)}</button>`;
-  app.innerHTML=`<div class="bar">${back}<div class="g-title">${G.mix?`遊戲 <small>${G.mix.idx+1}／${G.mix.segs.length}</small>`:GAMES[G.g][1]}</div></div><div class="gbody">${body}</div>`;
+  const endless=G.mix&&G.mix.endless;
+  const back=G.review||endless?'<button class="back" data-act="home">✕ 回家</button>':`<button class="back" data-act="subj">‹ ${esc(SUBJ.name)}</button>`;
+  app.innerHTML=`<div class="bar">${back}<div class="g-title">${endless?'':G.mix?`遊戲 <small>${G.mix.idx+1}／${G.mix.segs.length}</small>`:GAMES[G.g][1]}</div>${eggMini()}</div><div class="gbody">${body}</div>`;
 }
 const CARS_RUN=['🚗','🚒','🚌','🚓','🏎️','🚜'];
 const trackPct=r=>Math.min(100,Math.round(r/Math.max(1,G.total)*100));
@@ -1545,7 +1622,8 @@ function startMix(){
   runSeg();
 }
 function runSeg(){
-  const sg=G.mix.segs[G.mix.idx],it=SUBJ.items[sg.i];
+  const sg=G.mix.segs[G.mix.idx];if(sg.s){SUBJ=sg.s;G.lang=sg.s.lang;}
+  const it=SUBJ.items[sg.i];
   Object.assign(G,{g:sg.g,it,i:sg.i,key:dkey(sg.i,sg.g),r:0,lock:false,miss:0,streak:0,qs:null});
   if(GEN[sg.g]){G.qs=GEN[sg.g](it).slice(0,SEG_Q);G.total=G.qs.length;quizRound();return;}
   ({match:matchInit,lmatch:matchInit,order:orderInit,pickall:pickInit})[sg.g]();
@@ -1553,6 +1631,12 @@ function runSeg(){
 function finish(){
   if(G.stickerNow){announceThen(finish);return;}   // 最後一題先拎到貼紙：先報完，先出完成畫面
   store.done[G.key]=(store.done[G.key]||0)+1;save();
+  if(G.mix&&G.mix.endless){   // 一直玩：唔出完成畫面，自動接下一關
+    const g0=G;chime(true);G.mix.n=(G.mix.n||0)+1;
+    const nx=pickSeg(G.mix.segs[0]);if(!nx){goTab('home');return;}
+    G.mix.segs=[nx];G.mix.idx=0;toast(rand(['下一關 ▶','繼續衝！','再來一關！','好玩吧？','出發！']),1200);
+    setTimeout(()=>{if(G===g0){runSeg();window.scrollTo(0,0);}},900);return;
+  }
   if(G.mix&&G.mix.idx<G.mix.segs.length-1){   // 仲有下一關：靜靜哋接落去，唔使慶祝畫面
     const g0=G;G.mix.idx++;chime(true);toast(`第 ${G.mix.idx+1} 關 ▶`,1200);
     setTimeout(()=>{if(G===g0){runSeg();window.scrollTo(0,0);}},900);return;
@@ -1866,6 +1950,8 @@ document.addEventListener('click',e=>{
   switch(a){
     case 'open':SUBJ=T.subjects.find(s=>s.id===b.dataset.id);navPush('subj',{id:SUBJ.id});renderSubject();window.scrollTo(0,0);break;
     case 'home':navHome();break;
+    case 'endless':startEndless();break;
+    case 'subjects':goTab('subjects');break;
     case 'back':navBack();break;
     case 'list':LISTI=+b.dataset.i;navPush('list',{id:SUBJ.id,i:LISTI});renderList();window.scrollTo(0,0);break;
     case 'tab':goTab(b.dataset.t);break;
