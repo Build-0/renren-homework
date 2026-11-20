@@ -582,7 +582,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-08 17:44';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-20 18:55';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1236,7 +1236,7 @@ const songItemOnly=it=>!!it.songs&&!it.words&&!it.letters&&!it.sentences&&!(it.g
 const hasDetail=it=>!!(it.words||it.letters||it.sentences||it.songs||it.quiz||it.contrast);
 const learnItems=s=>s.items.map((it,i)=>({it,i})).filter(({it})=>!(songItemOnly(it)&&!songOnly(s))&&(hasDetail(it)||(it.games||[]).some(isLearn)));
 const gameItems=s=>s.items.map((it,i)=>({it,i})).filter(({it})=>(it.games||[]).some(g=>!isLearn(g)));
-const segLabel=it=>String(it.label).replace(/內容$/,'');
+const segLabel=it=>String(it.label).replace(/內容$/,'').replace(/。$/,'');
 const SHUF={};
 const skey=i=>`${SUBJ.id}:${i}`;
 let LISTI=0;
@@ -1249,8 +1249,8 @@ function itemCount(it){
   if(it.contrast)return `${it.contrast.wet.length+it.contrast.dry.length} 個例子`;
   return '';
 }
-const LEARN_SUB={cards:'一張一張學',chant:'1 到 30'};   // 學習卡副標題（唔再重複老師嘅項目名，免得同清單卡撞名）
-const ITEM_NAME=it=>it.words?'字詞表':it.letters?'字母表':it.sentences?'句子表':segLabel(it);   // 清單卡名稱
+const LEARN_SUB={cards:'一張一張學',chant:'唱數'};   // 學習卡副標題（唔再重複老師嘅項目名，免得同清單卡撞名）
+const ITEM_NAME=it=>it.short?it.short:it.words?'字詞表':it.letters?'字母表':it.sentences?'句子表':segLabel(it);   // 清單卡名稱
 const ITEM_ICON=it=>it.icon?it.icon:it.words?'🔤':it.letters?'🔠':it.sentences?'💬':it.quiz?'💡':it.contrast?'💧':'🎵';
 function renderSubject(){
   G=null;LOGVIEW=false;hush();
@@ -1258,7 +1258,7 @@ function renderSubject(){
   const dates=s.dates.length>1?s.dates.map(x=>fmt(x).replace(/（.*?）/,'')).join('、'):fmt(s.dates[0]);
   const cards=[];
   L.forEach(({it,i})=>{
-    (it.games||[]).filter(g=>isLearn(g)&&g!=='cards').forEach(g=>cards.push(`<button class="scard" data-act="play" data-i="${i}" data-g="${g}"><span class="ci" aria-hidden="true">${GICON[g]||'📖'}</span><b>${GAMES[g][1]}${store.done[dkey(i,g)]?' <span class="ok">✓</span>':''}</b><small>${LEARN_SUB[g]||esc(segLabel(it))}</small></button>`));
+    (it.games||[]).filter(g=>isLearn(g)&&g!=='cards').forEach(g=>cards.push(`<button class="scard" data-act="play" data-i="${i}" data-g="${g}"><span class="ci" aria-hidden="true">${GICON[g]||'📖'}</span><b>${GAMES[g][1]}${store.done[dkey(i,g)]?' <span class="ok">✓</span>':''}</b><small>${g==='chant'?`1 到 ${it.max||30}`:(LEARN_SUB[g]||esc(segLabel(it)))}</small></button>`));
     if(hasDetail(it))cards.push(`<button class="scard list" data-act="list" data-i="${i}"><span class="ci" aria-hidden="true">${ITEM_ICON(it)}</span><b style="--n:${[...ITEM_NAME(it)].length}">${esc(ITEM_NAME(it))}</b><small>${itemCount(it)}</small></button>`);
   });
   app.innerHTML=`
@@ -1442,17 +1442,18 @@ const GEN={
       return {say:`邊度有${QN(n)}${cl}${name}？`,prompt:numv(n),ask:`哪一個有 ${n} ${cl2}${name}？`,...m,ok:()=>say(QN(n)+cl,'yue'),okWait:1500};
     });
   },
-  next(){
+  next(it){
+    const mx=(it&&it.max)||30;
     return Array.from({length:8},()=>{
-      const s=1+(Math.random()*28|0),ans=s+2;
-      const pool=shuffle([s-1,s+3,s+4,s+5,s+1+10,ans-10].filter(x=>x>=1&&x<=30&&x!==ans&&x!==s&&x!==s+1));
+      const s=1+(Math.random()*(mx-2)|0),ans=s+2;
+      const pool=shuffle([s-1,s+3,s+4,s+5,s+1+10,ans-10].filter(x=>x>=1&&x<=mx&&x!==ans&&x!==s&&x!==s+1));
       const m=mix([ans,...pool.slice(0,2)].map(x=>`<span class="numv"><b>${x}</b></span>`));
       return {say:`${s}、${s+1}，跟住係咩？`,prompt:`<div class="seq"><span>${s}</span><span>${s+1}</span><span class="q">?</span></div>`,ask:'接下來是哪一個數字？',...m,ok:()=>say(String(ans),'yue'),okWait:1400};
     });
   },
-  color(){
+  color(it){
     return Array.from({length:6},()=>{
-      const t=pickTarget(Object.keys(SW),'blue'),nm=SW[t][1],m=mix([t,...shuffle(Object.keys(SW).filter(x=>x!==t)).slice(0,2)].map(swv));
+      const t=it&&it.colors?rand(it.colors):pickTarget(Object.keys(SW),'blue'),nm=SW[t][1],m=mix([t,...shuffle(Object.keys(SW).filter(x=>x!==t)).slice(0,2)].map(swv));
       return {say:`邊個係${nm}？`,ask:`哪一個是${nm}？`,...m,ok:()=>say(`係${nm}！`,'yue'),okWait:1400};});
   },
   shape(){
@@ -1612,15 +1613,15 @@ function ord(b){
 
 /* ---- 唱數 1-30 ---- */
 function chantInit(){
-  G.tok=0;
-  renderGame(`<div class="qcard"><p class="ask">一起從 1 數到 30</p><p class="small">按「一起數」會一個一個唸出來；按任何數字也會唸。</p></div>
+  G.tok=0;const mx=(G.it&&G.it.max)||30;
+  renderGame(`<div class="qcard"><p class="ask">一起從 1 數到 ${mx}</p><p class="small">按「一起數」會一個一個唸出來；按任何數字也會唸。</p></div>
     <div class="crow"><button class="btn blue" data-act="chgo">${SPK.replace('width="24"','width="20"')} 一起數</button><button class="btn ghost" data-act="chstop">停</button></div>
-    <div class="ngrid">${Array.from({length:30},(_,i)=>`<button class="nb" data-act="cnum" data-n="${i+1}">${i+1}</button>`).join('')}</div>`);
+    <div class="ngrid">${Array.from({length:mx},(_,i)=>`<button class="nb" data-act="cnum" data-n="${i+1}">${i+1}</button>`).join('')}</div>`);
 }
 function chantStep(n,tok){
   if(G.tok!==tok||G.g!=='chant')return;
   app.querySelectorAll('.nb.lit').forEach(x=>x.classList.remove('lit'));
-  if(n>30){award(null,true,G.lang,'chant');finish();return;}
+  if(n>((G.it&&G.it.max)||30)){award(null,true,G.lang,'chant');finish();return;}
   const b=app.querySelector(`.nb[data-n="${n}"]`);if(b){b.classList.add('lit','seen');}
   let moved=false;const adv=()=>{if(moved)return;moved=true;setTimeout(()=>chantStep(n+1,tok),520);};
   say(String(n),'yue',adv);setTimeout(adv,2600);
@@ -1630,7 +1631,7 @@ function chantStep(n,tok){
 const COLITEMS={blue:['🌊','👖','🐳','📘','🧢','💙','💧'],red:['🍎','🍓','🍅','🌹','❤️','🚒'],yellow:['🍌','🍋','🌻','🐥','⭐','🌽'],green:['🥒','🐸','🥦','🍏','🐢','🌲'],orange:['🍊','🥕','🎃','🏀','🦊'],purple:['🍇','🍆','🔮','👾'],pink:['🌸','🐷','🎀','🍑']};
 function pickInit(){G.total=G.mix?2:4;pickRound();}
 function pickRound(){
-  const t=pickTarget(Object.keys(COLITEMS),'blue'),nm=SW[t][1],others=Object.keys(COLITEMS).filter(x=>x!==t).flatMap(k=>COLITEMS[k]);
+  const t=G.it&&G.it.colors?rand(G.it.colors):pickTarget(Object.keys(COLITEMS),'blue'),nm=SW[t][1],others=Object.keys(COLITEMS).filter(x=>x!==t).flatMap(k=>COLITEMS[k]);
   G.cells=shuffle([...shuffle(COLITEMS[t]).slice(0,3).map(e=>({e,b:1})),...shuffle(others).slice(0,3).map(e=>({e,b:0}))]);
   G.found=0;G.miss=0;G.nm=nm;G.rs=[`揀晒所有${nm}嘅嘢出嚟`,'yue'];
   renderGame(`${dots()}<div class="qcard"><p class="ask">請選出所有${nm}的東西</p><p class="small">一共有 3 個</p></div>${replayBtn()}
