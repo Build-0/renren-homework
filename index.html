@@ -465,7 +465,7 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .listpanel .gh:first-of-type{margin-top:12px}
 /* ===== 童趣皮膚（Benny 2026-11-20：太大人化，冇童趣）：暖色底、彩色卡片、跳動角色。淺色模式先套用 ===== */
 @media (prefers-color-scheme: light){
- :root{--paper:#FFF3D1;--rule:#F2DCA0;--soft:#6B5A3C}
+ :root{--paper:#E6F3FF;--rule:#C6E0F5;--soft:#4B6177}
  body{background-color:var(--paper)}
 }
 .hello{display:flex;align-items:center;gap:10px;margin-top:10px}
@@ -476,9 +476,9 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .srow:active{transform:translateY(4px) scale(.97);box-shadow:0 1px 0 var(--c,var(--ink))}
 .srow .sj-name{font-size:17px;font-weight:700}
 .tcard{border-width:3px;border-radius:20px}
-.tcard.on{background:#FFE08A}
+.tcard.on{background:#BFE3FF}
 .scard{border-width:3px;border-radius:22px;transition:transform .12s}.scard:active{transform:scale(.95)}
-.qcard{background:#FFFBEA;border:3px solid #FFC94D;border-radius:26px;box-shadow:0 4px 0 #FFC94D}
+.qcard{background:#fff;border:3px solid #6FB6F0;border-radius:26px;box-shadow:0 4px 0 #6FB6F0}
 .choice{border-width:3px;border-radius:24px;transition:transform .12s}
 .choice:active{transform:scale(.96)}
 .choices>.choice:nth-child(4n+1){background:#FFE4E4;border-color:#F28B8B;box-shadow:0 5px 0 #F28B8B}
@@ -490,9 +490,9 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .choice.reveal{border-color:var(--leaf)!important;background:#CFF3DC!important}
 .choice.got{background:#CFF3DC!important}
 .pgrid .choice{background:#fff}
-.lane{border-bottom-color:#F0C230}
-#tabbar{border-top:4px solid #F0C230;background:#FFFBEA;border-radius:22px 22px 0 0}
-#tabbar button.on{background:#FFE08A}
+.lane{border-bottom-color:#6FB6F0}
+#tabbar{border-top:4px solid #6FB6F0;background:#fff;border-radius:22px 22px 0 0}
+#tabbar button.on{background:#CFE9FF}
 .back{border-width:3px}
 .btn{border-radius:999px}
 .pv{border-width:3px;border-radius:18px;background:#fff}
@@ -629,7 +629,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-20 19:28';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-20 19:31';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -775,10 +775,10 @@ function afterSpeech(fn,minMs,maxMs=4500){
   setTimeout(tick,120);
 }
 /* 拎到新貼紙：先講晒「好叻！攞到新貼紙，○○」（同時畫面顯示貼紙＋名），講完先去下一步，唔會被下一題嘅朗讀打斷 */
-const PRAISE_SAY=['叻叻豬！','好叻！','叻叻！','犀利！'];let lastPraise=-1;
+const PRAISE_SAY=['叻叻豬！','好叻！','叻叻！','犀利！','好嘢！','正！','勁呀！','好勁呀！','叻仔！','叻到飛起！','你好叻呀！','做得好！','太棒喇！','好樣嘅！','超班！','一流！','你係小天才！','好威呀！','勁爆！','啱晒！','哇，好叻！','好犀利呀！','真係好叻！','你係冠軍！','叻過頭！','好得意，好叻！','正喎！','咁都識，好叻！','你好勁！','好呀，繼續加油！','哇，好勁！','叻叻叻！','頂呱呱！','你真係好叻！','太犀利喇！','好嘢，好嘢！'];let lastPraise=-1;let recentPraise=[];
 function praiseThen(next){
   if(G.stickerNow){announceThen(next);return;}
-  let i;do{i=Math.floor(Math.random()*PRAISE_SAY.length);}while(i===lastPraise);lastPraise=i;
+  let i;do{i=Math.floor(Math.random()*PRAISE_SAY.length);}while(recentPraise.includes(i));recentPraise.push(i);if(recentPraise.length>10)recentPraise.shift();lastPraise=i;   // 最近 10 句唔重複
   const g0=G;say(PRAISE_SAY[i],'yue');
   afterSpeech(()=>{if(G===g0)next();},500,2500);
 }
@@ -1207,7 +1207,8 @@ function renderHome(){
   G=null;SUBJ=null;LOGVIEW=false;ROOT='home';hush();
   const byDate=(a,b)=>nextDate(a).localeCompare(nextDate(b));
   const subs=T.subjects.filter(s=>!songOnly(s)),pre=subs.filter(s=>s.pre).sort(byDate),main=subs.filter(s=>!s.pre).sort(byDate);
-  const groups=[['提前評估',pre,'is-pre'],['主要評估',main,'is-main']].filter(g=>g[1].length)
+  const CORE=['yue','math','eng','gs','cmn'];
+  const groups=(pre.length?[['提前評估',pre,'is-pre'],['主要評估',main,'is-main']]:[['主要科目',main.filter(x=>CORE.includes(x.id)),'is-main'],['其他活動',main.filter(x=>!CORE.includes(x.id)),'is-pre']]).filter(g=>g[1].length)
     .sort((a,b)=>nextDate(a[1][0]).localeCompare(nextDate(b[1][0])));   // 區塊本身都按日期排
   app.innerHTML=`
     <header class="top"><div><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1><div class="ver">版本 ${APP_VER}</div></div></header>
