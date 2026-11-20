@@ -469,7 +469,7 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
  body{background-color:var(--paper)}
 }
 .hello{display:flex;align-items:center;gap:10px;margin-top:10px}
-.hmas{width:84px;height:84px;flex:none;animation:idle 2.2s ease-in-out infinite}.hmas svg{width:100%;height:100%;display:block}
+.hmas{width:104px;height:104px;flex:none;animation:idle 2.2s ease-in-out infinite}.hmas svg{width:100%;height:100%;display:block}
 .bubble{position:relative;background:#fff;border:3px solid var(--ink);border-radius:20px;padding:8px 14px;font-family:var(--kai);font-weight:700;font-size:20px;box-shadow:0 3px 0 var(--ink)}
 .bubble::before{content:"";position:absolute;left:-12px;top:50%;width:14px;height:14px;background:#fff;border-left:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:translateY(-50%) rotate(45deg)}
 .srow{background:color-mix(in srgb,var(--c,var(--sky)) 16%,#fff);border:3px solid var(--c,var(--ink));box-shadow:0 5px 0 var(--c,var(--ink));border-radius:22px;transition:transform .12s}
@@ -498,6 +498,8 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .pv{border-width:3px;border-radius:18px;background:#fff}
 .pv:nth-child(3n+1){border-color:#F28B8B}.pv:nth-child(3n+2){border-color:#F0C230}.pv:nth-child(3n){border-color:#5CC48A}
 .pv.got,.pv.due{border-color:inherit}
+.khome *,.khome{box-sizing:border-box}
+.hmas svg{overflow:visible}
 .khome{display:flex;flex-direction:column;align-items:center;gap:18px;padding:4px 0 10px}
 .khome .hello{align-self:stretch;justify-content:center}
 .bigplay{display:flex;align-items:center;justify-content:center;gap:16px;width:100%;max-width:520px;min-height:150px;border:4px solid var(--ink);border-radius:36px;background:linear-gradient(#FF8A5B,#F0523A);color:#fff;box-shadow:0 8px 0 #A52A18;font-family:var(--kai);animation:pulse 1.8s ease-in-out infinite}
@@ -648,7 +650,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-20 19:46';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-20 19:49';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
