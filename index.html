@@ -277,6 +277,7 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .qgrp{margin-top:14px}.qgrp:first-of-type{margin-top:6px}.seqbtn{margin-left:auto;font-family:var(--ui);font-size:13px;font-weight:700;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:3px 10px;box-shadow:0 2px 0 var(--ink)}
 .qgrp h3,.wd h3{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.qgrp h3 span,.wd h3 span{flex:1 1 auto}
 .qgrp h3{margin:0 0 8px;font-size:17px;padding:6px 10px;background:color-mix(in srgb,var(--sky) 14%,var(--card));border-radius:12px;border-left:5px solid var(--sky)}
+.qa.tp{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}.qa.tp .qa-a b{font-size:15px}
 .qa{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
 .wdgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}.wd{display:flex;flex-direction:column;gap:8px;min-width:0}.wd h3{margin:0 0 2px;font-size:19px;text-align:center;padding:6px;border-radius:12px}
 .wd.wet h3{background:color-mix(in srgb,#6FB6F0 25%,var(--card))}.wd.dry h3{background:color-mix(in srgb,#F2C230 28%,var(--card))}
@@ -451,6 +452,8 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .scard.list{container-type:inline-size}
 .scard.list b{font-size:clamp(11px,calc((100cqw - 10px)/var(--n,8)),15px)}   /* 長標題自動縮細，盡量一行放得落 */
 @media (min-width:700px){.scard.list b{font-size:clamp(12px,calc((100cqw - 14px)/var(--n,8)),22px)}}
+.termline{margin:0;padding:10px 12px;background:var(--card);border:2px solid var(--rule);border-radius:14px;font-size:14px;line-height:1.6;color:var(--soft)}.termline b{color:var(--ink)}
+.srow .pct.info{color:var(--soft)}
 .tcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .tcard{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px 8px;background:var(--card);border:2px solid var(--rule);border-radius:16px;box-shadow:0 3px 0 var(--rule);font-family:var(--kai);min-width:0}
 .tcard b{font-size:17px}.tcard small{font-size:11px;color:var(--soft);text-align:center;line-height:1.25}
@@ -587,7 +590,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-20 19:13';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-20 19:15';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1072,7 +1075,7 @@ function voiceNote(){
   return `<div class="note">這支手機還沒有${need.map(l=>nm[l]).join('、')}語音。可以到系統設定的「朗讀內容」下載語音，下載後重新開啟本頁即可。</div>`;
 }
 const SUBMETA={yue:['字','認中文字・廣東話','var(--berry)'],math:['數','數字・顏色・形狀','var(--sky)'],eng:['A','ABC・英文生詞','var(--leaf)'],gs:['識','社區・家庭・中秋','var(--sun)'],
-  cmn:['普','認中文字・普通話','var(--berry)'],rel:['主','歌曲・祈禱文','var(--sky)'],sing:['歌','唱遊歌曲','var(--leaf)']};
+  cmn:['普','認中文字・普通話','var(--berry)'],rel:['主','歌曲・祈禱文','var(--sky)'],sing:['歌','唱遊歌曲','var(--leaf)'],sci:['科','科學活動','var(--sky)'],art:['藝','視藝活動','var(--berry)'],pe:['體','體能活動','var(--leaf)'],read:['讀','閱讀','var(--sun)']};
 const songN=x=>typeof x==='string'?x:x.n;
 const LEVELS={1:['★☆☆','易'],2:['★★☆','中'],3:['★★★','難']};
 function subjCount(s){
@@ -1126,18 +1129,25 @@ function subjRow(s){
     <span class="si">${cells(m[0],'ic')}</span>
     <span class="sj-name">${esc(s.name)}</span>
     ${termPill(s)}
-    <span class="mini ${pcl}"><i style="width:${pc}%"></i></span><span class="pct ${pcl}">完成 ${pc}%</span></button>`;
+    ${s.info?'<span class="pct info">看內容</span>':`<span class="mini ${pcl}"><i style="width:${pc}%"></i></span><span class="pct ${pcl}">完成 ${pc}%</span>`}</button>`;
 }function subjSection(title,list,cls){
   if(!list.length)return '';
   const ds=list.flatMap(s=>s.dates).sort(),md=d=>fmt(d).replace(/（.*?）/,'');
   const range=ds[0]===ds[ds.length-1]?md(ds[0]):`${md(ds[0])} 至 ${md(ds[ds.length-1])}`;
   return `<section class="grp-sec ${cls||''}"><div class="grp-head"><h2 class="sec">${esc(title)}</h2><span class="grp-range">${esc(range)}</span></div><div class="subjects">${list.map(subjRow).join('')}</div></section>`;
 }
-const songOnly=s=>!s.items.some(it=>(it.games||[]).length);   // 只有歌曲、冇遊戲嘅科目（宗教、唱遊）：首頁收埋，喺家長分頁睇
+const songOnly=s=>!s.info&&!s.items.some(it=>(it.games||[]).length);   // 只有歌曲、冇遊戲嘅科目（宗教、唱遊）：首頁收埋，喺家長分頁睇
 function termCards(){   // 每一段（階段）一張卡：第一段評估、第二段、第三段
   return `<section class="tcards" aria-label="階段">${TERMS.map((t,i)=>{
     const done=t.subjects.every(finished)&&!t.tentative;
     return `<button class="tcard ${t===T?'on':''}" data-act="term" data-i="${i}" aria-pressed="${t===T}"><b>${esc(t.short||t.name)}</b><small>${esc(t.when||'')}</small>${done?'<i class="tdone">已考完</i>':''}</button>`;}).join('')}</section>`;
+}
+const dayDiff=(a,b)=>Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/864e5);
+function termLine(){   // 有起止日期嘅階段：寫明由幾號到幾號、共幾多日、最後一日係邊日
+  if(!T.start||!T.end)return '';
+  const md=d=>{const x=new Date(d+'T00:00:00');return `${x.getMonth()+1}月${x.getDate()}日`;};
+  const total=dayDiff(T.start,T.end)+1,left=daysTo(T.end);
+  return `<p class="termline"><b>${md(T.start)} → ${md(T.end)}</b>・共 ${total} 天${T.weeks?`（${esc(T.weeks)}）`:''}<br>${md(T.end)}是這一段的最後一天（評估日期老師還沒公布）${left>=0?`，還有 <b>${left}</b> 天`:''}</p>`;
 }
 function selectTerm(i){T=TERMS[i];try{localStorage.setItem('renren-zi-term',T.id);}catch(e){}SUBJ=null;renderHome();}
 function renderHome(){
@@ -1149,7 +1159,7 @@ function renderHome(){
   app.innerHTML=`
     <header class="top"><div><h1 class="brand">${cells('仁仁','brand')}<span>功課</span></h1><div class="ver">版本 ${APP_VER}</div></div></header>
     ${voiceNote()}
-    ${termCards()}
+    ${termCards()}${termLine()}
     ${groups.map(g=>subjSection(g[0],g[1],g[2])).join('')}`;
   tabs('home');
 }
@@ -1245,7 +1255,7 @@ function renderUsageLog(){
 const LEARN_G=new Set(['cards','chant']);
 const isLearn=g=>LEARN_G.has(g);
 const songItemOnly=it=>!!it.songs&&!it.words&&!it.letters&&!it.sentences&&!(it.games||[]).length;
-const hasDetail=it=>!!(it.words||it.letters||it.sentences||it.songs||it.quiz||it.contrast);
+const hasDetail=it=>!!(it.words||it.letters||it.sentences||it.songs||it.quiz||it.contrast||it.topics);
 const learnItems=s=>s.items.map((it,i)=>({it,i})).filter(({it})=>!(songItemOnly(it)&&!songOnly(s))&&(hasDetail(it)||(it.games||[]).some(isLearn)));
 const gameItems=s=>s.items.map((it,i)=>({it,i})).filter(({it})=>(it.games||[]).some(g=>!isLearn(g)));
 const segLabel=it=>String(it.label).replace(/內容$/,'').replace(/。$/,'');
@@ -1258,6 +1268,7 @@ function itemCount(it){
   if(it.sentences)return `${it.sentences.length} 句`;
   if(it.songs)return `${it.songs.length} 首`;
   if(it.quiz)return `${it.quiz.length} 題`;
+  if(it.topics)return `${it.topics.length} 項`;
   if(it.contrast)return `${it.contrast.wet.length+it.contrast.dry.length} 個例子`;
   return '';
 }
@@ -1295,6 +1306,7 @@ function renderList(){
       ?`<div class="preview ${mixed?'mixed':''}">${words.map(w=>{const st=memState(lang,w);return `<button class="pv ${st==='got'||st==='due'?st:''}" data-act="pv" data-t="${esc(w)}" data-l="${lang}" aria-label="讀出 ${esc(w)}（${MEM_TXT[st]}）">${wv(w,'sm',lang)}</button>`;}).join('')}</div>`
       :`<div class="preview ${mixed?'mixed':''}">${letters.map(L=>`<button class="pv" data-act="pv" data-t="${L}" data-l="en"><span class="en sm">${L}${L.toLowerCase()}</span></button>`).join('')}</div>`);
   }
+  if(it.topics)body=`<p class="small">這一段學的活動內容，按一下會讀出來。</p><ul class="qa tp">${it.topics.map(x=>`<li><button class="qab" data-act="pv" data-t="${esc(x[1])}" data-l="yue"><span class="qa-a"><span class="qi">${x[0]}</span><b>${esc(x[1])}</b></span></button></li>`).join('')}</ul>`;
   if(it.contrast){const col=(t,cls,list,say)=>`<div class="wd ${cls}" data-q="${say==='係濕嘅'?'濕嘅嘢有':'乾嘅嘢有'}"><h3><span>${t}</span><button class="seqbtn" data-act="seq">▶ 順序播放</button></h3>${list.map(x=>`<button class="qab" data-act="pv" data-t="${esc((x[2]||x[1])+'，'+say)}" data-a="${esc(x[2]||x[1])}" data-l="yue"><span class="qa-a"><span class="qi">${x[0]}</span><b>${esc(x[1])}</b></span></button>`).join('')}</div>`;
     body=`<p class="small">按一下會讀出來。</p><div class="wdgrid">${col('💧 濕的','wet',it.contrast.wet,'係濕嘅')}${col('☀️ 乾的','dry',it.contrast.dry,'係乾嘅')}</div>`;}
   if(it.quiz){const gs=[];it.quiz.forEach(x=>{let g=gs.find(y=>y.q===x.q);if(!g){g={q:x.q,xs:[]};gs.push(g);}g.xs.push(x);});   // 同一條題目嘅答案放埋一組，唔同題目分開
