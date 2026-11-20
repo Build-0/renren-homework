@@ -211,11 +211,11 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 .sbook{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px}
 .stk{aspect-ratio:1;max-width:100%;display:grid;place-items:center;border-radius:50%;background:var(--rule);opacity:.45;font-size:32px}
 .stk.got{opacity:1;border:2px solid var(--sun);background:var(--paper)}
-.stk svg{width:84%;height:84%}
+.stk svg{width:84%;height:84%}.stk img{width:88%;height:88%;object-fit:contain;display:block}
 .toast .big svg{width:1.15em;height:1.15em;vertical-align:middle}
 .newstk span svg{width:1.1em;height:1.1em;vertical-align:middle}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--card);border:3px solid var(--ink);border-radius:999px;padding:10px 22px;font-family:var(--kai);font-weight:700;font-size:22px;box-shadow:0 5px 0 var(--ink);display:flex;align-items:center;gap:10px;white-space:nowrap;animation:toastin .35s both;transform:translateX(-50%)}
-.toast .big{font-size:36px;line-height:1}
+.toast .big{font-size:36px;line-height:1}.toast .big img{width:44px;height:44px;vertical-align:middle}
 @keyframes toastin{from{transform:translate(-50%,40px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
 .newstk{font-family:var(--kai);font-weight:700}
 .newstk span{font-size:44px;vertical-align:middle}
@@ -515,7 +515,7 @@ body.hastabs .newver{bottom:calc(84px + env(safe-area-inset-bottom,0px))}   /* �
 #hatch .fall{position:absolute;top:-30px;animation:fall 2.6s linear infinite;font-style:normal}
 .hbox{position:relative;z-index:1;background:#fff;border:4px solid var(--ink);border-radius:32px;box-shadow:0 8px 0 var(--ink);padding:22px 36px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;animation:grow .5s cubic-bezier(.3,1.6,.5,1) both}
 .hbox .hegg{width:70px;height:84px}.hbox .hegg svg{width:100%;height:100%}
-.hbox .hst{width:min(46vw,200px);height:min(46vw,200px);display:grid;place-items:center;font-size:min(34vw,150px);line-height:1;animation:bounce .8s ease-in-out 3}.hbox .hst svg{width:100%;height:100%}
+.hbox .hst{width:min(46vw,200px);height:min(46vw,200px);display:grid;place-items:center;font-size:min(34vw,150px);line-height:1;animation:bounce .8s ease-in-out 3}.hbox .hst svg,.hbox .hst img{width:100%;height:100%;object-fit:contain}
 .hbox b{font-family:var(--kai);font-size:30px}.hbox span{font-size:22px;font-weight:700;color:var(--berry)}
 </style>
 </head>
@@ -648,7 +648,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-20 19:43';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-20 19:46';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1055,7 +1055,10 @@ const REAL_CAR={
   <circle cx="92" cy="58" r="2.8" fill="#FFE27A" stroke="${INK}" stroke-width="1"/><rect x="6" y="56" width="3" height="4" rx="1" fill="#E53935"/>
   ${wheel(25,70,9)}${wheel(76,70,9)}`);}
 };
-const STICKERS=DINOS.flatMap((d,i)=>[{n:d.n,s:(REAL_DINO[d.n]||d.s)()},{n:CARS[i][1],s:REAL_CAR[CARS[i][1]]?REAL_CAR[CARS[i][1]]():CARS[i][0]}]);   // 有寫實版嘅用寫實版   // 恐龍、車、恐龍、車……共 30 張
+/* 第 2 本貼紙：Microsoft Fluent Emoji 3D（MIT，圖在 stickers/）：10 個恐龍世界＋20 部車，每 3 張有 1 張恐龍世界。舊嘅手畫 SVG 仍留喺 DINOS／REAL_DINO（首頁恐龍等用）。 */
+const STK_D=[["霸王龍","t-rex"],["雷龍","sauropod"],["中國龍","dragon"],["鱷魚","crocodile"],["蜥蜴","lizard"],["烏龜","turtle"],["龍頭","dragon_face"],["火山","volcano"],["恐龍骨頭","bone"],["破殼小雞","hatching_chick"]],STK_V=[["消防車","fire_engine"],["警車","police_car"],["救護車","ambulance"],["汽車","automobile"],["的士","taxi"],["巴士","bus"],["小巴","minibus"],["電車","trolleybus"],["貨車","delivery_truck"],["大貨車","articulated_lorry"],["小貨車","pickup_truck"],["拖拉機","tractor"],["賽車","racing_car"],["電單車","motorcycle"],["小綿羊","motor_scooter"],["直升機","helicopter"],["飛機","airplane"],["火箭","rocket"],["輕軌","light_rail"],["高速列車","bullet_train"]];
+const stkImg=f=>'<img src="stickers/'+f+'_3d.png" alt="" draggable="false">';
+const STICKERS=Array.from({length:30},(_,i)=>{const dn=i%3===0,k=dn?i/3:i-Math.floor(i/3)-1,[n,f]=dn?STK_D[k]:STK_V[k];return {n,s:stkImg(f)};});   // 恐龍、車、恐龍、車……共 30 張
 /*STK-END*/
 /*ICO-BEGIN*/
 /* 職業人物圖示（自己畫嘅卡通 SVG）：靠「衣服」分辨——醫生白袍＋聽診器、護士護士帽、廚師高帽、的士司機西裝領呔＋司機帽。
@@ -1447,7 +1450,7 @@ function renderParent(){
       <h2 class="sec">學校備註</h2>
       <ol class="notes">${T.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ol>
     </section>
-    <footer class="foot">內容跟足學校《${esc(T.year)} 年度${esc(T.name)}複習大綱》。星星同進度會同步到所有裝置。<br>版本 ${APP_VER}</footer>`;
+    <footer class="foot">內容跟足學校《${esc(T.year)} 年度${esc(T.name)}複習大綱》。星星同進度會同步到所有裝置。<br>貼紙圖示：Microsoft Fluent Emoji 3D（MIT 授權）<br>版本 ${APP_VER}</footer>`;
   tabs('parent');
 }
 
