@@ -587,7 +587,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-20 19:09';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-20 19:13';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -838,7 +838,7 @@ function pill(dates){
   const cls=d<=10?'soon':d<=20?'up':'far';   // 10 天內紅、11–20 天黃、21 天或以上藍
   return `<span class="pill ${cls}">還有 ${d} 天</span>`;
 }
-const termPill=s=>T.tentative?'<span class="pill far">待定</span>':pillS(s.dates);
+const termPill=s=>T.tentative?`<span class="pill far">${esc(T.pillText||'待定')}</span>`:pillS(s.dates);
 function pillS(dates){
   const up=dates.find(d=>daysTo(d)>=0);
   if(!up)return '<span class="pill past">已考</span>';
@@ -1267,7 +1267,7 @@ const ITEM_ICON=it=>it.icon?it.icon:it.words?'🔤':it.letters?'🔠':it.sentenc
 function renderSubject(){
   G=null;LOGVIEW=false;hush();
   const s=SUBJ,L=learnItems(s),Gm=gameItems(s);
-  const dates=T.tentative?'日期待定':s.dates.length>1?s.dates.map(x=>fmt(x).replace(/（.*?）/,'')).join('、'):fmt(s.dates[0]);
+  const dates=T.tentative?(T.whenSubj||'日期待定'):s.dates.length>1?s.dates.map(x=>fmt(x).replace(/（.*?）/,'')).join('、'):fmt(s.dates[0]);
   const cards=[];
   L.forEach(({it,i})=>{
     (it.games||[]).filter(g=>isLearn(g)&&g!=='cards').forEach(g=>cards.push(`<button class="scard" data-act="play" data-i="${i}" data-g="${g}"><span class="ci" aria-hidden="true">${GICON[g]||'📖'}</span><b>${GAMES[g][1]}${store.done[dkey(i,g)]?' <span class="ok">✓</span>':''}</b><small>${g==='chant'?`1 到 ${it.max||30}`:(LEARN_SUB[g]||esc(segLabel(it)))}</small></button>`));
