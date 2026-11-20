@@ -537,7 +537,7 @@ store.done=store.done||{}; store.sung=store.sung||{}; store.known=store.known||{
 const USAGE_EPOCH=2;  // 改這個數字 = 全部裝置清空使用時間統計一次（舊版本留低嘅測試時間唔會同步返嚟）
 if(store.usageEpoch!==USAGE_EPOCH){store.usage={};store.usageEpoch=USAGE_EPOCH;}
 store.sd=store.sd||{d:'',n:0,k:{}};   // 今日星星：d 日期、n 今日已得、k 今日已計過星星嘅題目
-const STAR_EPOCH=1;  // 改呢個數字 = 全部裝置星星同貼紙歸零一次（舊版本嘅星星唔會同步返嚟）
+const STAR_EPOCH=2;  // 改呢個數字 = 全部裝置星星同貼紙歸零一次（舊版本嘅星星唔會同步返嚟）
 if(store.starEpoch!==STAR_EPOCH){store.stars=0;store.sd={d:'',n:0,k:{}};store.starEpoch=STAR_EPOCH;}
 store.mem=store.mem||{};
 if(!store.memV){   // 舊版只記「答啱次數」，搬過去當「學緊」（唔信任：可能同一日玩出嚟），下次喺另一日答啱就會升級
@@ -629,7 +629,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastTick=Date.now();checkUpdate();}});
 
 /* ============ 版本更新提示（每次發佈要同時改 APP_VER 同 version.json） ============ */
-const APP_VER='2026-11-20 19:26';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
+const APP_VER='2026-11-20 19:27';   // 發佈時間（香港時間）；頁尾直接顯示，同 version.json 要一樣
 let lastChk=0,updSnooze=0;
 async function checkUpdate(){
   if(Date.now()<updSnooze)return;
@@ -1228,7 +1228,7 @@ const stickerLeftLine=()=>{const p=stickerProg();return p.done?'':`<p class="sma
 const tierLines=()=>{let a=1,tot=0;return STK_STEPS.map(([cnt,c])=>{const b=a+cnt-1;tot+=cnt*c;const t=`<li>第 ${a}–${b} 張：每張 <b>${c}</b> 顆星（累計 ${tot} 顆）</li>`;a=b+1;return t;}).join('');};   // 由 STK_STEPS 自動產生，改規則唔使改字
 function stickerBook(){
   const n=stickersOwned(),done=n>=STICKERS.length;
-  return `<section class="panel"><div class="sb-head"><h2 class="sec">我的貼紙</h2><span class="small">${n} ／ ${STICKERS.length}</span></div>
+  return `<section class="panel"><div class="sb-head"><h2 class="sec">我的貼紙・第 ${STAR_EPOCH} 本</h2><span class="small">${n} ／ ${STICKERS.length}</span></div>
     <div class="sbook">${STICKERS.map((st,i)=>i<n?`<span class="stk got" title="${st.n}" aria-label="${st.n}">${st.s}</span>`:`<span class="stk${i===n&&!done?' nxt':''}">${i===n&&!done?'？':''}</span>`).join('')}</div></section>`;
 }
 function renderStickers(){
